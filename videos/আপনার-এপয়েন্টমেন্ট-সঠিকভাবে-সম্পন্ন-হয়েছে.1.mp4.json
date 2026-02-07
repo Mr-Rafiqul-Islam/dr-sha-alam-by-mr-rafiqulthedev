@@ -1,0 +1,23 @@
+{
+  "status": "ready",
+  "originalFilePath": "videos\\আপনার-এপয়েন্টমেন্ট-সঠিকভাবে-সম্পন্ন-হয়েছে.1.mp4",
+  "provider": "mux",
+  "providerMetadata": {
+    "mux": {
+      "uploadId": "zP02oynbYdwCoIF40276hB01zdm7pH01jg4iCh3SsFVMGp4",
+      "assetId": "m00BAQokQ7ZxfVCvfv1iqWp2w00OfTQxGhmzvKKK5E01f4",
+      "playbackId": "LypYdEszi01R6k52uOdTaPGyM7UnUvayLu37FwwHmbGI"
+    }
+  },
+  "createdAt": 1763187169201,
+  "updatedAt": 1763187206468,
+  "size": 69810223,
+  "sources": [
+    {
+      "src": "https://stream.mux.com/LypYdEszi01R6k52uOdTaPGyM7UnUvayLu37FwwHmbGI.m3u8",
+      "type": "application/x-mpegURL"
+    }
+  ],
+  "poster": "https://image.mux.com/LypYdEszi01R6k52uOdTaPGyM7UnUvayLu37FwwHmbGI/thumbnail.webp",
+  "blurDataURL": "data:image/webp;base64,UklGRpoAAABXRUJQVlA4II4AAABQAgCdASoQAAkAAQAcJYwCdH8AgljBUs9apagA/v38MImuFq8sZvapclPqf1BDQ4OwBdbaQL+tyXB3yf9z43fbiHPiD/XXxOnK9MvuobnDBxkkJPotptar4DV/vnocPew4/8CmfDsf2/9v4qVgLsRGKz6/0lH7p371fE26fr3MwcsPsaMLHWnFhIHyqqAA"
+}

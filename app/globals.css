@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+:root {
+  --background: white;
+  --primary: #03a779;
+  --secondary: #006789;
+  --tertiary: #363639;
+  --accent: #FFCC45;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-tertiary: var(--tertiary);
+  --color-accent: var(--accent);
+  --font-montserrat: var(----font-montserrat);
+  --font-base: var(----font-base);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--tertiary);
+  }
+}
+
+body {
+  font-family: var(--font-base), system-ui, sans-serif;
+}
+
+/* Optional: Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--primary-foreground);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tertiary);
+}
+
+.outerShadow {
+  box-shadow: 6px 6px 10px -1px rgba(0, 0, 0, 0.15), -6px -6px 10px -1px rgba(255, 255, 255, 0.7);
+}
+
+.innerShadow {
+  box-shadow: inset 4px 4px 6px -1px rgba(0, 0, 0, 0.2), inset -4px -4px 6px -1px rgba(255, 255, 255, 0.7),
+    -0.5px -0.5px 0px rgba(255, 255, 255, 1), 0.5px 0.5px 0px rgba (0, 0, 0, 0.15), 0px 12px 10px -10px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes progressAnim {
+  from {
+    stroke-dashoffset: 200.96;
+    /* full circumference for radius=32 */
+  }
+
+  to {
+    stroke-dashoffset: var(--offset);
+  }
+}
+
+.animate-progress {
+  animation: progressAnim 1.5s ease-out forwards;
+}
+
+
+/* Fix invisible arrows */
+.slick-prev:before,
+.slick-next:before {
+  color: var(--primary) !important;
+  font-size: 30px !important;
+}
+
+/* Make dots visible */
+.slick-dots li button:before {
+  color: var(--primary) !important;
+  opacity: 0.6;
+}
+
+.slick-dots li.slick-active button:before {
+  color: var(--accent) !important;
+  opacity: 1;
+}
+
+.slick-slide > div {
+  margin: 0px 10px !important;
+}
+
+/* Responsive carousel adjustments */
+@media (max-width: 768px) {
+  .slick-slide > div {
+    margin: 0px 5px !important;
+  }
+}
+
+.slider-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.slider-container .slick-slider {
+  width: 100%;
+}
+
+.slider-container .slick-list {
+  margin: 0 -10px;
+}
+
+@media (max-width: 768px) {
+  .slider-container .slick-list {
+    margin: 0 -5px;
+  }
+}
+
+/* Hide default slick arrow :before pseudo-element for custom arrows */
+.next-arrow:before,
+.prev-arrow:before {
+  display: none !important;
+  content: none !important;
+}
+
+/* Custom arrow styling for mobile - position on top of images */
+@media (max-width: 768px) {
+  .next-arrow,
+  .prev-arrow {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 50 !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    padding: 0 !important;
+  }
+  
+  .next-arrow:hover,
+  .prev-arrow:hover {
+    background: rgba(0, 0, 0, 0.8) !important;
+    transform: translateY(-50%) scale(1.1) !important;
+  }
+  
+  .next-arrow {
+    right: 15px !important;
+  }
+  
+  .prev-arrow {
+    left: 15px !important;
+  }
+}
+
