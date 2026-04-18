@@ -1,0 +1,29 @@
+{
+  "name": "drsa-server",
+  "version": "1.0.0",
+  "description": "Doctor Sha Alam Appointment Server",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exec tsx src/app.ts --watch src",
+    "build": "tsc",
+    "test": "tsx --test \"src/**/*.test.ts\"",
+    "start": "node dist/app.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:force": "prisma db push --force-reset",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "prisma db seed",
+    "test:otp": "tsx scripts/test-otp-send.ts"
+  },
+  "keywords": [
+    "doctor",
+    "sha",
+    "alam",
+    "appointment",
+    "server"
+  ],
+  "author": "Dr Md Shah Alam",
+  "license": "",
+  "type": "module"
+}
