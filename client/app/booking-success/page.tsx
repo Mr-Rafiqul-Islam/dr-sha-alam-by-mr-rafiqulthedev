@@ -1,0 +1,127 @@
+import Image from 'next/image';
+import Link from 'next/link';
+import ScrollReveal from '@/components/ScrollReveal';
+
+export default function BookingSuccessPage() {
+  return (
+    <div className="flex-grow flex flex-col items-center justify-center py-16 lg:py-24 bg-white dark:bg-surface-dark">
+      <div className="max-w-3xl w-full px-4 sm:px-6">
+        
+        <ScrollReveal direction="up" className="text-center mb-12">
+          <div className="w-24 h-24 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="material-symbols-outlined text-6xl text-accent">check_circle</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-primary dark:text-white mb-4 tracking-tight">
+            Appointment Request Received!
+          </h1>
+          <p className="text-lg text-text-sub dark:text-gray-300 leading-relaxed max-w-xl mx-auto">
+            Thank you for choosing Doctor Shah Alam. We have received your details and will contact you shortly to confirm your visit.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" delay={0.1} className="bg-background-light dark:bg-background-dark border border-gray-100 dark:border-gray-800 rounded-3xl p-8 mb-12 shadow-sm">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-text-sub mb-6 border-b border-gray-200 dark:border-gray-700 pb-2">Booking Summary</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+            <div>
+              <p className="text-xs text-text-sub mb-1">Patient Name</p>
+              <p className="text-lg font-bold text-text-main dark:text-white">Mr. John Doe</p>
+            </div>
+            <div>
+              <p className="text-xs text-text-sub mb-1">Clinic Address</p>
+              <p className="text-base font-medium text-text-main dark:text-white">House 42, Road 7, Sector 3, Uttara, Dhaka</p>
+            </div>
+            <div>
+              <p className="text-xs text-text-sub mb-1">Preferred Date</p>
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-sm">calendar_month</span>
+                <p className="text-lg font-bold text-text-main dark:text-white">Oct 28, 2026</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-text-sub mb-1">Preferred Time</p>
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-sm">schedule</span>
+                <p className="text-lg font-bold text-text-main dark:text-white">10:00 AM - 12:00 PM</p>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" delay={0.2} className="mb-12">
+          <h3 className="text-xl font-bold text-text-main dark:text-white mb-8 text-center">What Happens Next?</h3>
+          <div className="relative">
+            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-200 dark:bg-gray-700 hidden md:block"></div>
+            <div className="space-y-8 md:space-y-0 relative">
+              <div className="flex flex-col md:flex-row items-center justify-between w-full md:mb-8">
+                <div className="w-full md:w-5/12 md:text-right order-2 md:order-1 pt-2 md:pt-0">
+                  <h4 className="font-bold text-lg text-primary dark:text-accent">We review your request</h4>
+                  <p className="text-sm text-text-sub mt-1">Our team checks availability for your preferred slot.</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold z-10 border-4 border-white dark:border-surface-dark mb-2 md:mb-0 order-1 md:order-2">1</div>
+                <div className="w-full md:w-5/12 order-3 md:order-3"></div>
+              </div>
+              <div className="flex flex-col md:flex-row items-center justify-between w-full md:mb-8">
+                <div className="w-full md:w-5/12 order-3 md:order-1"></div>
+                <div className="w-10 h-10 rounded-full bg-white border-2 border-primary text-primary flex items-center justify-center font-bold z-10 md:border-4 md:border-white dark:md:border-surface-dark dark:bg-surface-dark dark:border-primary mb-2 md:mb-0 order-1 md:order-2">2</div>
+                <div className="w-full md:w-5/12 md:text-left order-2 md:order-3 pt-2 md:pt-0">
+                  <h4 className="font-bold text-lg text-text-main dark:text-white">You receive a call or SMS</h4>
+                  <p className="text-sm text-text-sub mt-1">We&apos;ll confirm the final time with you directly.</p>
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row items-center justify-between w-full">
+                <div className="w-full md:w-5/12 md:text-right order-2 md:order-1 pt-2 md:pt-0">
+                  <h4 className="font-bold text-lg text-text-main dark:text-white">Visit the chamber</h4>
+                  <p className="text-sm text-text-sub mt-1">Bring previous reports if you have any.</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center font-bold z-10 md:border-4 md:border-white dark:md:border-surface-dark dark:bg-surface-dark dark:border-gray-600 mb-2 md:mb-0 order-1 md:order-2">3</div>
+                <div className="w-full md:w-5/12 order-3 md:order-3"></div>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" delay={0.3} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+          <Link href="/patient-guidelines" className="flex items-center p-5 border border-gray-100 dark:border-gray-700 rounded-2xl hover:border-accent hover:shadow-md transition-all group bg-background-light dark:bg-background-dark">
+            <div className="w-12 h-12 rounded-full bg-white dark:bg-surface-dark flex items-center justify-center text-primary group-hover:text-accent transition-colors shadow-sm mr-4">
+              <span className="material-symbols-outlined">description</span>
+            </div>
+            <div>
+              <h5 className="font-bold text-text-main dark:text-white group-hover:text-primary transition-colors">Patient Guidelines</h5>
+              <p className="text-xs text-text-sub mt-1">What to bring &amp; expect</p>
+            </div>
+            <span className="material-symbols-outlined ml-auto text-gray-300 group-hover:text-accent">arrow_forward_ios</span>
+          </Link>
+          <Link href="https://maps.app.goo.gl/5SxzDjQRYoSS7uS98" target="_blank" rel="noopener noreferrer" className="flex items-center p-5 border border-gray-100 dark:border-gray-700 rounded-2xl hover:border-accent hover:shadow-md transition-all group bg-background-light dark:bg-background-dark">
+            <div className="w-12 h-12 rounded-full bg-white dark:bg-surface-dark flex items-center justify-center text-primary group-hover:text-accent transition-colors shadow-sm mr-4">
+              <span className="material-symbols-outlined">map</span>
+            </div>
+            <div>
+              <h5 className="font-bold text-text-main dark:text-white group-hover:text-primary transition-colors">Directions to Clinic</h5>
+              <p className="text-xs text-text-sub mt-1">Google Maps Location</p>
+            </div>
+            <span className="material-symbols-outlined ml-auto text-gray-300 group-hover:text-accent">arrow_forward_ios</span>
+          </Link>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" delay={0.4} className="flex flex-col sm:flex-row items-center gap-6 bg-primary/5 dark:bg-primary/10 p-6 rounded-2xl mb-12 border border-primary/10">
+          <Image alt="Dr. Shah Alam" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOTjSAc1-lI6k7AWc9vIFTe1T3qZTUMpLURsHX5VugOOkg0mk7bhLy3jL078SBvDZ7AjPA-yAfXfo2ZuDvQk1elqdntezlYPbZNCaagEAoeiTm6OIGzSBjn7runX6jW9bo51kg7kNnf8adIw5D3wXSXevUB2M8XGTE22l-C5_FGsE_vJGMgkuHkFQP9QF1a02KMIdRHlNaAHoldCZkUlnsNhjAmGIY2q-xH9kpdQsNzlIi9ATCjHUhJPWvf3wARUi04_zChL0EQQ4" width={64} height={64} sizes="64px" />
+          <div className="text-center sm:text-left">
+            <p className="text-text-main dark:text-gray-200 italic font-medium">&quot;Looking forward to helping you on your recovery journey. We believe in healing without unnecessary interventions.&quot;</p>
+            <p className="text-sm font-bold text-primary mt-2">- Dr. Shah Alam</p>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" delay={0.5} className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+          <Link href="/" className="w-full sm:w-auto text-center bg-primary hover:bg-primary-dark text-white font-bold py-4 px-8 rounded-full transition-all duration-300 shadow-lg shadow-primary/20 hover:shadow-primary/40 transform hover:-translate-y-1">
+            Back to Home
+          </Link>
+          {/* <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white dark:bg-surface-dark border-2 border-gray-100 dark:border-gray-700 hover:border-accent hover:text-accent text-text-main dark:text-white font-bold py-3.5 px-8 rounded-full transition-all duration-300 shadow-sm hover:shadow-md">
+            <span className="material-symbols-outlined">calendar_today</span>
+            Add to Calendar
+          </button> */}
+        </ScrollReveal>
+
+      </div>
+    </div>
+  );
+}
