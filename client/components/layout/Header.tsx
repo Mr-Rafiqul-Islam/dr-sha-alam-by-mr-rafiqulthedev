@@ -13,12 +13,13 @@ export default function Header() {
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Treatments", href: "/treatments" },
-    { name: "Success Stories", href: "/success-stories" },
-    { name: "Blog", href: "/blog" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
+    { name: "Home", href: "/", target: "_self" },
+    { name: "Treatments", href: "/treatments", target: "_self" },
+    { name: "Success Stories", href: "/success-stories", target: "_self" },
+    { name: "Blog", href: "/blog", target: "_self" },
+    { name: "Courses", href: "https://yogawithdoctor.com/courses", target: "_blank" },
+    { name: "About", href: "/about", target: "_self" },
+    { name: "Contact", href: "/contact", target: "_self" },
   ];
 
   return (
@@ -54,6 +55,8 @@ export default function Header() {
                   key={link.name}
                   className={`text-base font-medium transition-colors ${isActive ? "text-primary dark:text-accent" : "text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-accent"}`}
                   href={link.href}
+                  target={link.target}
+                  rel={link.target === "_blank" ? "noopener noreferrer" : undefined}
                 >
                   {link.name}
                 </Link>
@@ -106,6 +109,8 @@ export default function Header() {
                   <Link
                     key={link.name}
                     href={link.href}
+                    target={link.target}
+                    rel={link.target === "_blank" ? "noopener noreferrer" : undefined}
                     onClick={closeMenu}
                     className={`text-lg font-bold transition-colors ${isActive ? "text-primary dark:text-accent" : "text-text-main dark:text-white hover:text-primary dark:hover:text-accent"}`}
                   >

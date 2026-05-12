@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -12,7 +12,9 @@ export default function Footer() {
                 D
               </div>
               <div className="flex flex-col">
-                <h2 className="text-xl font-bold text-white leading-none">Dr. Shah Alam</h2>
+                <h2 className="text-xl font-bold text-white leading-none">
+                  Dr. Shah Alam
+                </h2>
               </div>
             </div>
             <div className="space-y-3 pt-2">
@@ -33,16 +35,29 @@ export default function Footer() {
               </p>
             </div>
             <div className="flex gap-4 pt-4">
-              <Link className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white" href="https://www.facebook.com/doctorshahalam/" target="_blank">
+              <Link
+                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white"
+                href="https://www.facebook.com/doctorshahalam/"
+                target="_blank"
+              >
                 <i className="fab fa-facebook-f text-sm"></i>
               </Link>
-              <Link className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white" href="#">
+              <Link
+                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white"
+                href="#"
+              >
                 <i className="fab fa-instagram text-sm"></i>
               </Link>
-              <Link className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white" href="#">
+              <Link
+                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white"
+                href="#"
+              >
                 <i className="fab fa-youtube text-sm"></i>
               </Link>
-              <Link className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white" href="#">
+              <Link
+                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white"
+                href="#"
+              >
                 <i className="fab fa-twitter text-sm"></i>
               </Link>
             </div>
@@ -50,30 +65,140 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold mb-6 text-white">Quick Links</h3>
             <ul className="space-y-4">
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/">Home</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/treatments">Treatments</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/success-stories">Success Stories</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/blog">Blog</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/about">About</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/contact">Contact</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/book">Book Appointment</Link></li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/"
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/treatments"
+                >
+                  Treatments
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/success-stories"
+                >
+                  Success Stories
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/blog"
+                >
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="https://yogawithdoctor.com/courses"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Courses
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/about"
+                >
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/contact"
+                >
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/book"
+                >
+                  Book Appointment
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
             <h3 className="text-lg font-bold mb-6 text-white">Resources</h3>
             <ul className="space-y-4">
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/faq">FAQ</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/patient-guidelines">Patient Guidelines</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/before-visit-instructions">Before Visit Instructions</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/after-treatment-instructions">After Treatment Instructions</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/privacy-policy">Privacy Policy</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/terms-conditions">Terms & Conditions</Link></li>
-              <li><Link className="text-gray-400 hover:text-accent transition-colors text-sm" href="/medical-disclaimer">Medical Disclaimer</Link></li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/faq"
+                >
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/patient-guidelines"
+                >
+                  Patient Guidelines
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/before-visit-instructions"
+                >
+                  Before Visit Instructions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/after-treatment-instructions"
+                >
+                  After Treatment Instructions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/privacy-policy"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/terms-conditions"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-gray-400 hover:text-accent transition-colors text-sm"
+                  href="/medical-disclaimer"
+                >
+                  Medical Disclaimer
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
         <div className="border-t border-gray-800 pt-8 flex justify-center">
-          <p className="text-gray-500 text-sm text-center">© {currentYear} Doctor Shah Alam. All Rights Reserved.</p>
+          <p className="text-gray-500 text-sm text-center">
+            © {currentYear} Doctor Shah Alam. All Rights Reserved.
+          </p>
         </div>
       </div>
     </footer>
