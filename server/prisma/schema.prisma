@@ -1,0 +1,224 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  PATIENT
+  DOCTOR
+  EDITOR
+}
+
+enum AppointmentStatus {
+  PENDING
+  ATTEND
+  CANCEL
+  RESCHEDULED
+  CONFIRMED
+}
+
+enum SiteRef {
+  DOCTOR_SHA_ALAM
+  TRUE_CARE_HELLING_CENTER
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum AttendTime {
+  M10
+  A03
+}
+
+enum PatientProblem {
+  PLID
+  KNEEPAIN
+  BACKPAIN
+}
+
+enum PatientReviewVideoType {
+  MUX
+  EMBED
+  DIRECT
+}
+
+enum PatientReviewStatus {
+  PENDING
+  ACTIVE
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String?
+  email      String?  @unique
+  phone      String?
+  image      String?
+  password   String? // OAuth হলে password null থাকবে
+  provider   String? // যেমন: "google", "github"
+  providerId String? // OAuth user এর unique id
+  role       UserRole @default(PATIENT)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  appointments   Appointment[]
+  payments       Payment[]
+  patientReviews PatientReview[]
+  doctorId       String?
+
+  @@index([role])
+}
+
+model Doctor {
+  id              String   @id @default(uuid())
+  name            String
+  avatar          String?
+  specialization  String
+  about           String?
+  experience      Int?
+  consultationFee Float?
+  location        String?
+  availableDays   String? // উদাহরণ: "Sat, Sun, Mon"
+  startTime       String? // উদাহরণ: "09:00 AM"
+  endTime         String? // উদাহরণ: "05:00 PM"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relationship
+  appointments Appointment[]
+  payments     Payment[]
+
+  @@index([specialization])
+  @@index([location])
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  userId          String?
+  doctorId        String
+  name            String
+  phone           String
+  gender          String
+  location        String
+  appointmentDate DateTime
+  problem         PatientProblem    @default(PLID)
+  serialNumber    Int
+  attendTime      AttendTime        @default(M10)
+  status          AppointmentStatus @default(PENDING)
+  siteRef         SiteRef           @default(DOCTOR_SHA_ALAM)
+  transactionId   String?           @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([doctorId])
+  @@index([appointmentDate])
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  tranId          String        @unique
+  amount          Float
+  currency        String        @default("BDT")
+  status          PaymentStatus @default(PENDING)
+  gateway         String?
+  valId           String?
+  gatewayResponse Json?
+
+  userId        String?
+  doctorId      String?
+  appointmentId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user   User?   @relation(fields: [userId], references: [id])
+  doctor Doctor? @relation(fields: [doctorId], references: [id])
+  // appointment Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([tranId])
+  @@index([userId])
+  @@index([doctorId])
+}
+
+model Blog {
+  id    String @id @default(uuid())
+  title String
+  shortDesc String
+  content String
+  category String
+  author String
+  views Int
+  comments String[] @default([])
+  isFeatured Boolean
+  slug String
+  meta Json? @default("{}")
+
+  notes Json? 
+
+  image String
+  imagePublicId String
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model PatientReview {
+  id        String              @id @default(uuid())
+  status    PatientReviewStatus @default(PENDING)
+  sortOrder Int                 @default(0)
+
+  authorUserId String?
+  author       User?   @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  patientDisplayName String?
+  title              String
+  description        String
+  age                Int
+  rating             Int
+  problems           String[] @default([])
+  treatments         String[] @default([])
+  result             String
+
+  imageUrl      String?
+  imagePublicId String?
+
+  videoType PatientReviewVideoType?
+
+  muxUploadId       String?
+  muxAssetId        String?
+  muxPlaybackId     String?
+  muxPlaybackPolicy String? @default("signed")
+  videoThumbnailUrl String?
+  videoTitle        String?
+
+  embedPayload   Json?
+  directVideoUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, sortOrder])
+  @@index([authorUserId])
+}

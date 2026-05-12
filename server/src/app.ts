@@ -1,7 +1,8 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors, { CorsOptions } from "cors";
 import cookieParser from "cookie-parser";
+import { mountRoutes } from "./routes.js";
 
 dotenv.config();
 
@@ -22,7 +23,7 @@ const corsOptions: CorsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: [
     "Content-Type",
     "Authorization",
@@ -37,6 +38,8 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+mountRoutes(app);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World with TypeScript!");
