@@ -81,6 +81,73 @@ export function toPublicVideoPayload(r: PatientReview): PublicVideoPayload | nul
   }
 }
 
+/** Admin-facing video (Mux pipeline ids included for MUX). */
+export type AdminVideoPayload =
+  | {
+      type: "MUX";
+      muxPlaybackId: string | null;
+      muxPlaybackPolicy: string | null;
+      muxUploadId: string | null;
+      muxAssetId: string | null;
+      thumbnailUrl: string | null;
+      videoTitle: string | null;
+    }
+  | {
+      type: "EMBED";
+      embed: unknown;
+      thumbnailUrl: string | null;
+      videoTitle: string | null;
+    }
+  | {
+      type: "DIRECT";
+      directUrl: string;
+      thumbnailUrl: string | null;
+      videoTitle: string | null;
+    };
+
+export function toAdminVideoPayload(r: PatientReview): AdminVideoPayload | null {
+  const pub = toPublicVideoPayload(r);
+  if (!pub) return null;
+  if (pub.type === "MUX") {
+    return {
+      type: "MUX",
+      muxPlaybackId: pub.muxPlaybackId,
+      muxPlaybackPolicy: pub.muxPlaybackPolicy,
+      muxUploadId: r.muxUploadId,
+      muxAssetId: r.muxAssetId,
+      thumbnailUrl: pub.thumbnailUrl,
+      videoTitle: pub.videoTitle,
+    };
+  }
+  return pub;
+}
+
+/**
+ * Full review for admin UIs: core fields at the top level, playback-ready video
+ * (and Mux asset ids) nested under `video`, or `video: null`.
+ */
+export function toAdminReviewWithOptionalVideo(r: PatientReview) {
+  return {
+    id: r.id,
+    status: r.status,
+    sortOrder: r.sortOrder,
+    authorUserId: r.authorUserId,
+    patientDisplayName: r.patientDisplayName,
+    title: r.title,
+    description: r.description,
+    age: r.age,
+    rating: r.rating,
+    problems: r.problems,
+    treatments: r.treatments,
+    result: r.result,
+    imageUrl: r.imageUrl,
+    imagePublicId: r.imagePublicId,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+    video: toAdminVideoPayload(r),
+  };
+}
+
 /** One row for GET /patient-reviews/videos aggregate. */
 export function toPublicVideoListItem(r: PatientReview) {
   const video = toPublicVideoPayload(r);

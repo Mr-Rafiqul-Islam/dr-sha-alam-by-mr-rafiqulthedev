@@ -1,38 +1,12 @@
+import "./config/env.js";
 import express, { Request, Response } from "express";
-import dotenv from "dotenv";
-import cors, { CorsOptions } from "cors";
+import cors from "cors";
 import cookieParser from "cookie-parser";
-import { mountRoutes } from "./routes.js";
-
-dotenv.config();
+import { corsOptions } from "./config/cors.js";
+import { mountRoutes } from "./routes/index.js";
 
 const app = express();
 const port: number | string = process.env.PORT || 5002;
-
-const allowedOrigins: string[] = [
-  "http://localhost:3000",
-  "https://doctorshahalam.com",
-  "https://www.doctorshahalam.com",
-];
-
-const corsOptions: CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Cache-Control",
-    "Expires",
-    "Pragma",
-  ],
-  credentials: true,
-};
 
 app.use(cors(corsOptions));
 app.use(cookieParser());

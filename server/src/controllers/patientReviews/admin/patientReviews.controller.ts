@@ -1,15 +1,17 @@
 import type { Request, Response } from "express";
 import { PatientReviewVideoType, Prisma } from "@prisma/client";
-import { prisma } from "../../../shared/config/db.js";
+import { prisma } from "../../../config/db.js";
 import { createMuxUploadViaMediaService } from "../../../services/media/muxUpload.stub.js";
+import { routeParamString } from "../../../utils/index.js";
 import {
   buildVideoInputFromBody,
+  parseAdminReviewListStatus,
   parseAdminStatus,
   parseCoreReviewFields,
   parsePatchStatus,
-  routeParamString,
   validateVideoInput,
-} from "../patientReviews.helpers.js";
+} from "../../../modules/patientReviews/patientReviews.helpers.js";
+import { toAdminReviewWithOptionalVideo } from "../../../modules/patientReviews/patientReviews.mapper.js";
 
 /**
  * Curated admin-created reviews default to **ACTIVE** unless `status: "PENDING"`
@@ -18,6 +20,74 @@ import {
  * **Video is optional:** omit `videoType` and all video-related fields when the
  * story has no clip (same as patient submit).
  */
+/**
+ * Query: optional `status` — `ACTIVE`, `PENDING`, `INACTIVE` (same as PENDING),
+ * `ALL`, or omit for all reviews. Every video type is included; response matches
+ * the Prisma row (flat video fields).
+ */
+export async function listPatientReviewsForAdmin(req: Request, res: Response) {
+  try {
+    const filter = parseAdminReviewListStatus(req.query.status);
+    if (!filter) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'status must be ACTIVE, PENDING, INACTIVE, ALL, or omitted for all',
+      });
+    }
+    const where =
+      filter.mode === "all" ? {} : { status: filter.status };
+    const rows = await prisma.patientReview.findMany({
+      where,
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    });
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to load patient reviews",
+    });
+  }
+}
+
+/**
+ * Same filtering as {@link listPatientReviewsForAdmin}; each item nests playback
+ * metadata under `video` (or `video: null`). MUX entries include upload/asset ids
+ * for admin tooling.
+ */
+export async function listPatientReviewsWithVideosForAdmin(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const filter = parseAdminReviewListStatus(req.query.status);
+    if (!filter) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'status must be ACTIVE, PENDING, INACTIVE, ALL, or omitted for all',
+      });
+    }
+    const where =
+      filter.mode === "all" ? {} : { status: filter.status };
+    const rows = await prisma.patientReview.findMany({
+      where,
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    });
+    res.json({
+      success: true,
+      data: rows.map(toAdminReviewWithOptionalVideo),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to load patient reviews",
+    });
+  }
+}
+
 export async function createPatientReview(req: Request, res: Response) {
   try {
     const body = req.body as Record<string, unknown>;
@@ -162,8 +232,7 @@ export async function createMuxUploadForPatientReview(
   req: Request,
   res: Response,
 ) {
-  const adminReq = req as Request & { admin?: { id?: string } };
-  const adminId = adminReq.admin?.id;
+  const adminId = req.admin?.id;
   const body = req.body as Record<string, unknown>;
 
   try {

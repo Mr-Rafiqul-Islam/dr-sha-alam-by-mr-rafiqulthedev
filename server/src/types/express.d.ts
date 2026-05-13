@@ -1,0 +1,16 @@
+import type { User } from "@prisma/client";
+import type { JwtPayload } from "jsonwebtoken";
+
+export type AdminRequestUser = Omit<User, "password">;
+
+declare global {
+  namespace Express {
+    interface Request {
+      /** Authenticated staff user for `/api/v1/admin/*` (JWT `sub` → User id). */
+      admin?: AdminRequestUser;
+      tokenPayload?: JwtPayload;
+    }
+  }
+}
+
+export {};

@@ -3,6 +3,11 @@ import {
   PatientReviewVideoType,
   Prisma,
 } from "@prisma/client";
+import {
+  parseAge,
+  parseRating,
+  parseStringArray,
+} from "../../utils/parsers.js";
 
 export type PatientReviewVideoSlice = Pick<
   Prisma.PatientReviewCreateInput,
@@ -16,45 +21,6 @@ export type PatientReviewVideoSlice = Pick<
   | "embedPayload"
   | "directVideoUrl"
 >;
-
-export function parseRating(raw: unknown): number | null {
-  const n = typeof raw === "number" ? raw : Number(raw);
-  if (!Number.isInteger(n) || n < 1 || n > 5) return null;
-  return n;
-}
-
-export function parseAge(raw: unknown): number | null {
-  const n = typeof raw === "number" ? raw : Number(raw);
-  if (!Number.isInteger(n) || n < 0 || n > 150) return null;
-  return n;
-}
-
-export function parseStringArray(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.map((x) => String(x).trim()).filter(Boolean);
-}
-
-export function parseOptionalUuid(raw: unknown): string | undefined {
-  if (raw == null || raw === "") return undefined;
-  const s = String(raw).trim();
-  if (
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      s,
-    )
-  ) {
-    return s;
-  }
-  return undefined;
-}
-
-/** Express 5 may surface dynamic segments as `string | string[]`. */
-export function routeParamString(
-  param: string | string[] | undefined,
-): string | undefined {
-  if (param === undefined) return undefined;
-  const v = Array.isArray(param) ? param[0] : param;
-  return typeof v === "string" && v.length > 0 ? v : undefined;
-}
 
 function parseVideoType(raw: unknown): PatientReviewVideoType | null {
   if (raw == null || raw === "") return null;
@@ -196,6 +162,24 @@ export function parsePatchStatus(raw: unknown): PatientReviewStatus | null {
   const s = String(raw ?? "").toUpperCase();
   if (s === "PENDING") return PatientReviewStatus.PENDING;
   if (s === "ACTIVE") return PatientReviewStatus.ACTIVE;
+  return null;
+}
+
+/** Admin list filter: all rows, or one DB status. `INACTIVE` aliases `PENDING` (unpublished). */
+export type AdminReviewListStatusFilter =
+  | { mode: "all" }
+  | { mode: "one"; status: PatientReviewStatus };
+
+export function parseAdminReviewListStatus(
+  raw: unknown,
+): AdminReviewListStatusFilter | null {
+  if (raw == null || raw === "") return { mode: "all" };
+  const s = String(raw).trim().toUpperCase();
+  if (s === "ALL") return { mode: "all" };
+  if (s === "ACTIVE") return { mode: "one", status: PatientReviewStatus.ACTIVE };
+  if (s === "PENDING" || s === "INACTIVE") {
+    return { mode: "one", status: PatientReviewStatus.PENDING };
+  }
   return null;
 }
 

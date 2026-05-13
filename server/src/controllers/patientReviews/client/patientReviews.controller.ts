@@ -1,18 +1,20 @@
 import type { Request, Response } from "express";
 import { PatientReviewStatus } from "@prisma/client";
-import { prisma } from "../../../shared/config/db.js";
+import { prisma } from "../../../config/db.js";
+import {
+  parseOptionalUuid,
+  routeParamString,
+} from "../../../utils/index.js";
 import {
   buildVideoInputFromBody,
   parseCoreReviewFields,
-  parseOptionalUuid,
-  routeParamString,
   validateVideoInput,
-} from "../patientReviews.helpers.js";
+} from "../../../modules/patientReviews/patientReviews.helpers.js";
 import {
   toPublicReviewCard,
   toPublicVideoListItem,
   toPublicVideoPayload,
-} from "../patientReviews.mapper.js";
+} from "../../../modules/patientReviews/patientReviews.mapper.js";
 
 export async function getPatientReviews(_req: Request, res: Response) {
   try {
