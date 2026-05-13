@@ -32,10 +32,10 @@ export default function Header() {
                 D
               </div>
               <div className="flex flex-col">
-                <h1 className="text-2xl font-bold tracking-tight text-text-main dark:text-white leading-none">
+                <h1 className="text-xl xl:text-2xl font-bold tracking-tight text-text-main dark:text-white leading-none">
                   Dr. Shah Alam
                 </h1>
-                <p className="text-sm text-gray-500 font-medium mt-0.5">
+                <p className="text-xs xl:text-sm text-gray-500 font-medium mt-0.5">
                   Orthopedic Specialist
                 </p>
               </div>
@@ -43,7 +43,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-10">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-10">
             {navLinks.map((link) => {
               const isActive =
                 pathname === link.href ||
@@ -53,7 +53,7 @@ export default function Header() {
               return (
                 <Link
                   key={link.name}
-                  className={`text-base font-medium transition-colors ${isActive ? "text-primary dark:text-accent" : "text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-accent"}`}
+                  className={`text-sm xl:text-base font-medium transition-colors ${isActive ? "text-primary dark:text-accent" : "text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-accent"}`}
                   href={link.href}
                   target={link.target}
                   rel={link.target === "_blank" ? "noopener noreferrer" : undefined}
@@ -68,7 +68,7 @@ export default function Header() {
           <div className="hidden lg:flex flex-shrink-0">
             <Link
               href="/book"
-              className="bg-[#00CBC0] hover:bg-accent-dark text-white text-base font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
+              className="bg-[#00CBC0] hover:bg-accent-dark text-white text-sm xl:text-base font-bold py-3 px-6 xl:px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
             >
               Book Appointment
             </Link>
