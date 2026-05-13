@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { PatientReviewVideoType, Prisma } from "@prisma/client";
-import { prisma } from "../../../lib/prisma.js";
+import { prisma } from "../../../shared/config/db.js";
 import { createMuxUploadViaMediaService } from "../../../services/media/muxUpload.stub.js";
 import {
   buildVideoInputFromBody,

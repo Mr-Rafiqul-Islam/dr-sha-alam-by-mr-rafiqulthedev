@@ -7,7 +7,7 @@ import { mountRoutes } from "./routes.js";
 dotenv.config();
 
 const app = express();
-const port: number | string = process.env.PORT || 5000;
+const port: number | string = process.env.PORT || 5002;
 
 const allowedOrigins: string[] = [
   "http://localhost:3000",
@@ -42,7 +42,7 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 mountRoutes(app);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World with TypeScript!");
+  res.send("Server is running!");
 });
 
 app.listen(port, () => {
