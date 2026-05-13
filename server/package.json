@@ -9,14 +9,15 @@
     "test": "tsx --test \"src/**/*.test.ts\"",
     "start": "node dist/app.js",
     "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
-    "prisma:force": "prisma db push --force-reset",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "prisma db seed",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:migrate:status": "prisma migrate status",
+    "prisma:migrate:resolve": "prisma migrate resolve",
+    "prisma:diff": "prisma migrate diff",
     "prisma:reset": "prisma migrate reset",
-    "prisma:studio": "prisma studio",
-    "prisma:seed": "prisma db seed",
+    "prisma:push": "prisma db push",
     "test:otp": "tsx scripts/test-otp-send.ts"
   },
   "keywords": [
@@ -33,8 +34,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "7.7.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
@@ -53,9 +54,12 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.6.0",
     "nodemon": "^3.1.14",
-    "prisma": "^7.8.0",
+    "prisma": "7.7.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "@hono/node-server": "1.19.13"
   }
 }
