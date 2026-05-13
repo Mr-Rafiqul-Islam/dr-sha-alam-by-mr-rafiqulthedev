@@ -4,11 +4,14 @@ import { prisma } from "../../../config/db.js";
 import { createMuxUploadViaMediaService } from "../../../services/media/muxUpload.stub.js";
 import { routeParamString } from "../../../utils/index.js";
 import {
+  buildPatientReviewListWhere,
   buildVideoInputFromBody,
   parseAdminReviewListStatus,
   parseAdminStatus,
   parseCoreReviewFields,
+  parseIsSuccessStoryFlag,
   parsePatchStatus,
+  parsePatientReviewTypeQuery,
   validateVideoInput,
 } from "../../../modules/patientReviews/patientReviews.helpers.js";
 import { toAdminReviewWithOptionalVideo } from "../../../modules/patientReviews/patientReviews.mapper.js";
@@ -17,26 +20,37 @@ import { toAdminReviewWithOptionalVideo } from "../../../modules/patientReviews/
  * Curated admin-created reviews default to **ACTIVE** unless `status: "PENDING"`
  * is sent.
  *
+ * Set **`feature: true`** or **`isSuccessStory: true`** for success-story rows
+ * (stricter validation: title, result, age, problems, treatments). Omit or
+ * false for normal reviews.
+ *
  * **Video is optional:** omit `videoType` and all video-related fields when the
  * story has no clip (same as patient submit).
  */
 /**
- * Query: optional `status` — `ACTIVE`, `PENDING`, `INACTIVE` (same as PENDING),
- * `ALL`, or omit for all reviews. Every video type is included; response matches
- * the Prisma row (flat video fields).
+ * Query: optional `status` — `ACTIVE`, `PENDING`, `INACTIVE` (same as `PENDING`),
+ * `ALL`, or omit for all. Optional `type` — `all`, `normal`, `success` (or
+ * `successStory`), or omit for all. Response matches the Prisma row (flat fields).
  */
 export async function listPatientReviewsForAdmin(req: Request, res: Response) {
   try {
-    const filter = parseAdminReviewListStatus(req.query.status);
-    if (!filter) {
+    const statusFilter = parseAdminReviewListStatus(req.query.status);
+    if (!statusFilter) {
       return res.status(400).json({
         success: false,
         message:
           'status must be ACTIVE, PENDING, INACTIVE, ALL, or omitted for all',
       });
     }
-    const where =
-      filter.mode === "all" ? {} : { status: filter.status };
+    const typeFilter = parsePatientReviewTypeQuery(req.query.type);
+    if (!typeFilter) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'type must be all, normal, success, successStory, or omitted for all',
+      });
+    }
+    const where = buildPatientReviewListWhere(statusFilter, typeFilter);
     const rows = await prisma.patientReview.findMany({
       where,
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
@@ -61,16 +75,23 @@ export async function listPatientReviewsWithVideosForAdmin(
   res: Response,
 ) {
   try {
-    const filter = parseAdminReviewListStatus(req.query.status);
-    if (!filter) {
+    const statusFilter = parseAdminReviewListStatus(req.query.status);
+    if (!statusFilter) {
       return res.status(400).json({
         success: false,
         message:
           'status must be ACTIVE, PENDING, INACTIVE, ALL, or omitted for all',
       });
     }
-    const where =
-      filter.mode === "all" ? {} : { status: filter.status };
+    const typeFilter = parsePatientReviewTypeQuery(req.query.type);
+    if (!typeFilter) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'type must be all, normal, success, successStory, or omitted for all',
+      });
+    }
+    const where = buildPatientReviewListWhere(statusFilter, typeFilter);
     const rows = await prisma.patientReview.findMany({
       where,
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
@@ -91,7 +112,11 @@ export async function listPatientReviewsWithVideosForAdmin(
 export async function createPatientReview(req: Request, res: Response) {
   try {
     const body = req.body as Record<string, unknown>;
-    const parsed = parseCoreReviewFields(body);
+    const isSuccessStory = parseIsSuccessStoryFlag(body);
+    const parsed = parseCoreReviewFields(
+      body,
+      isSuccessStory ? "successStory" : "normal",
+    );
     if (!parsed.ok) {
       return res.status(400).json({ success: false, message: parsed.message });
     }
@@ -107,6 +132,7 @@ export async function createPatientReview(req: Request, res: Response) {
     const created = await prisma.patientReview.create({
       data: {
         status,
+        isSuccessStory,
         authorUserId: null,
         patientDisplayName: parsed.data.patientDisplayName,
         title: parsed.data.title,

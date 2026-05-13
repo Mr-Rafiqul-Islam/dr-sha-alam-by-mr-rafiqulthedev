@@ -7,8 +7,8 @@ import {
 
 export const patientReviewsAdminRouter = Router();
 
-// patientReviewsAdminRouter.use(requireAuth);
-// patientReviewsAdminRouter.use(requireAdmin);
+patientReviewsAdminRouter.use(requireAuth);
+patientReviewsAdminRouter.use(requireAdmin);
 
 patientReviewsAdminRouter.get("/", patientReviewsAdmin.listPatientReviewsForAdmin);
 patientReviewsAdminRouter.get(

@@ -5,6 +5,7 @@ import {
 } from "@prisma/client";
 import {
   parseAge,
+  parseOptionalAge,
   parseRating,
   parseStringArray,
 } from "../../utils/parsers.js";
@@ -183,11 +184,59 @@ export function parseAdminReviewListStatus(
   return null;
 }
 
+/** Admin create: `feature` or `isSuccessStory` truthy → success story. */
+export function parseIsSuccessStoryFlag(body: Record<string, unknown>): boolean {
+  const raw = body.isSuccessStory ?? body.feature;
+  if (raw == null || raw === "") return false;
+  if (typeof raw === "boolean") return raw;
+  const s = String(raw).trim().toLowerCase();
+  return s === "true" || s === "1" || s === "yes";
+}
+
+/** Client GET `type` query and admin list filter. */
+export type PatientReviewTypeFilter =
+  | { mode: "all" }
+  | { mode: "one"; isSuccessStory: boolean };
+
+export function parsePatientReviewTypeQuery(
+  raw: unknown,
+): PatientReviewTypeFilter | null {
+  if (raw == null || raw === "") return { mode: "all" };
+  const s = String(raw).trim().toLowerCase();
+  if (s === "all") return { mode: "all" };
+  if (s === "normal") return { mode: "one", isSuccessStory: false };
+  if (s === "success" || s === "successstory" || s === "success_story") {
+    return { mode: "one", isSuccessStory: true };
+  }
+  return null;
+}
+
+export function parseIncludeCountsQuery(raw: unknown): boolean {
+  if (raw == null || raw === "") return false;
+  if (typeof raw === "boolean") return raw;
+  const s = String(raw).trim().toLowerCase();
+  return s === "true" || s === "1" || s === "yes";
+}
+
+export function buildPatientReviewListWhere(
+  statusFilter: AdminReviewListStatusFilter,
+  typeFilter: PatientReviewTypeFilter,
+): Prisma.PatientReviewWhereInput {
+  const where: Prisma.PatientReviewWhereInput = {};
+  if (statusFilter.mode === "one") where.status = statusFilter.status;
+  if (typeFilter.mode === "one") {
+    where.isSuccessStory = typeFilter.isSuccessStory;
+  }
+  return where;
+}
+
+export type CoreReviewKind = "normal" | "successStory";
+
 export type CoreReviewFields = {
   title: string;
   description: string;
   result: string;
-  age: number;
+  age: number | null;
   rating: number;
   patientDisplayName: string | null;
   imageUrl: string | null;
@@ -199,30 +248,72 @@ export type CoreReviewFields = {
 
 export function parseCoreReviewFields(
   body: Record<string, unknown>,
+  kind: CoreReviewKind,
 ):
   | { ok: true; data: CoreReviewFields }
   | { ok: false; message: string } {
-  const title = String(body.title ?? "").trim();
   const description = String(body.description ?? "").trim();
-  const result = String(body.result ?? "").trim();
-
-  if (!title) return { ok: false, message: "title is required" };
-  if (!description) return { ok: false, message: "description is required" };
-  if (!result) return { ok: false, message: "result is required" };
+  if (!description) {
+    return { ok: false, message: "description is required" };
+  }
 
   const rating = parseRating(body.rating);
   if (rating == null) {
     return { ok: false, message: "rating must be an integer 1–5" };
   }
 
-  const age = parseAge(body.age);
-  if (age == null) return { ok: false, message: "age must be an integer 0–150" };
-
   const patientRaw = body.patientDisplayName;
   const patientDisplayName =
     patientRaw != null && String(patientRaw).trim() !== ""
       ? String(patientRaw).trim()
       : null;
+
+  if (kind === "normal") {
+    if (!patientDisplayName) {
+      return { ok: false, message: "patientDisplayName is required" };
+    }
+  }
+
+  const titleRaw = String(body.title ?? "").trim();
+  const title =
+    kind === "normal"
+      ? titleRaw || patientDisplayName!
+      : titleRaw;
+
+  if (kind === "successStory" && !title) {
+    return { ok: false, message: "title is required" };
+  }
+
+  const result = String(body.result ?? "").trim();
+
+  if (kind === "successStory" && !result) {
+    return { ok: false, message: "result is required" };
+  }
+
+  const problems = parseStringArray(body.problems);
+  const treatments = parseStringArray(body.treatments);
+
+  if (kind === "successStory") {
+    if (problems.length === 0) {
+      return { ok: false, message: "at least one problem is required" };
+    }
+    if (treatments.length === 0) {
+      return { ok: false, message: "at least one treatment is required" };
+    }
+  } else {
+    if (treatments.length === 0) {
+      return { ok: false, message: "at least one treatment is required" };
+    }
+  }
+
+  const age =
+    kind === "successStory"
+      ? parseAge(body.age)
+      : parseOptionalAge(body.age);
+
+  if (kind === "successStory" && age == null) {
+    return { ok: false, message: "age must be an integer 0–150" };
+  }
 
   const imageUrl =
     body.imageUrl != null && String(body.imageUrl).trim() !== ""
@@ -251,8 +342,8 @@ export function parseCoreReviewFields(
       patientDisplayName,
       imageUrl,
       imagePublicId,
-      problems: parseStringArray(body.problems),
-      treatments: parseStringArray(body.treatments),
+      problems: kind === "normal" && problems.length === 0 ? [] : problems,
+      treatments,
       sortOrder,
       rating,
       age,

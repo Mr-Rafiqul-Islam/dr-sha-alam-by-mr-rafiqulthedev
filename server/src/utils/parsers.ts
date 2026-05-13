@@ -17,6 +17,12 @@ export function parseAge(raw: unknown): number | null {
   return parseIntInRange(raw, 0, 150);
 }
 
+/** Age when omitted or empty is `null`; otherwise same rules as {@link parseAge}. */
+export function parseOptionalAge(raw: unknown): number | null {
+  if (raw == null || raw === "") return null;
+  return parseAge(raw);
+}
+
 export function parseStringArray(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((x) => String(x).trim()).filter(Boolean);

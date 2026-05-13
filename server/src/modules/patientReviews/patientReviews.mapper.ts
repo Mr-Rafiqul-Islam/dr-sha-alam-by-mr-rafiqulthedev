@@ -7,6 +7,8 @@ import type {
 export function toPublicReviewCard(r: PatientReview) {
   return {
     id: r.id,
+    isSuccessStory: r.isSuccessStory,
+    reviewType: r.isSuccessStory ? "successStory" : "normal",
     sortOrder: r.sortOrder,
     patientDisplayName: r.patientDisplayName,
     title: r.title,
@@ -129,6 +131,8 @@ export function toAdminVideoPayload(r: PatientReview): AdminVideoPayload | null 
 export function toAdminReviewWithOptionalVideo(r: PatientReview) {
   return {
     id: r.id,
+    isSuccessStory: r.isSuccessStory,
+    reviewType: r.isSuccessStory ? "successStory" : "normal",
     status: r.status,
     sortOrder: r.sortOrder,
     authorUserId: r.authorUserId,

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { PatientReviewStatus } from "@prisma/client";
+import { PatientReviewStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
 import {
   parseOptionalUuid,
@@ -8,6 +8,8 @@ import {
 import {
   buildVideoInputFromBody,
   parseCoreReviewFields,
+  parseIncludeCountsQuery,
+  parsePatientReviewTypeQuery,
   validateVideoInput,
 } from "../../../modules/patientReviews/patientReviews.helpers.js";
 import {
@@ -16,12 +18,57 @@ import {
   toPublicVideoPayload,
 } from "../../../modules/patientReviews/patientReviews.mapper.js";
 
-export async function getPatientReviews(_req: Request, res: Response) {
+export async function getPatientReviews(req: Request, res: Response) {
   try {
+    const typeFilter = parsePatientReviewTypeQuery(req.query.type);
+    if (!typeFilter) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "type must be all, normal, success, successStory, or omitted for all",
+      });
+    }
+
+    const where: Prisma.PatientReviewWhereInput = {
+      status: PatientReviewStatus.ACTIVE,
+    };
+    if (typeFilter.mode === "one") {
+      where.isSuccessStory = typeFilter.isSuccessStory;
+    }
+
     const rows = await prisma.patientReview.findMany({
-      where: { status: PatientReviewStatus.ACTIVE },
+      where,
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     });
+
+    const includeCounts = parseIncludeCountsQuery(req.query.includeCounts);
+    if (includeCounts) {
+      const [normal, successStories, total] = await Promise.all([
+        prisma.patientReview.count({
+          where: {
+            status: PatientReviewStatus.ACTIVE,
+            isSuccessStory: false,
+          },
+        }),
+        prisma.patientReview.count({
+          where: {
+            status: PatientReviewStatus.ACTIVE,
+            isSuccessStory: true,
+          },
+        }),
+        prisma.patientReview.count({
+          where: { status: PatientReviewStatus.ACTIVE },
+        }),
+      ]);
+      return res.json({
+        success: true,
+        data: rows.map(toPublicReviewCard),
+        meta: {
+          counts: { normal, successStories, total },
+        },
+      });
+    }
+
     res.json({ success: true, data: rows.map(toPublicReviewCard) });
   } catch (err) {
     console.error(err);
@@ -32,13 +79,27 @@ export async function getPatientReviews(_req: Request, res: Response) {
   }
 }
 
-export async function getAllPatientReviewVideos(_req: Request, res: Response) {
+export async function getAllPatientReviewVideos(req: Request, res: Response) {
   try {
+    const typeFilter = parsePatientReviewTypeQuery(req.query.type);
+    if (!typeFilter) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "type must be all, normal, success, successStory, or omitted for all",
+      });
+    }
+
+    const where: Prisma.PatientReviewWhereInput = {
+      status: PatientReviewStatus.ACTIVE,
+      videoType: { not: null },
+    };
+    if (typeFilter.mode === "one") {
+      where.isSuccessStory = typeFilter.isSuccessStory;
+    }
+
     const rows = await prisma.patientReview.findMany({
-      where: {
-        status: PatientReviewStatus.ACTIVE,
-        videoType: { not: null },
-      },
+      where,
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     });
     const data = rows
@@ -99,7 +160,7 @@ export async function getPatientReviewVideo(req: Request, res: Response) {
 export async function submitPatientReview(req: Request, res: Response) {
   try {
     const body = req.body as Record<string, unknown>;
-    const parsed = parseCoreReviewFields(body);
+    const parsed = parseCoreReviewFields(body, "normal");
     if (!parsed.ok) {
       return res.status(400).json({ success: false, message: parsed.message });
     }
@@ -115,6 +176,7 @@ export async function submitPatientReview(req: Request, res: Response) {
     const created = await prisma.patientReview.create({
       data: {
         status: PatientReviewStatus.PENDING,
+        isSuccessStory: false,
         authorUserId: authorUserId ?? null,
         patientDisplayName: parsed.data.patientDisplayName,
         title: parsed.data.title,

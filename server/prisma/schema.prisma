@@ -189,13 +189,15 @@ model PatientReview {
   status    PatientReviewStatus @default(PENDING)
   sortOrder Int                 @default(0)
 
+  isSuccessStory Boolean @default(false)
+
   authorUserId String?
   author       User?   @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
 
   patientDisplayName String?
   title              String
   description        String
-  age                Int
+  age                Int?
   rating             Int
   problems           String[] @default([])
   treatments         String[] @default([])
@@ -219,6 +221,6 @@ model PatientReview {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([status, sortOrder])
+  @@index([status, isSuccessStory, sortOrder])
   @@index([authorUserId])
 }
