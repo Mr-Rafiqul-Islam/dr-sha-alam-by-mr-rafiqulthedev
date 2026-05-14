@@ -1,17 +1,27 @@
+/**
+ * Public HTTP API for approved patient reviews (`PatientReview` with `status: ACTIVE`).
+ *
+ * Base path: `GET|POST /api/v1/client/patient-reviews/...` (see `routes/index.ts`).
+ *
+ * | Method | Path | Purpose |
+ * |--------|------|---------|
+ * | GET | `/` | List review cards; query `type`, optional `includeCounts` |
+ * | GET | `/videos` | Active reviews that have a `videoType` |
+ * | GET | `/:id/video` | Single playback payload for one review |
+ * | POST | `/` | Patient submit → always stored as `PENDING` until admin approves |
+ */
 import type { Request, Response } from "express";
-import { PatientReviewStatus, Prisma } from "@prisma/client";
+import { PatientReviewStatus, PatientReviewVideoType, Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
 import {
   parseOptionalUuid,
   routeParamString,
 } from "../../../utils/index.js";
 import {
-  buildVideoInputFromBody,
-  parseCoreReviewFields,
-  parseIncludeCountsQuery,
-  parsePatientReviewTypeQuery,
-  validateVideoInput,
-} from "../../../modules/patientReviews/patientReviews.helpers.js";
+  parseOptionalAge,
+  parseRating,
+  parseStringArray,
+} from "../../../utils/parsers.js";
 import {
   toPublicReviewCard,
   toPublicVideoListItem,
@@ -20,8 +30,8 @@ import {
 
 export async function getPatientReviews(req: Request, res: Response) {
   try {
-    const typeFilter = parsePatientReviewTypeQuery(req.query.type);
-    if (!typeFilter) {
+    const typeWhere = parseListTypeQuery(req.query.type);
+    if (!typeWhere.ok) {
       return res.status(400).json({
         success: false,
         message:
@@ -32,8 +42,8 @@ export async function getPatientReviews(req: Request, res: Response) {
     const where: Prisma.PatientReviewWhereInput = {
       status: PatientReviewStatus.ACTIVE,
     };
-    if (typeFilter.mode === "one") {
-      where.isSuccessStory = typeFilter.isSuccessStory;
+    if (typeWhere.mode === "one") {
+      where.isSuccessStory = typeWhere.isSuccessStory;
     }
 
     const rows = await prisma.patientReview.findMany({
@@ -41,7 +51,19 @@ export async function getPatientReviews(req: Request, res: Response) {
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     });
 
-    const includeCounts = parseIncludeCountsQuery(req.query.includeCounts);
+    let includeCounts = false;
+    const rawCounts = req.query.includeCounts;
+    if (rawCounts != null && rawCounts !== "") {
+      if (typeof rawCounts === "boolean") {
+        includeCounts = rawCounts;
+      } else {
+        const c = String(rawCounts).trim().toLowerCase();
+        if (c === "true" || c === "1" || c === "yes") {
+          includeCounts = true;
+        }
+      }
+    }
+
     if (includeCounts) {
       const [normal, successStories, total] = await Promise.all([
         prisma.patientReview.count({
@@ -81,8 +103,8 @@ export async function getPatientReviews(req: Request, res: Response) {
 
 export async function getAllPatientReviewVideos(req: Request, res: Response) {
   try {
-    const typeFilter = parsePatientReviewTypeQuery(req.query.type);
-    if (!typeFilter) {
+    const typeWhere = parseListTypeQuery(req.query.type);
+    if (!typeWhere.ok) {
       return res.status(400).json({
         success: false,
         message:
@@ -94,8 +116,8 @@ export async function getAllPatientReviewVideos(req: Request, res: Response) {
       status: PatientReviewStatus.ACTIVE,
       videoType: { not: null },
     };
-    if (typeFilter.mode === "one") {
-      where.isSuccessStory = typeFilter.isSuccessStory;
+    if (typeWhere.mode === "one") {
+      where.isSuccessStory = typeWhere.isSuccessStory;
     }
 
     const rows = await prisma.patientReview.findMany({
@@ -151,11 +173,8 @@ export async function getPatientReviewVideo(req: Request, res: Response) {
 }
 
 /**
- * Patient-submitted reviews are always stored as **PENDING** for moderation
- * (client cannot set ACTIVE).
- *
- * **Video is optional:** omit `videoType` and all video-related fields for a
- * text/image-only review. When present, use `MUX`, `EMBED`, or `DIRECT` as documented.
+ * Patient submissions: `status` is always `PENDING`. Video is optional (omit `videoType`
+ * and related fields for text/image-only — matches nullable columns on `PatientReview`).
  */
 export async function submitPatientReview(req: Request, res: Response) {
   try {
@@ -201,4 +220,268 @@ export async function submitPatientReview(req: Request, res: Response) {
       message: "Failed to submit patient review",
     });
   }
+}
+
+// --- List `type` query (maps to `PatientReview.isSuccessStory`) --------------
+
+function parseListTypeQuery(raw: unknown):
+  | { ok: true; mode: "all" }
+  | { ok: true; mode: "one"; isSuccessStory: boolean }
+  | { ok: false } {
+  if (raw == null || raw === "") {
+    return { ok: true, mode: "all" };
+  }
+  const s = String(raw).trim().toLowerCase();
+  if (s === "all") {
+    return { ok: true, mode: "all" };
+  }
+  if (s === "normal") {
+    return { ok: true, mode: "one", isSuccessStory: false };
+  }
+  if (s === "success" || s === "successstory" || s === "success_story") {
+    return { ok: true, mode: "one", isSuccessStory: true };
+  }
+  return { ok: false };
+}
+
+// --- Body → Prisma (same shapes as admin; patient path uses `normal` only) -----
+
+type PatientReviewVideoSlice = Pick<
+  Prisma.PatientReviewCreateInput,
+  | "videoType"
+  | "muxUploadId"
+  | "muxAssetId"
+  | "muxPlaybackId"
+  | "muxPlaybackPolicy"
+  | "videoThumbnailUrl"
+  | "videoTitle"
+  | "embedPayload"
+  | "directVideoUrl"
+>;
+
+type CoreReviewFields = {
+  title: string;
+  description: string;
+  result: string;
+  age: number | null;
+  rating: number;
+  patientDisplayName: string | null;
+  imageUrl: string | null;
+  imagePublicId: string | null;
+  problems: string[];
+  treatments: string[];
+  sortOrder: number;
+};
+
+function emptyVideoSlice(): PatientReviewVideoSlice {
+  return {
+    videoType: null,
+    muxUploadId: null,
+    muxAssetId: null,
+    muxPlaybackId: null,
+    muxPlaybackPolicy: null,
+    videoThumbnailUrl: null,
+    videoTitle: null,
+    embedPayload: Prisma.JsonNull,
+    directVideoUrl: null,
+  };
+}
+
+function parseVideoType(raw: unknown): PatientReviewVideoType | null {
+  if (raw == null || raw === "") {
+    return null;
+  }
+  const u = String(raw).toUpperCase();
+  if (u === "MUX" || u === "EMBED" || u === "DIRECT") {
+    return u as PatientReviewVideoType;
+  }
+  return null;
+}
+
+function parseEmbedPayload(raw: unknown): Prisma.InputJsonValue | null {
+  if (raw == null) {
+    return null;
+  }
+  if (typeof raw === "string") {
+    try {
+      return JSON.parse(raw) as Prisma.InputJsonValue;
+    } catch {
+      return null;
+    }
+  }
+  if (typeof raw === "object") {
+    return raw as Prisma.InputJsonValue;
+  }
+  return null;
+}
+
+function buildVideoInputFromBody(
+  body: Record<string, unknown>,
+): PatientReviewVideoSlice {
+  const vt = parseVideoType(body.videoType);
+  if (!vt) {
+    return emptyVideoSlice();
+  }
+
+  const thumb =
+    body.videoThumbnailUrl != null
+      ? String(body.videoThumbnailUrl).trim() || null
+      : null;
+  const vTitle =
+    body.videoTitle != null ? String(body.videoTitle).trim() || null : null;
+
+  const clearEmbedDirect = {
+    embedPayload: Prisma.JsonNull,
+    directVideoUrl: null as string | null,
+  };
+
+  const clearMux = {
+    muxUploadId: null as string | null,
+    muxAssetId: null as string | null,
+    muxPlaybackId: null as string | null,
+    muxPlaybackPolicy: null as string | null,
+  };
+
+  if (vt === PatientReviewVideoType.MUX) {
+    const playbackPolicyRaw = body.muxPlaybackPolicy;
+    const muxPlaybackPolicy =
+      playbackPolicyRaw != null && String(playbackPolicyRaw).trim() !== ""
+        ? String(playbackPolicyRaw).trim()
+        : "signed";
+
+    return {
+      videoType: PatientReviewVideoType.MUX,
+      muxUploadId:
+        body.muxUploadId != null
+          ? String(body.muxUploadId).trim() || null
+          : null,
+      muxAssetId:
+        body.muxAssetId != null ? String(body.muxAssetId).trim() || null : null,
+      muxPlaybackId:
+        body.muxPlaybackId != null
+          ? String(body.muxPlaybackId).trim() || null
+          : null,
+      muxPlaybackPolicy,
+      videoThumbnailUrl: thumb,
+      videoTitle: vTitle,
+      ...clearEmbedDirect,
+    };
+  }
+
+  if (vt === PatientReviewVideoType.EMBED) {
+    const embed = parseEmbedPayload(body.embedPayload ?? body.embed);
+    return {
+      videoType: PatientReviewVideoType.EMBED,
+      embedPayload: embed ?? Prisma.JsonNull,
+      videoThumbnailUrl: thumb,
+      videoTitle: vTitle,
+      ...clearMux,
+      directVideoUrl: null,
+    };
+  }
+
+  const url =
+    body.directVideoUrl != null ? String(body.directVideoUrl).trim() : "";
+
+  return {
+    videoType: PatientReviewVideoType.DIRECT,
+    directVideoUrl: url || null,
+    videoThumbnailUrl: thumb,
+    videoTitle: vTitle,
+    ...clearMux,
+    embedPayload: Prisma.JsonNull,
+  };
+}
+
+function validateVideoInput(slice: PatientReviewVideoSlice): string | null {
+  if (!slice.videoType) {
+    return null;
+  }
+  if (slice.videoType === PatientReviewVideoType.EMBED) {
+    if (slice.embedPayload === Prisma.JsonNull) {
+      return "embedPayload is required when videoType is EMBED";
+    }
+  }
+  if (slice.videoType === PatientReviewVideoType.DIRECT) {
+    if (!slice.directVideoUrl?.trim()) {
+      return "directVideoUrl is required when videoType is DIRECT";
+    }
+  }
+  return null;
+}
+
+function parseCoreReviewFields(
+  body: Record<string, unknown>,
+  kind: "normal",
+):
+  | { ok: true; data: CoreReviewFields }
+  | { ok: false; message: string } {
+  const description = String(body.description ?? "").trim();
+  if (!description) {
+    return { ok: false, message: "description is required" };
+  }
+
+  const rating = parseRating(body.rating);
+  if (rating == null) {
+    return { ok: false, message: "rating must be an integer 1–5" };
+  }
+
+  const patientRaw = body.patientDisplayName;
+  const patientDisplayName =
+    patientRaw != null && String(patientRaw).trim() !== ""
+      ? String(patientRaw).trim()
+      : null;
+
+  if (!patientDisplayName) {
+    return { ok: false, message: "patientDisplayName is required" };
+  }
+
+  const titleRaw = String(body.title ?? "").trim();
+  const title = titleRaw || patientDisplayName;
+
+  const result = String(body.result ?? "").trim();
+
+  const problems = parseStringArray(body.problems);
+  const treatments = parseStringArray(body.treatments);
+
+  if (treatments.length === 0) {
+    return { ok: false, message: "at least one treatment is required" };
+  }
+
+  const age = parseOptionalAge(body.age);
+
+  const imageUrl =
+    body.imageUrl != null && String(body.imageUrl).trim() !== ""
+      ? String(body.imageUrl).trim()
+      : null;
+  const imagePublicId =
+    body.imagePublicId != null && String(body.imagePublicId).trim() !== ""
+      ? String(body.imagePublicId).trim()
+      : null;
+
+  let sortOrder = 0;
+  if (body.sortOrder != null && body.sortOrder !== "") {
+    const so = Number(body.sortOrder);
+    if (!Number.isFinite(so)) {
+      return { ok: false, message: "sortOrder must be a number" };
+    }
+    sortOrder = Math.trunc(so);
+  }
+
+  return {
+    ok: true,
+    data: {
+      title,
+      description,
+      result,
+      patientDisplayName,
+      imageUrl,
+      imagePublicId,
+      problems: problems.length === 0 ? [] : problems,
+      treatments,
+      sortOrder,
+      rating,
+      age,
+    },
+  };
 }
