@@ -157,25 +157,28 @@ model Payment {
 }
 
 model Blog {
-  id         String   @id @default(uuid())
-  title      String
-  shortDesc  String
-  content    String
-  category   String
-  author     String
-  views      Int
-  comments   String[] @default([])
-  isFeatured Boolean
-  slug       String
-  meta       Json?    @default("{}")
-
-  notes Json?
+  id          String   @id @default(uuid())
+  title       String
+  shortDesc   String
+  content     String
+  category    String
+  author      String
+  views       Int      @default(0)
+  comments    String[] @default([])
+  isFeatured  Boolean
+  slug        String   @unique
+  meta        Json?    @default("{}")
+  notes       Json?
+  published   Boolean  @default(false)
 
   image         String
   imagePublicId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([published, createdAt])
+  @@index([category])
 }
 
 model PatientReview {
