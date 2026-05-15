@@ -5,7 +5,7 @@
  *
  * | Method | Path | Handler |
  * |--------|------|---------|
- * | GET | `/` | List reviews (flat Prisma rows). Query: `status`, `type` |
+ * | GET | `/` | List reviews (flat Prisma rows). Query: `status` |
  * | GET | `/with-videos` | Same filter; each row includes nested `video` |
  * | POST | `/` | Create curated review (optional video fields per schema) |
  * | PATCH | `/:id/status` | Set `status` to PENDING or ACTIVE |
@@ -13,7 +13,6 @@
  * | POST | `/:id/video/mux-upload` | Mux upload URL (501 until media service wired) |
  *
  * Query `status`: omit or `ALL` = all; `ACTIVE`; `PENDING` or `INACTIVE` (unpublished).
- * Query `type`: omit or `all`; `normal`; `success` / `successStory`.
  */
 import type { Request, Response } from "express";
 import {
@@ -24,12 +23,7 @@ import {
 import { prisma } from "../../../config/db.js";
 import { createMuxUploadViaMediaService } from "../../../services/media/muxUpload.stub.js";
 import { routeParamString } from "../../../utils/index.js";
-import {
-  parseAge,
-  parseOptionalAge,
-  parseRating,
-  parseStringArray,
-} from "../../../utils/parsers.js";
+import { parseRating } from "../../../utils/parsers.js";
 import { toAdminReviewWithOptionalVideo } from "../../../modules/patientReviews/patientReviews.mapper.js";
 
 // --- Handlers ----------------------------------------------------------------
@@ -45,21 +39,9 @@ export async function listPatientReviewsForAdmin(req: Request, res: Response) {
       });
     }
 
-    const typeWhere = parseListTypeQuery(req.query.type);
-    if (!typeWhere.ok) {
-      return res.status(400).json({
-        success: false,
-        message:
-          'type must be all, normal, success, successStory, or omitted for all',
-      });
-    }
-
     const where: Prisma.PatientReviewWhereInput = {};
     if (statusWhere.mode === "one") {
       where.status = statusWhere.status;
-    }
-    if (typeWhere.mode === "one") {
-      where.isSuccessStory = typeWhere.isSuccessStory;
     }
 
     const rows = await prisma.patientReview.findMany({
@@ -90,21 +72,9 @@ export async function listPatientReviewsWithVideosForAdmin(
       });
     }
 
-    const typeWhere = parseListTypeQuery(req.query.type);
-    if (!typeWhere.ok) {
-      return res.status(400).json({
-        success: false,
-        message:
-          'type must be all, normal, success, successStory, or omitted for all',
-      });
-    }
-
     const where: Prisma.PatientReviewWhereInput = {};
     if (statusWhere.mode === "one") {
       where.status = statusWhere.status;
-    }
-    if (typeWhere.mode === "one") {
-      where.isSuccessStory = typeWhere.isSuccessStory;
     }
 
     const rows = await prisma.patientReview.findMany({
@@ -126,28 +96,13 @@ export async function listPatientReviewsWithVideosForAdmin(
 
 /**
  * Curated create: defaults to ACTIVE unless `status: "PENDING"`.
- * Success story if `feature` or `isSuccessStory` is truthy (stricter fields).
  * Video optional — omit `videoType` and video fields for text-only (matches schema nulls).
  */
 export async function createPatientReview(req: Request, res: Response) {
   try {
     const body = req.body as Record<string, unknown>;
 
-    let isSuccessStory = false;
-    const rawStory = body.isSuccessStory ?? body.feature;
-    if (rawStory != null && rawStory !== "") {
-      if (typeof rawStory === "boolean") {
-        isSuccessStory = rawStory;
-      } else {
-        const t = String(rawStory).trim().toLowerCase();
-        if (t === "true" || t === "1" || t === "yes") {
-          isSuccessStory = true;
-        }
-      }
-    }
-
-    const kind = isSuccessStory ? "successStory" : "normal";
-    const parsed = parseCoreReviewFields(body, kind);
+    const parsed = parseCoreReviewFields(body);
     if (!parsed.ok) {
       return res.status(400).json({ success: false, message: parsed.message });
     }
@@ -166,16 +121,11 @@ export async function createPatientReview(req: Request, res: Response) {
     const created = await prisma.patientReview.create({
       data: {
         status,
-        isSuccessStory,
         authorUserId: null,
         patientDisplayName: parsed.data.patientDisplayName,
         title: parsed.data.title,
         description: parsed.data.description,
-        age: parsed.data.age,
         rating: parsed.data.rating,
-        problems: parsed.data.problems,
-        treatments: parsed.data.treatments,
-        result: parsed.data.result,
         imageUrl: parsed.data.imageUrl,
         imagePublicId: parsed.data.imagePublicId,
         sortOrder: parsed.data.sortOrder,
@@ -343,28 +293,6 @@ function parseListStatusQuery(raw: unknown):
   return { ok: false };
 }
 
-function parseListTypeQuery(raw: unknown):
-  | { ok: true; mode: "all" }
-  | { ok: true; mode: "one"; isSuccessStory: boolean }
-  | { ok: false } {
-  if (raw == null || raw === "") {
-    return { ok: true, mode: "all" };
-  }
-  const s = String(raw).trim().toLowerCase();
-  if (s === "all") {
-    return { ok: true, mode: "all" };
-  }
-  if (s === "normal") {
-    return { ok: true, mode: "one", isSuccessStory: false };
-  }
-  if (s === "success" || s === "successstory" || s === "success_story") {
-    return { ok: true, mode: "one", isSuccessStory: true };
-  }
-  return { ok: false };
-}
-
-// --- Body → Prisma field parsing (matches `PatientReview` model) --------------
-
 type PatientReviewVideoSlice = Pick<
   Prisma.PatientReviewCreateInput,
   | "videoType"
@@ -378,19 +306,13 @@ type PatientReviewVideoSlice = Pick<
   | "directVideoUrl"
 >;
 
-type CoreReviewKind = "normal" | "successStory";
-
 type CoreReviewFields = {
   title: string;
   description: string;
-  result: string;
-  age: number | null;
   rating: number;
   patientDisplayName: string | null;
   imageUrl: string | null;
   imagePublicId: string | null;
-  problems: string[];
-  treatments: string[];
   sortOrder: number;
 };
 
@@ -533,7 +455,6 @@ function validateVideoInput(slice: PatientReviewVideoSlice): string | null {
 
 function parseCoreReviewFields(
   body: Record<string, unknown>,
-  kind: CoreReviewKind,
 ):
   | { ok: true; data: CoreReviewFields }
   | { ok: false; message: string } {
@@ -553,48 +474,12 @@ function parseCoreReviewFields(
       ? String(patientRaw).trim()
       : null;
 
-  if (kind === "normal") {
-    if (!patientDisplayName) {
-      return { ok: false, message: "patientDisplayName is required" };
-    }
+  if (!patientDisplayName) {
+    return { ok: false, message: "patientDisplayName is required" };
   }
 
   const titleRaw = String(body.title ?? "").trim();
-  const title =
-    kind === "normal" ? titleRaw || patientDisplayName! : titleRaw;
-
-  if (kind === "successStory" && !title) {
-    return { ok: false, message: "title is required" };
-  }
-
-  const result = String(body.result ?? "").trim();
-
-  if (kind === "successStory" && !result) {
-    return { ok: false, message: "result is required" };
-  }
-
-  const problems = parseStringArray(body.problems);
-  const treatments = parseStringArray(body.treatments);
-
-  if (kind === "successStory") {
-    if (problems.length === 0) {
-      return { ok: false, message: "at least one problem is required" };
-    }
-    if (treatments.length === 0) {
-      return { ok: false, message: "at least one treatment is required" };
-    }
-  } else {
-    if (treatments.length === 0) {
-      return { ok: false, message: "at least one treatment is required" };
-    }
-  }
-
-  const age =
-    kind === "successStory" ? parseAge(body.age) : parseOptionalAge(body.age);
-
-  if (kind === "successStory" && age == null) {
-    return { ok: false, message: "age must be an integer 0–150" };
-  }
+  const title = titleRaw || patientDisplayName;
 
   const imageUrl =
     body.imageUrl != null && String(body.imageUrl).trim() !== ""
@@ -619,15 +504,11 @@ function parseCoreReviewFields(
     data: {
       title,
       description,
-      result,
       patientDisplayName,
       imageUrl,
       imagePublicId,
-      problems: kind === "normal" && problems.length === 0 ? [] : problems,
-      treatments,
       sortOrder,
       rating,
-      age,
     },
   };
 }
