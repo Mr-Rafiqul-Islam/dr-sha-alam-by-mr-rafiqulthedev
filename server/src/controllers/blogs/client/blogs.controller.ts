@@ -39,16 +39,48 @@ export async function listBlogs(req: Request, res: Response) {
       offset = o;
     }
 
-    const categoryWhere = parseOptionalCategory(req.query.category);
-    if (!categoryWhere.ok) {
-      return res.status(400).json({
-        success: false,
-        message: "category must be a non‑empty string when provided",
-      });
+    const rawCategory = req.query.category;
+    let categoryFilter: string | null = null;
+    if (rawCategory != null && rawCategory !== "") {
+      const s = String(rawCategory).trim();
+      if (!s) {
+        return res.status(400).json({
+          success: false,
+          message: "category must be a non‑empty string when provided",
+        });
+      }
+      categoryFilter = s;
     }
 
-    const featuredWhere = parseOptionalFeaturedTriState(req);
-    if (!featuredWhere.ok) {
+    const rawFeatured = req.query.featured ?? req.query.isFeatured;
+    let featuredFilter: boolean | null = null;
+    let featuredAll = false;
+    if (rawFeatured == null || rawFeatured === "") {
+      featuredAll = true;
+    } else if (typeof rawFeatured === "string") {
+      const t = rawFeatured.trim().toLowerCase();
+      if (t === "true" || t === "1" || t === "yes") featuredFilter = true;
+      else if (t === "false" || t === "0" || t === "no") featuredFilter = false;
+      else {
+        return res.status(400).json({
+          success: false,
+          message:
+            "featured / isFeatured must be true/false or omitted (use true, false, 1, 0)",
+        });
+      }
+    } else if (typeof rawFeatured === "boolean") {
+      featuredFilter = rawFeatured;
+    } else if (typeof rawFeatured === "number") {
+      if (rawFeatured === 1) featuredFilter = true;
+      else if (rawFeatured === 0) featuredFilter = false;
+      else {
+        return res.status(400).json({
+          success: false,
+          message:
+            "featured / isFeatured must be true/false or omitted (use true, false, 1, 0)",
+        });
+      }
+    } else {
       return res.status(400).json({
         success: false,
         message:
@@ -57,11 +89,11 @@ export async function listBlogs(req: Request, res: Response) {
     }
 
     const where: Prisma.BlogWhereInput = { published: true };
-    if (categoryWhere.category != null) {
-      where.category = categoryWhere.category;
+    if (categoryFilter != null) {
+      where.category = categoryFilter;
     }
-    if (featuredWhere.mode === "one") {
-      where.isFeatured = featuredWhere.isFeatured;
+    if (!featuredAll && featuredFilter !== null) {
+      where.isFeatured = featuredFilter;
     }
 
     const [total, rows] = await prisma.$transaction([
@@ -91,8 +123,7 @@ export async function listBlogs(req: Request, res: Response) {
 export async function getBlogBySlug(req: Request, res: Response) {
   try {
     const slugRaw = routeParamString(req.params.slug);
-    const slug =
-      slugRaw != null ? normalizeSlugForLookup(slugRaw) : "";
+    const slug = slugRaw != null ? slugRaw.trim().toLowerCase() : "";
     if (!slug) {
       return res.status(400).json({
         success: false,
@@ -134,46 +165,4 @@ export async function getBlogBySlug(req: Request, res: Response) {
       message: "Failed to load blog",
     });
   }
-}
-
-function parseOptionalCategory(raw: unknown):
-  | { ok: true; category: string | null }
-  | { ok: false } {
-  if (raw == null || raw === "") {
-    return { ok: true, category: null };
-  }
-  const s = String(raw).trim();
-  if (!s) return { ok: false };
-  return { ok: true, category: s };
-}
-
-function parseOptionalFeaturedTriState(req: Request):
-  | { ok: true; mode: "all" }
-  | { ok: true; mode: "one"; isFeatured: boolean }
-  | { ok: false } {
-  const rawFeatured = req.query.featured ?? req.query.isFeatured;
-  if (rawFeatured == null || rawFeatured === "") {
-    return { ok: true, mode: "all" };
-  }
-
-  let v: unknown = rawFeatured;
-  if (typeof v === "string") {
-    const t = v.trim().toLowerCase();
-    if (t === "true" || t === "1" || t === "yes") return { ok: true, mode: "one", isFeatured: true };
-    if (t === "false" || t === "0" || t === "no") return { ok: true, mode: "one", isFeatured: false };
-    return { ok: false };
-  }
-  if (typeof v === "boolean") {
-    return { ok: true, mode: "one", isFeatured: v };
-  }
-  if (typeof v === "number") {
-    if (v === 1) return { ok: true, mode: "one", isFeatured: true };
-    if (v === 0) return { ok: true, mode: "one", isFeatured: false };
-  }
-  return { ok: false };
-}
-
-/** Match stored slug: trim + lowercase (same normalization as admin create/update). */
-function normalizeSlugForLookup(s: string): string {
-  return s.trim().toLowerCase();
 }

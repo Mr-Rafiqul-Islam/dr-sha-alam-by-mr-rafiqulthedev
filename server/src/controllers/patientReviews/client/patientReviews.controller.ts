@@ -131,15 +131,178 @@ export async function getPatientReviewVideo(req: Request, res: Response) {
 export async function submitPatientReview(req: Request, res: Response) {
   try {
     const body = req.body as Record<string, unknown>;
-    const parsed = parseCoreReviewFields(body);
-    if (!parsed.ok) {
-      return res.status(400).json({ success: false, message: parsed.message });
+
+    const description = String(body.description ?? "").trim();
+    if (!description) {
+      return res
+        .status(400)
+        .json({ success: false, message: "description is required" });
     }
 
-    const videoSlice = buildVideoInputFromBody(body);
-    const videoErr = validateVideoInput(videoSlice);
-    if (videoErr) {
-      return res.status(400).json({ success: false, message: videoErr });
+    const rating = parseRating(body.rating);
+    if (rating == null) {
+      return res
+        .status(400)
+        .json({ success: false, message: "rating must be an integer 1–5" });
+    }
+
+    const patientRaw = body.patientDisplayName;
+    const patientDisplayName =
+      patientRaw != null && String(patientRaw).trim() !== ""
+        ? String(patientRaw).trim()
+        : null;
+    if (!patientDisplayName) {
+      return res.status(400).json({
+        success: false,
+        message: "patientDisplayName is required",
+      });
+    }
+
+    const titleRaw = String(body.title ?? "").trim();
+    const title = titleRaw || patientDisplayName;
+
+    const imageUrl =
+      body.imageUrl != null && String(body.imageUrl).trim() !== ""
+        ? String(body.imageUrl).trim()
+        : null;
+    const imagePublicId =
+      body.imagePublicId != null && String(body.imagePublicId).trim() !== ""
+        ? String(body.imagePublicId).trim()
+        : null;
+
+    let sortOrder = 0;
+    if (body.sortOrder != null && body.sortOrder !== "") {
+      const so = Number(body.sortOrder);
+      if (!Number.isFinite(so)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "sortOrder must be a number" });
+      }
+      sortOrder = Math.trunc(so);
+    }
+
+    let videoType: PatientReviewVideoType | null = null;
+    if (body.videoType != null && body.videoType !== "") {
+      const u = String(body.videoType).toUpperCase();
+      if (u === "MUX" || u === "EMBED" || u === "DIRECT") {
+        videoType = u as PatientReviewVideoType;
+      }
+    }
+
+    const thumb =
+      body.videoThumbnailUrl != null
+        ? String(body.videoThumbnailUrl).trim() || null
+        : null;
+    const vTitle =
+      body.videoTitle != null ? String(body.videoTitle).trim() || null : null;
+
+    let videoSlice: Pick<
+      Prisma.PatientReviewCreateInput,
+      | "videoType"
+      | "muxUploadId"
+      | "muxAssetId"
+      | "muxPlaybackId"
+      | "muxPlaybackPolicy"
+      | "videoThumbnailUrl"
+      | "videoTitle"
+      | "embedPayload"
+      | "directVideoUrl"
+    >;
+
+    if (!videoType) {
+      videoSlice = {
+        videoType: null,
+        muxUploadId: null,
+        muxAssetId: null,
+        muxPlaybackId: null,
+        muxPlaybackPolicy: null,
+        videoThumbnailUrl: null,
+        videoTitle: null,
+        embedPayload: Prisma.JsonNull,
+        directVideoUrl: null,
+      };
+    } else if (videoType === PatientReviewVideoType.MUX) {
+      const playbackPolicyRaw = body.muxPlaybackPolicy;
+      const muxPlaybackPolicy =
+        playbackPolicyRaw != null && String(playbackPolicyRaw).trim() !== ""
+          ? String(playbackPolicyRaw).trim()
+          : "signed";
+
+      videoSlice = {
+        videoType: PatientReviewVideoType.MUX,
+        muxUploadId:
+          body.muxUploadId != null
+            ? String(body.muxUploadId).trim() || null
+            : null,
+        muxAssetId:
+          body.muxAssetId != null
+            ? String(body.muxAssetId).trim() || null
+            : null,
+        muxPlaybackId:
+          body.muxPlaybackId != null
+            ? String(body.muxPlaybackId).trim() || null
+            : null,
+        muxPlaybackPolicy,
+        videoThumbnailUrl: thumb,
+        videoTitle: vTitle,
+        embedPayload: Prisma.JsonNull,
+        directVideoUrl: null,
+      };
+    } else if (videoType === PatientReviewVideoType.EMBED) {
+      let embed: Prisma.InputJsonValue | null = null;
+      const embedRaw = body.embedPayload ?? body.embed;
+      if (embedRaw != null) {
+        if (typeof embedRaw === "string") {
+          try {
+            embed = JSON.parse(embedRaw) as Prisma.InputJsonValue;
+          } catch {
+            embed = null;
+          }
+        } else if (typeof embedRaw === "object") {
+          embed = embedRaw as Prisma.InputJsonValue;
+        }
+      }
+
+      if (embed == null) {
+        return res.status(400).json({
+          success: false,
+          message: "embedPayload is required when videoType is EMBED",
+        });
+      }
+
+      videoSlice = {
+        videoType: PatientReviewVideoType.EMBED,
+        embedPayload: embed,
+        videoThumbnailUrl: thumb,
+        videoTitle: vTitle,
+        muxUploadId: null,
+        muxAssetId: null,
+        muxPlaybackId: null,
+        muxPlaybackPolicy: null,
+        directVideoUrl: null,
+      };
+    } else {
+      const url =
+        body.directVideoUrl != null ? String(body.directVideoUrl).trim() : "";
+
+      if (!url) {
+        return res.status(400).json({
+          success: false,
+          message: "directVideoUrl is required when videoType is DIRECT",
+        });
+      }
+
+      videoSlice = {
+        videoType: PatientReviewVideoType.DIRECT,
+        directVideoUrl: url,
+        videoThumbnailUrl: thumb,
+        videoTitle: vTitle,
+        muxUploadId: null,
+        muxAssetId: null,
+        muxPlaybackId: null,
+        muxPlaybackPolicy: null,
+        embedPayload: Prisma.JsonNull,
+      };
     }
 
     const authorUserId = parseOptionalUuid(body.authorUserId);
@@ -148,13 +311,13 @@ export async function submitPatientReview(req: Request, res: Response) {
       data: {
         status: PatientReviewStatus.PENDING,
         authorUserId: authorUserId ?? null,
-        patientDisplayName: parsed.data.patientDisplayName,
-        title: parsed.data.title,
-        description: parsed.data.description,
-        rating: parsed.data.rating,
-        imageUrl: parsed.data.imageUrl,
-        imagePublicId: parsed.data.imagePublicId,
-        sortOrder: parsed.data.sortOrder,
+        patientDisplayName,
+        title,
+        description,
+        rating,
+        imageUrl,
+        imagePublicId,
+        sortOrder,
         ...videoSlice,
       },
     });
@@ -167,224 +330,4 @@ export async function submitPatientReview(req: Request, res: Response) {
       message: "Failed to submit patient review",
     });
   }
-}
-
-type PatientReviewVideoSlice = Pick<
-  Prisma.PatientReviewCreateInput,
-  | "videoType"
-  | "muxUploadId"
-  | "muxAssetId"
-  | "muxPlaybackId"
-  | "muxPlaybackPolicy"
-  | "videoThumbnailUrl"
-  | "videoTitle"
-  | "embedPayload"
-  | "directVideoUrl"
->;
-
-type CoreReviewFields = {
-  title: string;
-  description: string;
-  rating: number;
-  patientDisplayName: string | null;
-  imageUrl: string | null;
-  imagePublicId: string | null;
-  sortOrder: number;
-};
-
-function emptyVideoSlice(): PatientReviewVideoSlice {
-  return {
-    videoType: null,
-    muxUploadId: null,
-    muxAssetId: null,
-    muxPlaybackId: null,
-    muxPlaybackPolicy: null,
-    videoThumbnailUrl: null,
-    videoTitle: null,
-    embedPayload: Prisma.JsonNull,
-    directVideoUrl: null,
-  };
-}
-
-function parseVideoType(raw: unknown): PatientReviewVideoType | null {
-  if (raw == null || raw === "") {
-    return null;
-  }
-  const u = String(raw).toUpperCase();
-  if (u === "MUX" || u === "EMBED" || u === "DIRECT") {
-    return u as PatientReviewVideoType;
-  }
-  return null;
-}
-
-function parseEmbedPayload(raw: unknown): Prisma.InputJsonValue | null {
-  if (raw == null) {
-    return null;
-  }
-  if (typeof raw === "string") {
-    try {
-      return JSON.parse(raw) as Prisma.InputJsonValue;
-    } catch {
-      return null;
-    }
-  }
-  if (typeof raw === "object") {
-    return raw as Prisma.InputJsonValue;
-  }
-  return null;
-}
-
-function buildVideoInputFromBody(
-  body: Record<string, unknown>,
-): PatientReviewVideoSlice {
-  const vt = parseVideoType(body.videoType);
-  if (!vt) {
-    return emptyVideoSlice();
-  }
-
-  const thumb =
-    body.videoThumbnailUrl != null
-      ? String(body.videoThumbnailUrl).trim() || null
-      : null;
-  const vTitle =
-    body.videoTitle != null ? String(body.videoTitle).trim() || null : null;
-
-  const clearEmbedDirect = {
-    embedPayload: Prisma.JsonNull,
-    directVideoUrl: null as string | null,
-  };
-
-  const clearMux = {
-    muxUploadId: null as string | null,
-    muxAssetId: null as string | null,
-    muxPlaybackId: null as string | null,
-    muxPlaybackPolicy: null as string | null,
-  };
-
-  if (vt === PatientReviewVideoType.MUX) {
-    const playbackPolicyRaw = body.muxPlaybackPolicy;
-    const muxPlaybackPolicy =
-      playbackPolicyRaw != null && String(playbackPolicyRaw).trim() !== ""
-        ? String(playbackPolicyRaw).trim()
-        : "signed";
-
-    return {
-      videoType: PatientReviewVideoType.MUX,
-      muxUploadId:
-        body.muxUploadId != null
-          ? String(body.muxUploadId).trim() || null
-          : null,
-      muxAssetId:
-        body.muxAssetId != null ? String(body.muxAssetId).trim() || null : null,
-      muxPlaybackId:
-        body.muxPlaybackId != null
-          ? String(body.muxPlaybackId).trim() || null
-          : null,
-      muxPlaybackPolicy,
-      videoThumbnailUrl: thumb,
-      videoTitle: vTitle,
-      ...clearEmbedDirect,
-    };
-  }
-
-  if (vt === PatientReviewVideoType.EMBED) {
-    const embed = parseEmbedPayload(body.embedPayload ?? body.embed);
-    return {
-      videoType: PatientReviewVideoType.EMBED,
-      embedPayload: embed ?? Prisma.JsonNull,
-      videoThumbnailUrl: thumb,
-      videoTitle: vTitle,
-      ...clearMux,
-      directVideoUrl: null,
-    };
-  }
-
-  const url =
-    body.directVideoUrl != null ? String(body.directVideoUrl).trim() : "";
-
-  return {
-    videoType: PatientReviewVideoType.DIRECT,
-    directVideoUrl: url || null,
-    videoThumbnailUrl: thumb,
-    videoTitle: vTitle,
-    ...clearMux,
-    embedPayload: Prisma.JsonNull,
-  };
-}
-
-function validateVideoInput(slice: PatientReviewVideoSlice): string | null {
-  if (!slice.videoType) {
-    return null;
-  }
-  if (slice.videoType === PatientReviewVideoType.EMBED) {
-    if (slice.embedPayload === Prisma.JsonNull) {
-      return "embedPayload is required when videoType is EMBED";
-    }
-  }
-  if (slice.videoType === PatientReviewVideoType.DIRECT) {
-    if (!slice.directVideoUrl?.trim()) {
-      return "directVideoUrl is required when videoType is DIRECT";
-    }
-  }
-  return null;
-}
-
-function parseCoreReviewFields(
-  body: Record<string, unknown>,
-):
-  | { ok: true; data: CoreReviewFields }
-  | { ok: false; message: string } {
-  const description = String(body.description ?? "").trim();
-  if (!description) {
-    return { ok: false, message: "description is required" };
-  }
-
-  const rating = parseRating(body.rating);
-  if (rating == null) {
-    return { ok: false, message: "rating must be an integer 1–5" };
-  }
-
-  const patientRaw = body.patientDisplayName;
-  const patientDisplayName =
-    patientRaw != null && String(patientRaw).trim() !== ""
-      ? String(patientRaw).trim()
-      : null;
-
-  if (!patientDisplayName) {
-    return { ok: false, message: "patientDisplayName is required" };
-  }
-
-  const titleRaw = String(body.title ?? "").trim();
-  const title = titleRaw || patientDisplayName;
-
-  const imageUrl =
-    body.imageUrl != null && String(body.imageUrl).trim() !== ""
-      ? String(body.imageUrl).trim()
-      : null;
-  const imagePublicId =
-    body.imagePublicId != null && String(body.imagePublicId).trim() !== ""
-      ? String(body.imagePublicId).trim()
-      : null;
-
-  let sortOrder = 0;
-  if (body.sortOrder != null && body.sortOrder !== "") {
-    const so = Number(body.sortOrder);
-    if (!Number.isFinite(so)) {
-      return { ok: false, message: "sortOrder must be a number" };
-    }
-    sortOrder = Math.trunc(so);
-  }
-
-  return {
-    ok: true,
-    data: {
-      title,
-      description,
-      patientDisplayName,
-      imageUrl,
-      imagePublicId,
-      sortOrder,
-      rating,
-    },
-  };
 }

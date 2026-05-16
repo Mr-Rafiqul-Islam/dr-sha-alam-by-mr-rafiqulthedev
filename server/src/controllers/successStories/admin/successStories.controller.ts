@@ -15,18 +15,32 @@ import {
 
 export async function listSuccessStoriesForAdmin(req: Request, res: Response) {
   try {
-    const statusWhere = parseListStatusQuery(req.query.status);
-    if (!statusWhere.ok) {
-      return res.status(400).json({
-        success: false,
-        message:
-          'status must be ACTIVE, PENDING, INACTIVE, ALL, or omitted for all',
-      });
+    const rawStatus = req.query.status;
+    let statusFilter: PatientReviewStatus | null = null;
+    let statusAll = false;
+
+    if (rawStatus == null || rawStatus === "") {
+      statusAll = true;
+    } else {
+      const s = String(rawStatus).trim().toUpperCase();
+      if (s === "ALL") {
+        statusAll = true;
+      } else if (s === "ACTIVE") {
+        statusFilter = PatientReviewStatus.ACTIVE;
+      } else if (s === "PENDING" || s === "INACTIVE") {
+        statusFilter = PatientReviewStatus.PENDING;
+      } else {
+        return res.status(400).json({
+          success: false,
+          message:
+            'status must be ACTIVE, PENDING, INACTIVE, ALL, or omitted for all',
+        });
+      }
     }
 
     const where: Prisma.SuccessStoryWhereInput = {};
-    if (statusWhere.mode === "one") {
-      where.status = statusWhere.status;
+    if (!statusAll && statusFilter) {
+      where.status = statusFilter;
     }
 
     const rows = await prisma.successStory.findMany({
@@ -46,9 +60,60 @@ export async function listSuccessStoriesForAdmin(req: Request, res: Response) {
 export async function createSuccessStory(req: Request, res: Response) {
   try {
     const body = req.body as Record<string, unknown>;
-    const parsed = parseSuccessStoryFields(body);
-    if (!parsed.ok) {
-      return res.status(400).json({ success: false, message: parsed.message });
+
+    const age = parseAge(body.age);
+    if (age == null) {
+      return res
+        .status(400)
+        .json({ success: false, message: "age must be an integer 0–150" });
+    }
+
+    const rating = parseRating(body.rating);
+    if (rating == null) {
+      return res
+        .status(400)
+        .json({ success: false, message: "rating must be an integer 1–5" });
+    }
+
+    const problems = parseStringArray(body.problems);
+    if (problems.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "at least one problem is required" });
+    }
+
+    const treatments = parseStringArray(body.treatments);
+    if (treatments.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "at least one treatment is required" });
+    }
+
+    const result = String(body.result ?? "").trim();
+    if (!result) {
+      return res
+        .status(400)
+        .json({ success: false, message: "result is required" });
+    }
+
+    const imageUrl =
+      body.imageUrl != null && String(body.imageUrl).trim() !== ""
+        ? String(body.imageUrl).trim()
+        : null;
+    const imagePublicId =
+      body.imagePublicId != null && String(body.imagePublicId).trim() !== ""
+        ? String(body.imagePublicId).trim()
+        : null;
+
+    let sortOrder = 0;
+    if (body.sortOrder != null && body.sortOrder !== "") {
+      const so = Number(body.sortOrder);
+      if (!Number.isFinite(so)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "sortOrder must be a number" });
+      }
+      sortOrder = Math.trunc(so);
     }
 
     let status: PatientReviewStatus = PatientReviewStatus.ACTIVE;
@@ -59,14 +124,14 @@ export async function createSuccessStory(req: Request, res: Response) {
     const created = await prisma.successStory.create({
       data: {
         status,
-        age: parsed.data.age,
-        rating: parsed.data.rating,
-        problems: parsed.data.problems,
-        treatments: parsed.data.treatments,
-        result: parsed.data.result,
-        imageUrl: parsed.data.imageUrl,
-        imagePublicId: parsed.data.imagePublicId,
-        sortOrder: parsed.data.sortOrder,
+        age,
+        rating,
+        problems,
+        treatments,
+        result,
+        imageUrl,
+        imagePublicId,
+        sortOrder,
       },
     });
 
@@ -142,22 +207,73 @@ export async function updateSuccessStory(req: Request, res: Response) {
     }
 
     const body = req.body as Record<string, unknown>;
-    const parsed = parseSuccessStoryFields(body);
-    if (!parsed.ok) {
-      return res.status(400).json({ success: false, message: parsed.message });
+
+    const age = parseAge(body.age);
+    if (age == null) {
+      return res
+        .status(400)
+        .json({ success: false, message: "age must be an integer 0–150" });
+    }
+
+    const rating = parseRating(body.rating);
+    if (rating == null) {
+      return res
+        .status(400)
+        .json({ success: false, message: "rating must be an integer 1–5" });
+    }
+
+    const problems = parseStringArray(body.problems);
+    if (problems.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "at least one problem is required" });
+    }
+
+    const treatments = parseStringArray(body.treatments);
+    if (treatments.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "at least one treatment is required" });
+    }
+
+    const result = String(body.result ?? "").trim();
+    if (!result) {
+      return res
+        .status(400)
+        .json({ success: false, message: "result is required" });
+    }
+
+    const imageUrl =
+      body.imageUrl != null && String(body.imageUrl).trim() !== ""
+        ? String(body.imageUrl).trim()
+        : null;
+    const imagePublicId =
+      body.imagePublicId != null && String(body.imagePublicId).trim() !== ""
+        ? String(body.imagePublicId).trim()
+        : null;
+
+    let sortOrder = 0;
+    if (body.sortOrder != null && body.sortOrder !== "") {
+      const so = Number(body.sortOrder);
+      if (!Number.isFinite(so)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "sortOrder must be a number" });
+      }
+      sortOrder = Math.trunc(so);
     }
 
     const updated = await prisma.successStory.update({
       where: { id },
       data: {
-        age: parsed.data.age,
-        rating: parsed.data.rating,
-        problems: parsed.data.problems,
-        treatments: parsed.data.treatments,
-        result: parsed.data.result,
-        imageUrl: parsed.data.imageUrl,
-        imagePublicId: parsed.data.imagePublicId,
-        sortOrder: parsed.data.sortOrder,
+        age,
+        rating,
+        problems,
+        treatments,
+        result,
+        imageUrl,
+        imagePublicId,
+        sortOrder,
       },
     });
 
@@ -177,96 +293,4 @@ export async function updateSuccessStory(req: Request, res: Response) {
       message: "Failed to update success story",
     });
   }
-}
-
-function parseListStatusQuery(raw: unknown):
-  | { ok: true; mode: "all" }
-  | { ok: true; mode: "one"; status: PatientReviewStatus }
-  | { ok: false } {
-  if (raw == null || raw === "") {
-    return { ok: true, mode: "all" };
-  }
-  const s = String(raw).trim().toUpperCase();
-  if (s === "ALL") {
-    return { ok: true, mode: "all" };
-  }
-  if (s === "ACTIVE") {
-    return { ok: true, mode: "one", status: PatientReviewStatus.ACTIVE };
-  }
-  if (s === "PENDING" || s === "INACTIVE") {
-    return { ok: true, mode: "one", status: PatientReviewStatus.PENDING };
-  }
-  return { ok: false };
-}
-
-type SuccessStoryFields = {
-  age: number;
-  rating: number;
-  problems: string[];
-  treatments: string[];
-  result: string;
-  imageUrl: string | null;
-  imagePublicId: string | null;
-  sortOrder: number;
-};
-
-function parseSuccessStoryFields(body: Record<string, unknown>):
-  | { ok: true; data: SuccessStoryFields }
-  | { ok: false; message: string } {
-  const age = parseAge(body.age);
-  if (age == null) {
-    return { ok: false, message: "age must be an integer 0–150" };
-  }
-
-  const rating = parseRating(body.rating);
-  if (rating == null) {
-    return { ok: false, message: "rating must be an integer 1–5" };
-  }
-
-  const problems = parseStringArray(body.problems);
-  if (problems.length === 0) {
-    return { ok: false, message: "at least one problem is required" };
-  }
-
-  const treatments = parseStringArray(body.treatments);
-  if (treatments.length === 0) {
-    return { ok: false, message: "at least one treatment is required" };
-  }
-
-  const result = String(body.result ?? "").trim();
-  if (!result) {
-    return { ok: false, message: "result is required" };
-  }
-
-  const imageUrl =
-    body.imageUrl != null && String(body.imageUrl).trim() !== ""
-      ? String(body.imageUrl).trim()
-      : null;
-  const imagePublicId =
-    body.imagePublicId != null && String(body.imagePublicId).trim() !== ""
-      ? String(body.imagePublicId).trim()
-      : null;
-
-  let sortOrder = 0;
-  if (body.sortOrder != null && body.sortOrder !== "") {
-    const so = Number(body.sortOrder);
-    if (!Number.isFinite(so)) {
-      return { ok: false, message: "sortOrder must be a number" };
-    }
-    sortOrder = Math.trunc(so);
-  }
-
-  return {
-    ok: true,
-    data: {
-      age,
-      rating,
-      problems,
-      treatments,
-      result,
-      imageUrl,
-      imagePublicId,
-      sortOrder,
-    },
-  };
 }

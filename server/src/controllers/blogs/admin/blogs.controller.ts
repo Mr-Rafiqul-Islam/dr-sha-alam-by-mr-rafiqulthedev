@@ -11,25 +11,73 @@ import { parseStringArray } from "../../../utils/parsers.js";
 
 export async function listBlogsForAdmin(req: Request, res: Response) {
   try {
-    const pubWhere = parsePublishedListFilter(req.query.published);
-    if (!pubWhere.ok) {
-      return res.status(400).json({
-        success: false,
-        message:
-          'published must be "true", "false", "ALL", or omitted for all',
-      });
+    const rawPub = req.query.published;
+    let publishedFilter: boolean | null = null;
+    let publishedAll = false;
+
+    if (rawPub == null || rawPub === "") {
+      publishedAll = true;
+    } else {
+      const s = String(rawPub).trim().toUpperCase();
+      if (s === "ALL") {
+        publishedAll = true;
+      } else if (s === "TRUE" || s === "1" || s === "YES") {
+        publishedFilter = true;
+      } else if (s === "FALSE" || s === "0" || s === "NO") {
+        publishedFilter = false;
+      } else {
+        return res.status(400).json({
+          success: false,
+          message:
+            'published must be "true", "false", "ALL", or omitted for all',
+        });
+      }
     }
 
-    const categoryWhere = parseOptionalCategory(req.query.category);
-    if (!categoryWhere.ok) {
-      return res.status(400).json({
-        success: false,
-        message: "category must be a non‑empty string when provided",
-      });
+    const rawCategory = req.query.category;
+    let categoryFilter: string | null = null;
+    if (rawCategory != null && rawCategory !== "") {
+      const s = String(rawCategory).trim();
+      if (!s) {
+        return res.status(400).json({
+          success: false,
+          message: "category must be a non‑empty string when provided",
+        });
+      }
+      categoryFilter = s;
     }
 
-    const featuredWhere = parseOptionalFeaturedTriState(req);
-    if (!featuredWhere.ok) {
+    const rawFeatured = req.query.featured ?? req.query.isFeatured;
+    let featuredFilter: boolean | null = null;
+    let featuredAll = false;
+    if (rawFeatured == null || rawFeatured === "") {
+      featuredAll = true;
+    } else if (typeof rawFeatured === "string") {
+      const t = rawFeatured.trim().toLowerCase();
+      if (t === "true" || t === "1" || t === "yes") {
+        featuredFilter = true;
+      } else if (t === "false" || t === "0" || t === "no") {
+        featuredFilter = false;
+      } else {
+        return res.status(400).json({
+          success: false,
+          message:
+            "featured / isFeatured must be true/false or omitted (use true, false, 1, 0)",
+        });
+      }
+    } else if (typeof rawFeatured === "boolean") {
+      featuredFilter = rawFeatured;
+    } else if (typeof rawFeatured === "number") {
+      if (rawFeatured === 1) featuredFilter = true;
+      else if (rawFeatured === 0) featuredFilter = false;
+      else {
+        return res.status(400).json({
+          success: false,
+          message:
+            "featured / isFeatured must be true/false or omitted (use true, false, 1, 0)",
+        });
+      }
+    } else {
       return res.status(400).json({
         success: false,
         message:
@@ -38,9 +86,15 @@ export async function listBlogsForAdmin(req: Request, res: Response) {
     }
 
     const where: Prisma.BlogWhereInput = {};
-    if (pubWhere.mode === "one") where.published = pubWhere.published;
-    if (categoryWhere.category != null) where.category = categoryWhere.category;
-    if (featuredWhere.mode === "one") where.isFeatured = featuredWhere.isFeatured;
+    if (!publishedAll && publishedFilter !== null) {
+      where.published = publishedFilter;
+    }
+    if (categoryFilter != null) {
+      where.category = categoryFilter;
+    }
+    if (!featuredAll && featuredFilter !== null) {
+      where.isFeatured = featuredFilter;
+    }
 
     const rows = await prisma.blog.findMany({
       where,
@@ -87,27 +141,116 @@ export async function getBlogByIdForAdmin(req: Request, res: Response) {
 export async function createBlog(req: Request, res: Response) {
   try {
     const body = req.body as Record<string, unknown>;
-    const parsed = parseCreateBlogFields(body);
-    if (!parsed.ok) {
+
+    const requiredFields: Array<[keyof typeof body, string]> = [
+      ["title", "title"],
+      ["shortDesc", "shortDesc"],
+      ["content", "content"],
+      ["category", "category"],
+      ["author", "author"],
+      ["slug", "slug"],
+      ["image", "image"],
+      ["imagePublicId", "imagePublicId"],
+    ];
+
+    const trimmed: Record<string, string> = {};
+    for (const [key, label] of requiredFields) {
+      const raw = body[key];
+      if (raw === undefined || raw === null) {
+        return res
+          .status(400)
+          .json({ success: false, message: `${label} is required` });
+      }
+      const s = String(raw).trim();
+      if (!s.length) {
+        return res
+          .status(400)
+          .json({ success: false, message: `${label} cannot be empty` });
+      }
+      trimmed[String(key)] = s;
+    }
+
+    const featuredRaw = body.isFeatured;
+    let isFeatured: boolean | null = null;
+    if (featuredRaw === undefined || featuredRaw === null || featuredRaw === "") {
+      isFeatured = null;
+    } else if (typeof featuredRaw === "boolean") {
+      isFeatured = featuredRaw;
+    } else if (typeof featuredRaw === "number") {
+      if (featuredRaw === 1) isFeatured = true;
+      else if (featuredRaw === 0) isFeatured = false;
+    } else if (typeof featuredRaw === "string") {
+      const t = featuredRaw.trim().toLowerCase();
+      if (t === "true" || t === "1" || t === "yes") isFeatured = true;
+      else if (t === "false" || t === "0" || t === "no") isFeatured = false;
+    }
+    if (isFeatured === null) {
       return res.status(400).json({
         success: false,
-        message: parsed.message,
+        message: "isFeatured must be a boolean (true/false)",
       });
     }
 
+    let published = false;
+    const publishedRaw = body.published;
+    if (
+      publishedRaw !== undefined &&
+      publishedRaw !== null &&
+      publishedRaw !== ""
+    ) {
+      if (typeof publishedRaw === "boolean") {
+        published = publishedRaw;
+      } else if (typeof publishedRaw === "number") {
+        if (publishedRaw === 1) published = true;
+        else if (publishedRaw === 0) published = false;
+        else {
+          return res.status(400).json({
+            success: false,
+            message: "published must be a boolean (true/false when provided)",
+          });
+        }
+      } else if (typeof publishedRaw === "string") {
+        const t = publishedRaw.trim().toLowerCase();
+        if (t === "true" || t === "1" || t === "yes") published = true;
+        else if (t === "false" || t === "0" || t === "no") published = false;
+        else {
+          return res.status(400).json({
+            success: false,
+            message: "published must be a boolean (true/false when provided)",
+          });
+        }
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "published must be a boolean (true/false when provided)",
+        });
+      }
+    }
+
+    let views = 0;
+    if (body.views != null && body.views !== "") {
+      const v = typeof body.views === "number" ? body.views : Number(body.views);
+      if (!Number.isInteger(v) || v < 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "views must be a non‑negative integer" });
+      }
+      views = v;
+    }
+
     const createData: Prisma.BlogCreateInput = {
-      title: parsed.data.title,
-      shortDesc: parsed.data.shortDesc,
-      content: parsed.data.content,
-      category: parsed.data.category,
-      author: parsed.data.author,
-      slug: normalizeSlug(parsed.data.slug),
-      image: parsed.data.image,
-      imagePublicId: parsed.data.imagePublicId,
-      isFeatured: parsed.data.isFeatured,
-      published: parsed.data.published,
-      views: parsed.data.views,
-      comments: parsed.data.comments,
+      title: trimmed.title,
+      shortDesc: trimmed.shortDesc,
+      content: trimmed.content,
+      category: trimmed.category,
+      author: trimmed.author,
+      slug: trimmed.slug.trim().toLowerCase(),
+      image: trimmed.image,
+      imagePublicId: trimmed.imagePublicId,
+      isFeatured,
+      published,
+      views,
+      comments: parseStringArray(body.comments),
     };
 
     if ("meta" in body) {
@@ -157,16 +300,132 @@ export async function updateBlog(req: Request, res: Response) {
     }
 
     const body = req.body as Record<string, unknown>;
-    const slice = buildBlogPatchData(body);
+    const data: Prisma.BlogUpdateInput = {};
 
-    if (slice.error) {
-      return res.status(400).json({
-        success: false,
-        message: slice.error,
-      });
+    const stringFields: Array<
+      [
+        keyof Pick<
+          Prisma.BlogUncheckedUpdateInput,
+          | "title"
+          | "shortDesc"
+          | "content"
+          | "category"
+          | "author"
+          | "image"
+          | "imagePublicId"
+        >,
+        string,
+      ]
+    > = [
+      ["title", "title"],
+      ["shortDesc", "shortDesc"],
+      ["content", "content"],
+      ["category", "category"],
+      ["author", "author"],
+      ["image", "image"],
+      ["imagePublicId", "imagePublicId"],
+    ];
+
+    for (const [field, label] of stringFields) {
+      if (!(field in body)) continue;
+      const raw = body[field];
+      if (raw === undefined) continue;
+      const v = raw === null ? "" : String(raw).trim();
+      if (!v.length) {
+        return res
+          .status(400)
+          .json({ success: false, message: `${label} cannot be empty` });
+      }
+      (data as Record<string, string>)[field] = v;
     }
 
-    if (Object.keys(slice.data).length === 0) {
+    if ("slug" in body) {
+      const raw = body.slug;
+      if (raw !== undefined) {
+        const v = raw === null ? "" : String(raw).trim();
+        if (!v.length) {
+          return res
+            .status(400)
+            .json({ success: false, message: "slug cannot be empty" });
+        }
+        data.slug = v.toLowerCase();
+      }
+    }
+
+    if ("isFeatured" in body && body.isFeatured !== undefined) {
+      const raw = body.isFeatured;
+      let b: boolean | null = null;
+      if (raw === null || raw === "") b = null;
+      else if (typeof raw === "boolean") b = raw;
+      else if (typeof raw === "number") {
+        if (raw === 1) b = true;
+        else if (raw === 0) b = false;
+      } else if (typeof raw === "string") {
+        const t = raw.trim().toLowerCase();
+        if (t === "true" || t === "1" || t === "yes") b = true;
+        else if (t === "false" || t === "0" || t === "no") b = false;
+      }
+      if (b === null) {
+        return res.status(400).json({
+          success: false,
+          message: "isFeatured must be a boolean (true/false)",
+        });
+      }
+      data.isFeatured = b;
+    }
+
+    if ("published" in body) {
+      const raw = body.published;
+      let b: boolean | null = null;
+      if (raw === undefined || raw === null || raw === "") b = null;
+      else if (typeof raw === "boolean") b = raw;
+      else if (typeof raw === "number") {
+        if (raw === 1) b = true;
+        else if (raw === 0) b = false;
+      } else if (typeof raw === "string") {
+        const t = raw.trim().toLowerCase();
+        if (t === "true" || t === "1" || t === "yes") b = true;
+        else if (t === "false" || t === "0" || t === "no") b = false;
+      }
+      if (b === null) {
+        return res.status(400).json({
+          success: false,
+          message: "published must be a boolean (true/false when provided)",
+        });
+      }
+      data.published = b;
+    }
+
+    if ("views" in body && body.views !== undefined) {
+      if (body.views === "") {
+        return res
+          .status(400)
+          .json({ success: false, message: "views cannot be empty" });
+      }
+      const n = typeof body.views === "number" ? body.views : Number(body.views);
+      if (!Number.isInteger(n) || n < 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "views must be a non‑negative integer" });
+      }
+      data.views = n;
+    }
+
+    if ("comments" in body) {
+      data.comments = { set: parseStringArray(body.comments) };
+    }
+
+    if ("meta" in body) {
+      if (body.meta === null) data.meta = Prisma.JsonNull;
+      else data.meta = body.meta as Prisma.InputJsonValue;
+    }
+
+    if ("notes" in body) {
+      if (body.notes === null) data.notes = Prisma.JsonNull;
+      else data.notes = body.notes as Prisma.InputJsonValue;
+    }
+
+    if (Object.keys(data).length === 0) {
       return res.status(400).json({
         success: false,
         message: "No valid fields to update",
@@ -175,7 +434,7 @@ export async function updateBlog(req: Request, res: Response) {
 
     const updated = await prisma.blog.update({
       where: { id },
-      data: slice.data,
+      data,
     });
 
     res.json({ success: true, data: updated });
@@ -229,299 +488,4 @@ export async function deleteBlog(req: Request, res: Response) {
       message: "Failed to delete blog",
     });
   }
-}
-
-// --- Query parsing ------------------------------------------------------------
-
-function parsePublishedListFilter(raw: unknown):
-  | { ok: true; mode: "all" }
-  | { ok: true; mode: "one"; published: boolean }
-  | { ok: false } {
-  if (raw == null || raw === "") {
-    return { ok: true, mode: "all" };
-  }
-  const s = String(raw).trim().toUpperCase();
-  if (s === "ALL") return { ok: true, mode: "all" };
-  if (s === "TRUE" || s === "1" || s === "YES")
-    return { ok: true, mode: "one", published: true };
-  if (s === "FALSE" || s === "0" || s === "NO")
-    return { ok: true, mode: "one", published: false };
-  return { ok: false };
-}
-
-function parseOptionalCategory(raw: unknown):
-  | { ok: true; category: string | null }
-  | { ok: false } {
-  if (raw == null || raw === "") {
-    return { ok: true, category: null };
-  }
-  const s = String(raw).trim();
-  if (!s) return { ok: false };
-  return { ok: true, category: s };
-}
-
-function parseOptionalFeaturedTriState(req: Request):
-  | { ok: true; mode: "all" }
-  | { ok: true; mode: "one"; isFeatured: boolean }
-  | { ok: false } {
-  const rawFeatured = req.query.featured ?? req.query.isFeatured;
-  if (rawFeatured == null || rawFeatured === "") {
-    return { ok: true, mode: "all" };
-  }
-
-  let v: unknown = rawFeatured;
-  if (typeof v === "string") {
-    const t = v.trim().toLowerCase();
-    if (t === "true" || t === "1" || t === "yes") {
-      return { ok: true, mode: "one", isFeatured: true };
-    }
-    if (t === "false" || t === "0" || t === "no") {
-      return { ok: true, mode: "one", isFeatured: false };
-    }
-    return { ok: false };
-  }
-  if (typeof v === "boolean") {
-    return { ok: true, mode: "one", isFeatured: v };
-  }
-  if (typeof v === "number") {
-    if (v === 1) return { ok: true, mode: "one", isFeatured: true };
-    if (v === 0) return { ok: true, mode: "one", isFeatured: false };
-  }
-  return { ok: false };
-}
-
-// --- Create / patch body helpers ---------------------------------------------
-
-type CreateBlogData = {
-  title: string;
-  shortDesc: string;
-  content: string;
-  category: string;
-  author: string;
-  slug: string;
-  image: string;
-  imagePublicId: string;
-  isFeatured: boolean;
-  published: boolean;
-  views: number;
-  comments: string[];
-};
-
-function parseCreateBlogFields(
-  body: Record<string, unknown>,
-): { ok: true; data: CreateBlogData } | { ok: false; message: string } {
-  const title = parseRequiredTrimmed(body.title, "title");
-  if (!title.ok) return { ok: false, message: title.message };
-  const shortDesc = parseRequiredTrimmed(body.shortDesc, "shortDesc");
-  if (!shortDesc.ok) return { ok: false, message: shortDesc.message };
-  const content = parseRequiredTrimmed(body.content, "content");
-  if (!content.ok) return { ok: false, message: content.message };
-  const category = parseRequiredTrimmed(body.category, "category");
-  if (!category.ok) return { ok: false, message: category.message };
-  const author = parseRequiredTrimmed(body.author, "author");
-  if (!author.ok) return { ok: false, message: author.message };
-  const slugRaw = parseRequiredTrimmed(body.slug, "slug");
-  if (!slugRaw.ok) return { ok: false, message: slugRaw.message };
-  const image = parseRequiredTrimmed(body.image, "image");
-  if (!image.ok) return { ok: false, message: image.message };
-  const imagePublicId = parseRequiredTrimmed(
-    body.imagePublicId,
-    "imagePublicId",
-  );
-  if (!imagePublicId.ok) {
-    return { ok: false, message: imagePublicId.message };
-  }
-
-  const fb = parseRequiredBoolean(body.isFeatured);
-  if (fb === null)
-    return { ok: false, message: "isFeatured must be a boolean (true/false)" };
-
-  const published = parseOptionalBoolean(body.published) ?? false;
-  let views = 0;
-  if (body.views != null && body.views !== "") {
-    const v = typeof body.views === "number" ? body.views : Number(body.views);
-    if (!Number.isInteger(v) || v < 0) {
-      return { ok: false, message: "views must be a non‑negative integer" };
-    }
-    views = v;
-  }
-
-  return {
-    ok: true,
-    data: {
-      title: title.value,
-      shortDesc: shortDesc.value,
-      content: content.value,
-      category: category.value,
-      author: author.value,
-      slug: slugRaw.value,
-      image: image.value,
-      imagePublicId: imagePublicId.value,
-      isFeatured: fb,
-      published,
-      views,
-      comments: parseStringArray(body.comments),
-    },
-  };
-}
-
-function buildBlogPatchData(
-  body: Record<string, unknown>,
-): { data: Prisma.BlogUpdateInput; error?: string } {
-  const data: Prisma.BlogUpdateInput = {};
-
-  const setStr = (
-    field: keyof Pick<
-      Prisma.BlogUncheckedUpdateInput,
-      | "title"
-      | "shortDesc"
-      | "content"
-      | "category"
-      | "author"
-      | "slug"
-      | "image"
-      | "imagePublicId"
-    >,
-    raw: unknown,
-    label: string,
-  ): string | undefined => {
-    const v = trimPatchString(raw);
-    if (v === undefined) return undefined;
-    if (!v.length) return `${label} cannot be empty`;
-    (data as Record<string, string>)[field] = v;
-    return undefined;
-  };
-
-  if ("title" in body) {
-    const e = setStr("title", body.title, "title");
-    if (e) return { data, error: e };
-  }
-  if ("shortDesc" in body) {
-    const e = setStr("shortDesc", body.shortDesc, "shortDesc");
-    if (e) return { data, error: e };
-  }
-  if ("content" in body) {
-    const e = setStr("content", body.content, "content");
-    if (e) return { data, error: e };
-  }
-  if ("category" in body) {
-    const e = setStr("category", body.category, "category");
-    if (e) return { data, error: e };
-  }
-  if ("author" in body) {
-    const e = setStr("author", body.author, "author");
-    if (e) return { data, error: e };
-  }
-  if ("slug" in body) {
-    const v = trimPatchString(body.slug);
-    if (v === undefined) {
-      /** key present but unusable payload — ignored */
-    } else if (!v.length) return { data, error: "slug cannot be empty" };
-    else data.slug = normalizeSlug(v);
-  }
-  if ("image" in body) {
-    const e = setStr("image", body.image, "image");
-    if (e) return { data, error: e };
-  }
-  if ("imagePublicId" in body) {
-    const e = setStr(
-      "imagePublicId",
-      body.imagePublicId,
-      "imagePublicId",
-    );
-    if (e) return { data, error: e };
-  }
-
-  if ("isFeatured" in body && body.isFeatured !== undefined) {
-    const b = parseRequiredBoolean(body.isFeatured);
-    if (b === null)
-      return { data, error: "isFeatured must be a boolean (true/false)" };
-    data.isFeatured = b;
-  }
-
-  if ("published" in body) {
-    const b = parseRequiredBoolean(body.published);
-    if (b === null) {
-      return {
-        data,
-        error: "published must be a boolean (true/false when provided)",
-      };
-    }
-    data.published = b;
-  }
-
-  if ("views" in body && body.views !== undefined) {
-    if (body.views === "") return { data, error: "views cannot be empty" };
-    const n = typeof body.views === "number" ? body.views : Number(body.views);
-    if (!Number.isInteger(n) || n < 0) {
-      return { data, error: "views must be a non‑negative integer" };
-    }
-    data.views = n;
-  }
-
-  if ("comments" in body) {
-    data.comments = { set: parseStringArray(body.comments) };
-  }
-
-  if ("meta" in body) {
-    if (body.meta === null) data.meta = Prisma.JsonNull;
-    else data.meta = body.meta as Prisma.InputJsonValue;
-  }
-
-  if ("notes" in body) {
-    if (body.notes === null) data.notes = Prisma.JsonNull;
-    else data.notes = body.notes as Prisma.InputJsonValue;
-  }
-
-  return { data };
-}
-
-function parseRequiredTrimmed(
-  raw: unknown,
-  label: string,
-): { ok: true; value: string } | { ok: false; message: string } {
-  if (raw === undefined || raw === null) {
-    return { ok: false, message: `${label} is required` };
-  }
-  const s = String(raw).trim();
-  if (!s.length) {
-    return { ok: false, message: `${label} cannot be empty` };
-  }
-  return { ok: true, value: s };
-}
-
-/**
- * PATCH string fields when the key exists: preserve `false`/`0` by stringifying.
- * Missing key → caller should skip; explicit `null`/empty trimmed string → caller reports error.
- */
-function trimPatchString(raw: unknown): string | undefined {
-  if (raw === undefined) return undefined;
-  if (raw === null) return "";
-  return String(raw).trim();
-}
-
-function parseRequiredBoolean(raw: unknown): boolean | null {
-  if (raw === undefined || raw === null || raw === "") return null;
-  if (typeof raw === "boolean") return raw;
-  if (typeof raw === "number") {
-    if (raw === 1) return true;
-    if (raw === 0) return false;
-    return null;
-  }
-  if (typeof raw === "string") {
-    const t = raw.trim().toLowerCase();
-    if (t === "true" || t === "1" || t === "yes") return true;
-    if (t === "false" || t === "0" || t === "no") return false;
-  }
-  return null;
-}
-
-/** Like {@link parseRequiredBoolean} but returns `undefined` when missing (optional field). */
-function parseOptionalBoolean(raw: unknown): boolean | undefined {
-  if (raw === undefined || raw === null || raw === "") return undefined;
-  return parseRequiredBoolean(raw) ?? undefined;
-}
-
-function normalizeSlug(s: string): string {
-  return s.trim().toLowerCase();
 }
