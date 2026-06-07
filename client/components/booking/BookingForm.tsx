@@ -84,9 +84,9 @@ export default function BookingForm() {
                 <div className="relative">
                   <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all appearance-none">
                     <option>Select Time Slot</option>
-                    <option>Morning (10:00 AM - 1:00 PM)</option>
-                    <option>Afternoon (2:00 PM - 5:00 PM)</option>
-                    <option>Evening (6:00 PM - 9:00 PM)</option>
+                    <option>PLID (Present at - 9:00 AM)</option>
+                    <option>Old PLID (Present at - 4:00 PM)</option>
+                    <option>Genreral Patient (Present at - 5:00 PM)</option>
                   </select>
                   <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                     expand_more
