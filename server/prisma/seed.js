@@ -20,6 +20,17 @@ const adminsToSeed = [
   { email: "superadmin@doctorshahalam.test", name: "Super Admin" },
 ];
 
+const DEFAULT_DOCTOR = {
+  name: "Dr. Md Shah Alam",
+  specialization: "Orthopedic & Physiotherapy",
+  about: "Consultant orthopedic surgeon and physiotherapy specialist.",
+  location: "House 42, Road 7, Sector 3, Uttara Model Town, Dhaka - 1230",
+  availableDays: "Sat, Sun, Mon, Tue, Wed, Thu",
+  startTime: "09:00 AM",
+  endTime: "10:00 PM",
+  consultationFee: 1500,
+};
+
 async function main() {
   const passwordPlain = process.env.ADMIN_SEED_PASSWORD || FALLBACK_DEV_PASSWORD;
   const hash = await bcrypt.hash(passwordPlain, 10);
@@ -42,6 +53,19 @@ async function main() {
       },
     });
     console.log(`Seeded admin: ${admin.email}`);
+  }
+
+  const existingDoctor = await prisma.doctor.findFirst({
+    where: { name: DEFAULT_DOCTOR.name },
+  });
+
+  if (existingDoctor) {
+    console.log(`Seed skip (exists): doctor ${existingDoctor.name} (${existingDoctor.id})`);
+    console.log(`Set DEFAULT_DOCTOR_ID=${existingDoctor.id} in .env`);
+  } else {
+    const doctor = await prisma.doctor.create({ data: DEFAULT_DOCTOR });
+    console.log(`Seeded doctor: ${doctor.name} (${doctor.id})`);
+    console.log(`Set DEFAULT_DOCTOR_ID=${doctor.id} in .env`);
   }
 }
 

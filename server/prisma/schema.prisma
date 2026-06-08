@@ -37,12 +37,7 @@ enum PaymentStatus {
 enum AttendTime {
   M10
   A03
-}
-
-enum PatientProblem {
-  PLID
-  KNEEPAIN
-  BACKPAIN
+  A05
 }
 
 enum PatientReviewVideoType {
@@ -70,7 +65,6 @@ model User {
   updatedAt  DateTime @updatedAt
 
   // Relations
-  appointments   Appointment[]
   payments       Payment[]
   patientReviews PatientReview[]
   doctorId       String?
@@ -93,8 +87,6 @@ model Doctor {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  // Relationship
-  appointments Appointment[]
   payments     Payment[]
 
   @@index([specialization])
@@ -103,16 +95,15 @@ model Doctor {
 
 model Appointment {
   id              String            @id @default(uuid())
-  userId          String?
-  doctorId        String
   name            String
   phone           String
-  gender          String
-  location        String
+  email           String?
+  homeAddress     String
+  problem         String?
+  preferredTime   String
   appointmentDate DateTime
-  problem         PatientProblem    @default(PLID)
   serialNumber    Int
-  attendTime      AttendTime        @default(M10)
+  gender          String?
   status          AppointmentStatus @default(PENDING)
   siteRef         SiteRef           @default(DOCTOR_SHA_ALAM)
   transactionId   String?           @unique
@@ -120,12 +111,6 @@ model Appointment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relationships
-  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([doctorId])
   @@index([appointmentDate])
 }
 
