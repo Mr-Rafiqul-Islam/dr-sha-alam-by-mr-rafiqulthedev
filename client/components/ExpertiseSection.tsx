@@ -5,24 +5,34 @@ import { motion, Variants } from 'motion/react';
 
 const treatments = [
   {
-    title: 'PLID (Disc Prolapse)',
-    description: 'Non-surgical spinal decompression and posture correction techniques to heal without knives.',
+    title: 'PLID (Lumbar Disc Prolapse)',
+    description: 'Understand your MRI, reduce nerve irritation, and recover safely with a structured treatment plan.',
     icon: 'accessibility_new',
   },
   {
-    title: 'Chronic Back Pain',
-    description: 'Targeted exercises and ergonomic adjustments to strengthen the spine and reduce inflammation.',
+    title: 'Sciatica & Nerve Compression',
+    description: 'Relieve radiating leg pain, tingling, numbness, and weakness through targeted care.',
     icon: 'personal_injury',
   },
   {
-    title: 'Migraine Relief',
-    description: 'Holistic approaches combining manual therapy and relaxation to reduce headache frequency.',
+    title: 'Chronic Back Pain',
+    description: 'Identify the real cause of persistent pain and create a long-term recovery strategy.',
     icon: 'healing',
   },
   {
-    title: 'Sciatica & Nerve',
-    description: 'Nerve mobilization techniques to alleviate shooting leg pain and restore comfortable movement.',
+    title: 'Neck Pain & Cervical Problems',
+    description: 'Evidence-based treatment for cervical disc issues, neck stiffness, and arm pain.',
     icon: 'directions_walk',
+  },
+  {
+    title: 'Epidural Steroid Injection',
+    description: 'Advanced non-surgical treatment for selected patients suffering from nerve inflammation.',
+    icon: 'syringe',
+  },
+  {
+    title: 'Spine Surgery Consultation',
+    description: 'Helping patients make confident and informed surgical decisions.',
+    icon: 'medical_information',
   },
 ];
 
@@ -67,21 +77,21 @@ export default function ExpertiseSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6"
         >
           {treatments.map((treatment, index) => (
             <motion.div 
               key={index}
               variants={itemVariants}
-              className="group bg-background-light dark:bg-background-dark p-8 rounded-3xl border border-transparent hover:border-accent/20 transition-all duration-300 hover:shadow-hover hover:-translate-y-1"
+              className="group bg-background-light dark:bg-background-dark p-5 rounded-3xl border border-transparent hover:border-accent/20 transition-all duration-300 hover:shadow-hover hover:-translate-y-1"
             >
-              <div className="w-16 h-16 bg-white dark:bg-surface-dark rounded-2xl flex items-center justify-center text-primary shadow-sm mb-6 group-hover:scale-110 group-hover:text-accent transition-all duration-300">
+              <div className="w-12 h-12 bg-white dark:bg-surface-dark rounded-2xl flex items-center justify-center text-primary shadow-sm mb-6 group-hover:scale-110 group-hover:text-accent transition-all duration-300">
                 <span className="material-symbols-outlined text-4xl">{treatment.icon}</span>
               </div>
-              <h4 className="text-xl font-bold text-text-main dark:text-white mb-3">{treatment.title}</h4>
-              <p className="text-text-sub text-sm mb-6 leading-relaxed">{treatment.description}</p>
+              <h4 className="text-sm md:text-base font-bold text-text-main dark:text-white mb-3">{treatment.title}</h4>
+              <p className="text-text-sub text-xs mb-6 leading-relaxed">{treatment.description}</p>
               <Link className="inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors" href="/treatments">
-                Learn more <span className="material-symbols-outlined text-base ml-1 transition-transform group-hover:translate-x-1">arrow_forward</span>
+                Learn more <span className="material-symbols-outlined text-xs ml-1 transition-transform group-hover:translate-x-1">arrow_forward</span>
               </Link>
             </motion.div>
           ))}
