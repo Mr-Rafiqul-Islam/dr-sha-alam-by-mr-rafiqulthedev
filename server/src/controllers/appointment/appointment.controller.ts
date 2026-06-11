@@ -138,6 +138,23 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
   }
 }
 
+export async function deleteAppointment(req: Request, res: Response) {
+  const appointmentId = routeParamString(req.params.id);
+  if (!appointmentId) {
+    return res.status(400).json({ success: false, message: "Invalid appointment id" });
+  }
+
+  try {
+    await prisma.appointment.delete({ where: { id: appointmentId } });
+    return res.status(200).json({
+      success: true,
+      message: "Appointment deleted successfully",
+    });
+  } catch (error) {
+    return handleAppointmentError(res, error, "Failed to delete appointment");
+  }
+}
+
 export async function cancelAppointment(req: Request, res: Response) {
   const appointmentId = routeParamString(req.params.id);
   if (!appointmentId) {
