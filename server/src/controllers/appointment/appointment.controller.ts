@@ -1,158 +1,116 @@
 import { AppointmentStatus } from "@prisma/client";
 import type { Request, Response } from "express";
 import { prisma } from "../../config/db.js";
+import { sendAppointmentSms } from "../../modules/appointment/appointment.sms.js";
 import {
-  getPreferredTimeSmsLabel,
   parsePreferredTimeCode,
   toPublicAppointment,
   toPublicAppointments,
 } from "../../modules/appointment/appointment.mapper.js";
+import {
+  AppointmentValidationError,
+  getDayRange,
+  handleAppointmentError,
+  parseAppointmentDate,
+  parseAppointmentStatus,
+  parseEmail,
+  parseFutureAppointmentDate,
+  parseMonthYear,
+  parseOptionalString,
+  parseRequiredString,
+} from "../../modules/appointment/appointment.utils.js";
 import { routeParamString } from "../../utils/express-params.js";
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ACTIVE_APPOINTMENT_STATUSES = {
+  not: AppointmentStatus.CANCEL,
+} as const;
 
-function getDayRange(date: Date) {
-  const dayStart = new Date(date);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(date);
-  dayEnd.setHours(23, 59, 59, 999);
-  return { dayStart, dayEnd };
-}
+const DAY_APPOINTMENT_ORDER = [
+  { preferredTime: "asc" as const },
+  { serialNumber: "asc" as const },
+];
 
-function parseOptionalString(value: unknown): string | null {
-  if (typeof value !== "string") {
-    return null;
-  }
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
+const ALL_APPOINTMENTS_ORDER = [
+  { appointmentDate: "desc" as const },
+  ...DAY_APPOINTMENT_ORDER,
+];
 
 export async function createAppointment(req: Request, res: Response) {
-  const {
-    fullName,
-    phoneNumber,
-    email,
-    homeAddress,
-    problem,
-    preferredDate,
-    preferredTime,
-  } = req.body;
-
   try {
-    if (!fullName?.trim()) {
-      return res.status(400).json({ success: false, message: "fullName is required" });
-    }
-    if (!phoneNumber?.trim()) {
-      return res.status(400).json({ success: false, message: "phoneNumber is required" });
-    }
-    if (!homeAddress?.trim()) {
-      return res.status(400).json({ success: false, message: "homeAddress is required" });
-    }
-    if (!preferredDate) {
-      return res.status(400).json({ success: false, message: "preferredDate is required" });
-    }
+    const name = parseRequiredString(req.body.fullName, "fullName");
+    const phone = parseRequiredString(req.body.phoneNumber, "phoneNumber");
+    const homeAddress = parseRequiredString(req.body.homeAddress, "homeAddress");
+    const emailText = parseEmail(req.body.email);
+    const problemText = parseOptionalString(req.body.problem);
+    const selectedDate = parseFutureAppointmentDate(req.body.preferredDate, "preferredDate");
 
-    const slotCode = parsePreferredTimeCode(preferredTime);
+    const slotCode = parsePreferredTimeCode(req.body.preferredTime);
     if (!slotCode) {
-      return res.status(400).json({
-        success: false,
-        message: "preferredTime must be one of: P-9, OP-4, G-5",
-      });
-    }
-
-    const emailText = parseOptionalString(email);
-    if (emailText && !EMAIL_REGEX.test(emailText)) {
-      return res.status(400).json({ success: false, message: "Invalid email address" });
-    }
-
-    const selectedDate = new Date(preferredDate);
-    if (Number.isNaN(selectedDate.getTime())) {
-      return res.status(400).json({ success: false, message: "Invalid preferredDate" });
+      throw new AppointmentValidationError(
+        "preferredTime must be one of: P-9, OP-4, G-5",
+      );
     }
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
-    const smsLabel = getPreferredTimeSmsLabel(slotCode);
-    const problemText = parseOptionalString(problem);
-    const name = fullName.trim();
-    const phone = phoneNumber.trim();
 
-    const existingAppointment = await prisma.appointment.findFirst({
-      where: {
-        phone,
-        name,
-        appointmentDate: { gte: dayStart, lte: dayEnd },
-      },
-    });
-
-    if (existingAppointment) {
-      return res.status(400).json({
-        success: false,
-        message: "Appointment already exists for this patient on the selected date",
+    const newAppointment = await prisma.$transaction(async (tx) => {
+      const existingAppointment = await tx.appointment.findFirst({
+        where: {
+          phone,
+          name,
+          status: ACTIVE_APPOINTMENT_STATUSES,
+          appointmentDate: { gte: dayStart, lte: dayEnd },
+        },
+        select: { id: true },
       });
-    }
 
-    const slotCount = await prisma.appointment.count({
-      where: {
-        preferredTime: slotCode,
-        appointmentDate: { gte: dayStart, lte: dayEnd },
-      },
-    });
-
-    const serialNumber = slotCount + 1;
-
-    const newAppointment = await prisma.appointment.create({
-      data: {
-        name,
-        phone,
-        email: emailText,
-        homeAddress: homeAddress.trim(),
-        problem: problemText,
-        preferredTime: slotCode,
-        appointmentDate: selectedDate,
-        serialNumber,
-      },
-    });
-
-    try {
-      const apiKey = process.env.NOVOCOM_API_KEY;
-      const clientId = process.env.NOVOCOM_CLIENT_ID;
-      const senderId = process.env.NOVOCOM_SENDER_ID;
-
-      if (apiKey && clientId && senderId) {
-        const message = encodeURIComponent(
-          `চেম্বার: TruCare Healing Centre
-        সিদ্দিক টাওয়ার (৫ম তলা, লিফট এর- ৪), ৪৯ মহাখালী, ঢাকা।
-        (স্কয়ার ফার্মাসিউটিক্যালস হেড অফিসের পাশের ভবন)
-        
-        রোগীর নাম: ${name}
-        আপনার সিরিয়াল নং: ${serialNumber}
-        উপস্থিতি সময়ঃ ${smsLabel}
-        
-        যোগাযোগ: ০৯৬১৩-৬৬৮৮৬৬, ০১৭০১ ৩১৩০০১-০২`,
+      if (existingAppointment) {
+        throw new AppointmentValidationError(
+          "Appointment already exists for this patient on the selected date",
         );
-
-        const url =
-          `https://sms.novocom-bd.com/api/v2/SendSMS?` +
-          `ApiKey=${apiKey}&ClientId=${clientId}&SenderId=${senderId}` +
-          `&Message=${message}&MobileNumbers=${phone}&Is_Unicode=True`;
-
-        await fetch(url);
       }
-    } catch (smsError) {
-      console.error("Failed to send appointment SMS:", smsError);
-    }
 
-    return res.status(200).json({
+      const { _max } = await tx.appointment.aggregate({
+        where: {
+          preferredTime: slotCode,
+          status: ACTIVE_APPOINTMENT_STATUSES,
+          appointmentDate: { gte: dayStart, lte: dayEnd },
+        },
+        _max: { serialNumber: true },
+      });
+
+      const serialNumber = (_max.serialNumber ?? 0) + 1;
+
+      return tx.appointment.create({
+        data: {
+          name,
+          phone,
+          email: emailText,
+          homeAddress,
+          problem: problemText,
+          preferredTime: slotCode,
+          appointmentDate: selectedDate,
+          serialNumber,
+        },
+      });
+    });
+
+    void sendAppointmentSms({
+      name,
+      phone,
+      serialNumber: newAppointment.serialNumber,
+      slotCode,
+    }).catch((smsError) => {
+      console.error("Failed to send appointment SMS:", smsError);
+    });
+
+    return res.status(201).json({
       success: true,
       message: "Appointment created successfully",
       appointment: toPublicAppointment(newAppointment),
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to create appointment",
-    });
+    return handleAppointmentError(res, error, "Failed to create appointment");
   }
 }
 
@@ -163,11 +121,11 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
   }
 
   try {
+    const status = parseAppointmentStatus(req.body.status);
+
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
-      data: {
-        status: req.body.status,
-      },
+      data: { status },
     });
 
     return res.status(200).json({
@@ -176,8 +134,7 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       appointment: toPublicAppointment(appointment),
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return handleAppointmentError(res, error, "Internal server error");
   }
 }
 
@@ -190,9 +147,7 @@ export async function cancelAppointment(req: Request, res: Response) {
   try {
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
-      data: {
-        status: AppointmentStatus.CANCEL,
-      },
+      data: { status: AppointmentStatus.CANCEL },
     });
 
     return res.status(200).json({
@@ -201,8 +156,7 @@ export async function cancelAppointment(req: Request, res: Response) {
       appointment: toPublicAppointment(appointment),
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return handleAppointmentError(res, error, "Internal server error");
   }
 }
 
@@ -213,11 +167,16 @@ export async function rescheduleAppointment(req: Request, res: Response) {
   }
 
   try {
+    const selectedDate = parseFutureAppointmentDate(
+      req.body.appointmentDate,
+      "appointmentDate",
+    );
+
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
       data: {
         status: AppointmentStatus.RESCHEDULED,
-        appointmentDate: new Date(req.body.appointmentDate),
+        appointmentDate: selectedDate,
       },
     });
 
@@ -227,15 +186,14 @@ export async function rescheduleAppointment(req: Request, res: Response) {
       appointment: toPublicAppointment(appointment),
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return handleAppointmentError(res, error, "Internal server error");
   }
 }
 
 export async function getAllAppointments(_req: Request, res: Response) {
   try {
     const appointments = await prisma.appointment.findMany({
-      orderBy: [{ appointmentDate: "desc" }, { preferredTime: "asc" }, { serialNumber: "asc" }],
+      orderBy: ALL_APPOINTMENTS_ORDER,
     });
 
     return res.status(200).json({
@@ -244,21 +202,19 @@ export async function getAllAppointments(_req: Request, res: Response) {
       appointments: toPublicAppointments(appointments),
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Failed to get appointments" });
+    return handleAppointmentError(res, error, "Failed to get appointments");
   }
 }
 
 export async function getAppointmentsByDay(req: Request, res: Response) {
   try {
-    const date = routeParamString(req.params.date);
-    if (!date) {
+    const dateParam = routeParamString(req.params.date);
+    if (!dateParam) {
       return res.status(400).json({ success: false, message: "Invalid date" });
     }
 
-    const selectedDate = new Date(date);
-
-    if (Number.isNaN(selectedDate.getTime())) {
+    const selectedDate = parseAppointmentDate(dateParam);
+    if (!selectedDate) {
       return res.status(400).json({ success: false, message: "Invalid date" });
     }
 
@@ -267,7 +223,7 @@ export async function getAppointmentsByDay(req: Request, res: Response) {
       where: {
         appointmentDate: { gte: dayStart, lte: dayEnd },
       },
-      orderBy: [{ preferredTime: "asc" }, { serialNumber: "asc" }],
+      orderBy: DAY_APPOINTMENT_ORDER,
     });
 
     return res.status(200).json({
@@ -276,38 +232,26 @@ export async function getAppointmentsByDay(req: Request, res: Response) {
       appointments: toPublicAppointments(appointments),
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Failed to get appointments" });
+    return handleAppointmentError(res, error, "Failed to get appointments");
   }
 }
 
 export async function getAppointmentsByMonth(req: Request, res: Response) {
   try {
-    const month = routeParamString(req.params.month);
-    const year = routeParamString(req.params.year);
-    const monthNum = month ? Number(month) : NaN;
-    const yearNum = year ? Number(year) : NaN;
-
-    if (!monthNum || !yearNum) {
+    const range = parseMonthYear(
+      routeParamString(req.params.month),
+      routeParamString(req.params.year),
+    );
+    if (!range) {
       return res.status(400).json({ success: false, message: "Invalid month or year" });
     }
 
-    const startDate = new Date(yearNum, monthNum - 1, 1);
-    const endDate = new Date(yearNum, monthNum, 0, 23, 59, 59, 999);
-
     const appointments = await prisma.appointment.findMany({
       where: {
-        appointmentDate: { gte: startDate, lte: endDate },
+        appointmentDate: { gte: range.startDate, lte: range.endDate },
       },
       orderBy: { appointmentDate: "asc" },
     });
-
-    if (appointments.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No appointments found for the specified month",
-      });
-    }
 
     return res.status(200).json({
       success: true,
@@ -315,43 +259,37 @@ export async function getAppointmentsByMonth(req: Request, res: Response) {
       appointments: toPublicAppointments(appointments),
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Failed to get appointments" });
+    return handleAppointmentError(res, error, "Failed to get appointments");
   }
 }
 
 export async function getAppointmentsByMonthForCalendar(req: Request, res: Response) {
   try {
-    const month = routeParamString(req.params.month);
-    const year = routeParamString(req.params.year);
-    const monthNum = month ? Number(month) : NaN;
-    const yearNum = year ? Number(year) : NaN;
-
-    if (!monthNum || !yearNum) {
+    const range = parseMonthYear(
+      routeParamString(req.params.month),
+      routeParamString(req.params.year),
+    );
+    if (!range) {
       return res.status(400).json({ success: false, message: "Invalid month or year" });
     }
 
-    const startDate = new Date(yearNum, monthNum - 1, 1);
-    const endDate = new Date(yearNum, monthNum, 0, 23, 59, 59, 999);
-
     const appointments = await prisma.appointment.findMany({
       where: {
-        appointmentDate: { gte: startDate, lte: endDate },
+        appointmentDate: { gte: range.startDate, lte: range.endDate },
       },
       orderBy: { appointmentDate: "asc" },
+      select: {
+        id: true,
+        name: true,
+        appointmentDate: true,
+        preferredTime: true,
+      },
     });
-
-    if (appointments.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No appointments found for the specified month",
-      });
-    }
 
     const formattedAppointments = appointments.map((appointment) => ({
       id: appointment.id,
       name: appointment.name,
-      appointmentDate: new Date(appointment.appointmentDate),
+      appointmentDate: appointment.appointmentDate,
       preferredTime: toPublicAppointment(appointment).preferredTime,
     }));
 
@@ -361,8 +299,7 @@ export async function getAppointmentsByMonthForCalendar(req: Request, res: Respo
       appointments: formattedAppointments,
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Failed to get appointments" });
+    return handleAppointmentError(res, error, "Failed to get appointments");
   }
 }
 
@@ -390,25 +327,20 @@ export async function getAppointmentsById(req: Request, res: Response) {
       },
     });
 
-    if (appointment) {
-      const formattedDate = new Date(appointment.appointmentDate).toLocaleDateString("en-GB");
-      return res.status(200).json({
-        success: true,
-        message: "Appointments fetched successfully",
-        appointment: toPublicAppointment({
-          ...appointment,
-          appointmentDate: formattedDate,
-        }),
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "No appointment found",
       });
     }
 
-    return res.status(404).json({
-      success: false,
-      message: "No appointment found",
+    return res.status(200).json({
+      success: true,
+      message: "Appointments fetched successfully",
+      appointment: toPublicAppointment(appointment),
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Failed to get appointments" });
+    return handleAppointmentError(res, error, "Failed to get appointments");
   }
 }
 
@@ -430,7 +362,6 @@ export async function getAppointmentsByPhone(req: Request, res: Response) {
       appointments: toPublicAppointments(appointments),
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Failed to get appointments" });
+    return handleAppointmentError(res, error, "Failed to get appointments");
   }
 }

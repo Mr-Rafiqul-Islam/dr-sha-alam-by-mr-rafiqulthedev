@@ -7,7 +7,6 @@ import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
 import { routeParamString } from "../../../utils/express-params.js";
-import { parseStringArray } from "../../../utils/parsers.js";
 
 export async function listBlogsForAdmin(req: Request, res: Response) {
   try {
@@ -250,7 +249,7 @@ export async function createBlog(req: Request, res: Response) {
       isFeatured,
       published,
       views,
-      comments: parseStringArray(body.comments),
+      comments: body.comments as string[],
     };
 
     if ("meta" in body) {
@@ -412,7 +411,7 @@ export async function updateBlog(req: Request, res: Response) {
     }
 
     if ("comments" in body) {
-      data.comments = { set: parseStringArray(body.comments) };
+      data.comments = { set: body.comments as string[] };
     }
 
     if ("meta" in body) {

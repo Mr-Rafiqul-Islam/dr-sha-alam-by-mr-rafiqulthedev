@@ -7,7 +7,6 @@ import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
 import { routeParamString } from "../../../utils/express-params.js";
-import { parseIntInRange } from "../../../utils/parsers.js";
 import { toPublicBlog } from "../../../modules/blogs/blogs.mapper.js";
 
 const DEFAULT_LIMIT = 50;
@@ -19,7 +18,7 @@ export async function listBlogs(req: Request, res: Response) {
     const offsetRaw = req.query.offset;
     let limit =
       limitRaw != null && limitRaw !== ""
-        ? parseIntInRange(limitRaw, 1, MAX_LIMIT)
+        ? parseInt(limitRaw as string, 10)
         : DEFAULT_LIMIT;
     if (limit === null) {
       return res.status(400).json({
@@ -29,8 +28,8 @@ export async function listBlogs(req: Request, res: Response) {
     }
     let offset = 0;
     if (offsetRaw != null && offsetRaw !== "") {
-      const o = parseIntInRange(offsetRaw, 0, 1_000_000);
-      if (o === null) {
+      const o = parseInt(offsetRaw as string, 10);
+      if (isNaN(o)) {
         return res.status(400).json({
           success: false,
           message: "offset must be a non‑negative integer",
