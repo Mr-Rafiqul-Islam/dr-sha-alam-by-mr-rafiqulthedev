@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 import { cn } from "../../lib/cn";
 
-type BadgeVariant = "pending" | "confirmed" | "neutral";
+export type BadgeVariant =
+  | "pending"
+  | "confirmed"
+  | "attend"
+  | "cancel"
+  | "rescheduled"
+  | "neutral";
 
 type BadgeProps = {
   variant?: BadgeVariant;
@@ -14,7 +20,14 @@ const variantClasses: Record<BadgeVariant, string> = {
     "bg-tertiary-fixed text-on-tertiary-fixed-variant border-tertiary-fixed-dim/30",
   confirmed:
     "bg-secondary-fixed text-on-secondary-fixed-variant border-secondary-fixed-dim/30",
-  neutral: "bg-surface-container-low text-primary-container border-outline-variant/30",
+  attend:
+    "bg-primary-fixed text-on-primary-fixed-variant border-primary-fixed-dim/30",
+  cancel:
+    "bg-error-container text-on-error-container border-error/30",
+  rescheduled:
+    "bg-surface-container-high text-on-surface-variant border-outline-variant/40",
+  neutral:
+    "bg-surface-container-low text-primary-container border-outline-variant/30",
 };
 
 export function Badge({ variant = "neutral", children, className }: BadgeProps) {

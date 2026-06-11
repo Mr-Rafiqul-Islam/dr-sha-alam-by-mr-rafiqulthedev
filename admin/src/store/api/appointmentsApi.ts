@@ -1,0 +1,44 @@
+import type {
+  Appointment,
+  AppointmentResponse,
+  AppointmentsListResponse,
+  AppointmentStatus,
+} from "../../types/appointment";
+import { baseApi } from "./baseApi";
+
+export const appointmentsApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getAppointments: builder.query<Appointment[], void>({
+      query: () => "/api/v1/admin/appointments",
+      transformResponse: (response: AppointmentsListResponse) =>
+        response.appointments,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: "Appointment" as const, id })),
+              { type: "Appointment", id: "LIST" },
+            ]
+          : [{ type: "Appointment", id: "LIST" }],
+    }),
+    updateAppointmentStatus: builder.mutation<
+      Appointment,
+      { id: string; status: AppointmentStatus }
+    >({
+      query: ({ id, status }) => ({
+        url: `/api/v1/admin/appointments/${id}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      transformResponse: (response: AppointmentResponse) => response.appointment,
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Appointment", id },
+        { type: "Appointment", id: "LIST" },
+      ],
+    }),
+  }),
+});
+
+export const {
+  useGetAppointmentsQuery,
+  useUpdateAppointmentStatusMutation,
+} = appointmentsApi;

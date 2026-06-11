@@ -5,9 +5,9 @@ import type { FormFieldConfig } from "../../types/form";
 
 const TIME_SLOT_OPTIONS = [
   { value: "", label: "Select Time Slot", disabled: true },
-  { value: "plid-9am", label: "PLID (Present at - 9:00 AM)" },
-  { value: "old-plid-4pm", label: "Old PLID (Present at - 4:00 PM)" },
-  { value: "general-5pm", label: "Genreral Patient (Present at - 5:00 PM)" },
+  { value: "P-9", label: "PLID (Present at - 9:00 AM)" },
+  { value: "OP-4", label: "Old PLID (Present at - 4:00 PM)" },
+  { value: "G-5", label: "Genreral Patient (Present at - 5:00 PM)" },
 ] as const;
 
 const appointmentSchema = z.object({
@@ -82,24 +82,24 @@ const defaultValues: AppointmentFormData = {
 type AppointmentFormProps = {
   onSubmit: (data: AppointmentFormData) => void | Promise<void>;
   isSubmitting?: boolean;
+  submitLabel?: string;
 };
 
-export function AppointmentForm({ onSubmit, isSubmitting }: AppointmentFormProps) {
+export function AppointmentForm({
+  onSubmit,
+  isSubmitting,
+  submitLabel = "Book Appointment",
+}: AppointmentFormProps) {
   return (
     <CommonForm
       schema={appointmentSchema}
       defaultValues={defaultValues}
       fields={appointmentFields}
-      submitLabel="Book Appointment"
+      submitLabel={submitLabel}
       onSubmit={onSubmit}
       isSubmitting={isSubmitting}
       submitWrapperClassName="pt-2"
       submitClassName="w-full justify-center"
-      formFooter={
-        <p className="text-center text-label-sm text-on-surface-variant mt-4">
-          By booking, you agree to our Terms of Service and Privacy Policy.
-        </p>
-      }
     />
   );
 }
