@@ -2,16 +2,45 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   AppointmentForm,
-  type AppointmentFormData,
 } from "../components/appointments/AppointmentForm";
 import { Button, Icon, PageHeader } from "../components/common";
+import { useCreateAppointmentMutation } from "../store/api/appointmentsApi";
+import type { AppointmentFormData } from "../types/appointment";
+import { toCreateAppointmentPayload } from "../utils/appointment";
+
+function getApiErrorMessage(error: unknown): string {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "data" in error &&
+    typeof error.data === "object" &&
+    error.data !== null &&
+    "message" in error.data &&
+    typeof error.data.message === "string"
+  ) {
+    return error.data.message;
+  }
+
+  return "Failed to create appointment";
+}
 
 export function CreateAppointmentPage() {
   const navigate = useNavigate();
+  const [createAppointment, { isLoading }] = useCreateAppointmentMutation();
 
-  const handleSubmit = (data: AppointmentFormData) => {
-    console.log("New appointment:", data);
-    toast.success("Appointment data captured — check console");
+  const handleSubmit = async (data: AppointmentFormData) => {
+    try {
+      const appointment = await createAppointment(
+        toCreateAppointmentPayload(data),
+      ).unwrap();
+
+      toast.success(
+        `Appointment created for ${appointment.name} (Serial #${appointment.serialNumber})`,
+      );
+      navigate("/appointments");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error));
+    }
   };
 
   return (
@@ -34,6 +63,7 @@ export function CreateAppointmentPage() {
       <div className="mx-auto max-w-2xl rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-6 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
         <AppointmentForm
           submitLabel="Create Appointment"
+          isSubmitting={isLoading}
           onSubmit={handleSubmit}
         />
       </div>

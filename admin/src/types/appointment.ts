@@ -36,3 +36,24 @@ export type AppointmentResponse = {
   message: string;
   appointment: Appointment;
 };
+
+export type AppointmentFormData = {
+  patientName: string;
+  phone: string;
+  email: string;
+  homeAddress: string;
+  symptoms?: string;
+  preferredDate: string;
+  preferredTime: string;
+};
+
+/** Payload shape for POST /api/v1/client/appointments */
+export type CreateAppointmentPayload = {
+  fullName: string;
+  phoneNumber: string;
+  email?: string;
+  homeAddress: string;
+  problem?: string;
+  preferredDate: string;
+  preferredTime: string;
+};

@@ -1,13 +1,18 @@
 import { z } from "zod";
 
 import { CommonForm } from "../forms";
+import type { AppointmentFormData } from "../../types/appointment";
 import type { FormFieldConfig } from "../../types/form";
+import { isFutureDateYmd } from "../../utils/appointment";
+
+export type { AppointmentFormData } from "../../types/appointment";
+
 
 const TIME_SLOT_OPTIONS = [
   { value: "", label: "Select Time Slot", disabled: true },
   { value: "P-9", label: "PLID (Present at - 9:00 AM)" },
   { value: "OP-4", label: "Old PLID (Present at - 4:00 PM)" },
-  { value: "G-5", label: "Genreral Patient (Present at - 5:00 PM)" },
+  { value: "G-5", label: "General Patient (Present at - 5:00 PM)" },
 ] as const;
 
 const appointmentSchema = z.object({
@@ -19,11 +24,18 @@ const appointmentSchema = z.object({
   ]),
   homeAddress: z.string().min(1, "Home address is required"),
   symptoms: z.string().optional(),
-  preferredDate: z.string().min(1, "Preferred date is required"),
-  preferredTime: z.string().min(1, "Preferred time is required"),
+  preferredDate: z
+    .string()
+    .min(1, "Preferred date is required")
+    .refine(isFutureDateYmd, "Only future dates are allowed"),
+  preferredTime: z
+    .string()
+    .min(1, "Preferred time is required")
+    .refine(
+      (value) => ["P-9", "OP-4", "G-5"].includes(value),
+      "Select a valid time slot",
+    ),
 });
-
-export type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
 const appointmentFields: FormFieldConfig[] = [
   {
@@ -48,7 +60,7 @@ const appointmentFields: FormFieldConfig[] = [
     name: "homeAddress",
     label: "Home Address *",
     type: "text",
-    placeholder: "Kalighat, Sreemangal, Sylhet",
+    placeholder: "Dhaka, Bangladesh",
   },
   {
     name: "symptoms",

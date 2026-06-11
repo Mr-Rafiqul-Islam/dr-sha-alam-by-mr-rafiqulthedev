@@ -1,6 +1,7 @@
 export { Avatar } from "./Avatar";
 export { Badge } from "./Badge";
 export { Button } from "./Button";
+export { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 export { Icon } from "./Icon";
 export { Modal } from "./Modal";
 export { Input } from "./Input";

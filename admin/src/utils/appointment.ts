@@ -1,6 +1,8 @@
 import type {
   Appointment,
+  AppointmentFormData,
   AppointmentStatus,
+  CreateAppointmentPayload,
   SiteRef,
 } from "../types/appointment";
 import type { BadgeVariant } from "../components/common/Badge";
@@ -92,6 +94,40 @@ export const APPOINTMENT_STATUS_OPTIONS: Array<{
   { value: "RESCHEDULED", label: "Rescheduled" },
   { value: "CANCEL", label: "Cancelled" },
 ];
+
+export function toCreateAppointmentPayload(
+  data: AppointmentFormData,
+): CreateAppointmentPayload {
+  return {
+    fullName: data.patientName.trim(),
+    phoneNumber: data.phone.trim(),
+    homeAddress: data.homeAddress.trim(),
+    preferredDate: data.preferredDate,
+    preferredTime: data.preferredTime,
+    ...(data.email.trim() ? { email: data.email.trim() } : {}),
+    ...(data.symptoms?.trim() ? { problem: data.symptoms.trim() } : {}),
+  };
+}
+
+export function isFutureDateYmd(value: string): boolean {
+  const [year, month, day] = value.split("-").map(Number);
+  const selected = new Date(year, month - 1, day);
+  selected.setHours(0, 0, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return selected.getTime() > today.getTime();
+}
+
+export function getTomorrowYmd(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const year = tomorrow.getFullYear();
+  const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+  const day = String(tomorrow.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 export function getTodayYmd(): string {
   const now = new Date();

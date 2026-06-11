@@ -5,6 +5,7 @@ import {
   Avatar,
   Badge,
   Button,
+  DeleteConfirmationModal,
   Icon,
   Modal,
   PageHeader,
@@ -20,6 +21,7 @@ import { AppointmentFilters } from "../components/appointments/AppointmentFilter
 import { AppointmentStats } from "../components/appointments/AppointmentStats";
 import { AppointmentViewModal } from "../components/appointments/AppointmentViewModal";
 import {
+  useDeleteAppointmentMutation,
   useGetAppointmentsQuery,
   useUpdateAppointmentStatusMutation,
 } from "../store/api/appointmentsApi";
@@ -43,6 +45,8 @@ export function AppointmentsPage() {
   const [todayOnly, setTodayOnly] = useState(false);
   const [editingAppointment, setEditingAppointment] =
     useState<Appointment | null>(null);
+  const [deletingAppointment, setDeletingAppointment] =
+    useState<Appointment | null>(null);
   const [viewingAppointment, setViewingAppointment] =
     useState<Appointment | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus | "">(
@@ -53,6 +57,8 @@ export function AppointmentsPage() {
     useGetAppointmentsQuery();
   const [updateStatus, { isLoading: isUpdating }] =
     useUpdateAppointmentStatusMutation();
+  const [deleteAppointment, { isLoading: isDeleting }] =
+    useDeleteAppointmentMutation();
 
   const filteredAppointments = filterAppointments(appointments, {
     search,
@@ -82,6 +88,10 @@ export function AppointmentsPage() {
     setSelectedStatus("");
   };
 
+  const closeDeleteModal = () => {
+    setDeletingAppointment(null);
+  };
+
   const openViewModal = (appointment: Appointment) => {
     setViewingAppointment(appointment);
   };
@@ -102,6 +112,18 @@ export function AppointmentsPage() {
       closeStatusModal();
     } catch {
       toast.error("Failed to update appointment status");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingAppointment) return;
+
+    try {
+      await deleteAppointment({ id: deletingAppointment.id }).unwrap();
+      toast.success("Appointment deleted successfully");
+      closeDeleteModal();
+    } catch {
+      toast.error("Failed to delete appointment");
     }
   };
 
@@ -197,6 +219,15 @@ export function AppointmentsPage() {
         </div>
       </Modal>
 
+      <DeleteConfirmationModal
+        open={deletingAppointment !== null}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title="Delete Appointment"
+        itemName={deletingAppointment?.name}
+        isLoading={isDeleting}
+      />
+
       <AppointmentViewModal
         appointment={viewingAppointment}
         onClose={closeViewModal}
@@ -226,7 +257,7 @@ export function AppointmentsPage() {
                     <TableHead>Patient Name</TableHead>
                     <TableHead>Contact Info</TableHead>
                     <TableHead>Date &amp; Time</TableHead>
-                    <TableHead>Symptoms/Problem</TableHead>
+                    <TableHead>Problems</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -313,6 +344,7 @@ export function AppointmentsPage() {
                               size="sm"
                               className="hover:text-error hover:bg-error-container/50"
                               aria-label="Delete appointment"
+                              onClick={() => setDeletingAppointment(appointment)}
                             >
                               <Icon name="delete" size={20} />
                             </Button>

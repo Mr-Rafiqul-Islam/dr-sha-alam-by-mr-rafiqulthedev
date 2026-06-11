@@ -3,6 +3,7 @@ import type {
   AppointmentResponse,
   AppointmentsListResponse,
   AppointmentStatus,
+  CreateAppointmentPayload,
 } from "../../types/appointment";
 import { baseApi } from "./baseApi";
 
@@ -20,6 +21,15 @@ export const appointmentsApi = baseApi.injectEndpoints({
             ]
           : [{ type: "Appointment", id: "LIST" }],
     }),
+    createAppointment: builder.mutation<Appointment, CreateAppointmentPayload>({
+      query: (body) => ({
+        url: "/api/v1/client/appointments",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: AppointmentResponse) => response.appointment,
+      invalidatesTags: [{ type: "Appointment", id: "LIST" }],
+    }),
     updateAppointmentStatus: builder.mutation<
       Appointment,
       { id: string; status: AppointmentStatus }
@@ -35,10 +45,25 @@ export const appointmentsApi = baseApi.injectEndpoints({
         { type: "Appointment", id: "LIST" },
       ],
     }),
+    deleteAppointment: builder.mutation<
+      { success: boolean; message: string },
+      { id: string }
+    >({
+      query: ({ id }) => ({
+        url: `/api/v1/admin/appointments/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Appointment", id },
+        { type: "Appointment", id: "LIST" },
+      ],
+    }),
   }),
 });
 
 export const {
   useGetAppointmentsQuery,
+  useCreateAppointmentMutation,
   useUpdateAppointmentStatusMutation,
+  useDeleteAppointmentMutation,
 } = appointmentsApi;
