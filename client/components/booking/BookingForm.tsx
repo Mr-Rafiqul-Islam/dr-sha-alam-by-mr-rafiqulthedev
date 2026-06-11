@@ -86,7 +86,7 @@ export default function BookingForm() {
                     <option>Select Time Slot</option>
                     <option>PLID (Present at - 9:00 AM)</option>
                     <option>Old PLID (Present at - 4:00 PM)</option>
-                    <option>Genreral Patient (Present at - 5:00 PM)</option>
+                    <option>General Patient (Present at - 5:00 PM)</option>
                   </select>
                   <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                     expand_more

@@ -10,7 +10,7 @@ export default function HomeBlogSection() {
           <div className="text-center mb-16">
             <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">Health Insights</h2>
             <h3 className="text-3xl md:text-4xl font-extrabold text-primary dark:text-white">Latest Articles</h3>
-            <p className="text-text-sub mt-4 max-w-2xl mx-auto">Expert advice on maintaining joint health, improving posture, and living a pain-free life naturally.</p>
+            <p className="text-text-sub mt-4 max-w-2xl mx-auto">Evidence-based articles from Dr. Shah Alam on spine care, joint health, therapeutic yoga, posture correction, nutrition, and natural recovery strategies to help you move better and live pain-free.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <article className="flex flex-col bg-white dark:bg-surface-dark rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group">

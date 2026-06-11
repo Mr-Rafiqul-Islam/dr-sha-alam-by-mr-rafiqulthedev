@@ -9,7 +9,10 @@ export default function HomeContactSection() {
           <div className="bg-primary rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col lg:flex-row">
             <div className="lg:w-1/2 p-10 lg:p-16 bg-white dark:bg-surface-dark">
               <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-2">Get in Touch</h2>
-              <h3 className="text-3xl font-extrabold text-primary dark:text-white mb-8">Start Your Recovery Today</h3>
+              <h3 className="text-3xl font-extrabold text-primary dark:text-white mb-2">Start Your Recovery Journey Today</h3>
+              <p className="text-text-sub text-lg mb-8">
+              Book your consultation and receive personalized guidance for your condition.
+              </p>
               <form className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
@@ -22,14 +25,15 @@ export default function HomeContactSection() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-text-main dark:text-gray-300">Service Needed</label>
+                  <label className="block text-sm font-bold text-text-main dark:text-gray-300">Help Needed</label>
                   <div className="relative">
                     <select className="w-full px-5 py-3.5 rounded-xl bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all appearance-none">
-                      <option>General Consultation</option>
-                      <option>Back Pain Therapy</option>
-                      <option>Neck Pain Therapy</option>
-                      <option>Post-Op Rehab</option>
-                      <option>Other</option>
+                      <option value="general-consultation">General Consultation</option>
+                      <option value="plid-consultation">PLID Consultation</option>
+                      <option value="emergency-consultation">Emergency Consultation</option>
+                      <option value="technical-support">Technical Support</option>
+                      <option value="collaboration">Collaboration</option>
+                      <option value="feedback">Feedback</option>
                     </select>
                     <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">expand_more</span>
                   </div>
@@ -55,10 +59,10 @@ export default function HomeContactSection() {
                         <span className="material-symbols-outlined">location_on</span>
                       </div>
                       <div>
-                        <p className="font-bold mb-1">Visit Our Clinic</p>
+                        <p className="font-bold mb-1">TruCare Diagnostic Centre</p>
                         <p className="text-white/80 text-sm leading-relaxed">
-                          House 42, Road 7, Sector 3<br/>
-                          Uttara, Dhaka - 1230, Bangladesh
+                        49, Mohakhali, Beside Square Centre, Wireless Gate,<br/>
+                          Mohakhali, Dhaka 1212, Bangladesh
                         </p>
                       </div>
                     </div>
@@ -69,8 +73,13 @@ export default function HomeContactSection() {
                       <div>
                         <p className="font-bold mb-1">Call Us</p>
                         <p className="text-white/80 text-sm leading-relaxed">
-                          +880 1701313001<br/>
-                          info@drshahalam.com
+                        09613-668866
+                        <br/>
+                        01701-313001
+                        <br/>
+                        01701-313002
+                        <br/>
+                        help@doctorshahalam.com
                         </p>
                       </div>
                     </div>
@@ -81,7 +90,7 @@ export default function HomeContactSection() {
                       <div>
                         <p className="font-bold mb-1">Working Hours</p>
                         <p className="text-white/80 text-sm leading-relaxed">
-                          Sat - Thu: 10:00 AM - 9:00 PM<br/>
+                          Sat - Thu: 8:00 AM – 10:00 PM<br/>
                           Friday: Closed
                         </p>
                       </div>
