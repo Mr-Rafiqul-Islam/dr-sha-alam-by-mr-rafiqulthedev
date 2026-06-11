@@ -9,7 +9,3 @@ patientReviewsClientRouter.get(
   patientReviewsClient.getAllPatientReviewVideos,
 );
 patientReviewsClientRouter.post("/", patientReviewsClient.submitPatientReview);
-patientReviewsClientRouter.get(
-  "/:id/video",
-  patientReviewsClient.getPatientReviewVideo,
-);

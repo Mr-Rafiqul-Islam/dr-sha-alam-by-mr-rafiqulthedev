@@ -40,10 +40,10 @@ enum AttendTime {
   A05
 }
 
-enum PatientReviewVideoType {
-  MUX
-  EMBED
-  DIRECT
+enum MuxVideoStatus {
+  PROCESSING
+  READY
+  ERROR
 }
 
 enum PatientReviewStatus {
@@ -182,17 +182,14 @@ model PatientReview {
   imageUrl      String?
   imagePublicId String?
 
-  videoType PatientReviewVideoType?
-
-  muxUploadId       String?
-  muxAssetId        String?
-  muxPlaybackId     String?
-  muxPlaybackPolicy String? @default("signed")
-  videoThumbnailUrl String?
-  videoTitle        String?
-
-  embedPayload   Json?
-  directVideoUrl String?
+  muxUploadId          String?
+  mediaAssetId         String?
+  muxPlaybackId        String?
+  muxPlaybackPolicy    String?         @default("public")
+  muxVideoStatus       MuxVideoStatus?
+  videoThumbnailUrl    String?
+  videoTitle           String?
+  videoDurationSeconds Float?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -205,6 +202,9 @@ model SuccessStory {
   id        String              @id @default(uuid())
   status    PatientReviewStatus @default(PENDING)
   sortOrder Int                 @default(0)
+
+  patientName       String
+  patientReview     String
 
   age        Int
   rating     Int

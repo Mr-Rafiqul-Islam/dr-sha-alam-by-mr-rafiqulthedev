@@ -1,127 +1,94 @@
-import type {
-  PatientReview,
-  PatientReviewVideoType,
-} from "@prisma/client";
+import type { PatientReview } from "@prisma/client";
 
-/** Card-safe shape for public listings (no Mux upload/asset secrets). */
-export function toPublicReviewCard(r: PatientReview) {
+/** Strict public list: core review fields only. */
+export function toPublicReviewSimple(r: PatientReview) {
   return {
     id: r.id,
-    sortOrder: r.sortOrder,
     patientDisplayName: r.patientDisplayName,
     title: r.title,
     description: r.description,
     rating: r.rating,
-    imageUrl: r.imageUrl,
-    imagePublicId: r.imagePublicId,
-    videoType: r.videoType,
-    muxPlaybackId: r.muxPlaybackId,
-    muxPlaybackPolicy: r.muxPlaybackPolicy,
-    videoThumbnailUrl: r.videoThumbnailUrl,
-    videoTitle: r.videoTitle,
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
   };
 }
 
-export type PublicVideoPayload =
-  | {
-      type: "MUX";
-      muxPlaybackId: string | null;
-      muxPlaybackPolicy: string | null;
-      thumbnailUrl: string | null;
-      videoTitle: string | null;
-    }
-  | {
-      type: "EMBED";
-      embed: unknown;
-      thumbnailUrl: string | null;
-      videoTitle: string | null;
-    }
-  | {
-      type: "DIRECT";
-      directUrl: string;
-      thumbnailUrl: string | null;
-      videoTitle: string | null;
-    };
-
-export function toPublicVideoPayload(r: PatientReview): PublicVideoPayload | null {
-  const vt = r.videoType as PatientReviewVideoType | null;
-  if (!vt) return null;
-
-  switch (vt) {
-    case "MUX":
-      return {
-        type: "MUX",
-        muxPlaybackId: r.muxPlaybackId,
-        muxPlaybackPolicy: r.muxPlaybackPolicy,
-        thumbnailUrl: r.videoThumbnailUrl,
-        videoTitle: r.videoTitle,
-      };
-    case "EMBED":
-      return {
-        type: "EMBED",
-        embed: r.embedPayload,
-        thumbnailUrl: r.videoThumbnailUrl,
-        videoTitle: r.videoTitle,
-      };
-    case "DIRECT":
-      return {
-        type: "DIRECT",
-        directUrl: r.directVideoUrl ?? "",
-        thumbnailUrl: r.videoThumbnailUrl,
-        videoTitle: r.videoTitle,
-      };
-    default:
-      return null;
-  }
+export function formatDurationLabel(seconds: number | null | undefined): string | null {
+  if (seconds == null || !Number.isFinite(seconds) || seconds <= 0) return null;
+  const total = Math.round(seconds);
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return `${mins}:${String(secs).padStart(2, "0")}`;
 }
 
-/** Admin-facing video (Mux pipeline ids included for MUX). */
-export type AdminVideoPayload =
-  | {
-      type: "MUX";
-      muxPlaybackId: string | null;
-      muxPlaybackPolicy: string | null;
-      muxUploadId: string | null;
-      muxAssetId: string | null;
-      thumbnailUrl: string | null;
-      videoTitle: string | null;
-    }
-  | {
-      type: "EMBED";
-      embed: unknown;
-      thumbnailUrl: string | null;
-      videoTitle: string | null;
-    }
-  | {
-      type: "DIRECT";
-      directUrl: string;
-      thumbnailUrl: string | null;
-      videoTitle: string | null;
-    };
+export type PublicMuxVideo = {
+  muxPlaybackId: string;
+  playbackPolicy: "public";
+  thumbnailUrl: string | null;
+  durationSeconds: number | null;
+  durationLabel: string | null;
+  videoTitle: string | null;
+  status: "READY";
+};
 
-export function toAdminVideoPayload(r: PatientReview): AdminVideoPayload | null {
-  const pub = toPublicVideoPayload(r);
-  if (!pub) return null;
-  if (pub.type === "MUX") {
-    return {
-      type: "MUX",
-      muxPlaybackId: pub.muxPlaybackId,
-      muxPlaybackPolicy: pub.muxPlaybackPolicy,
-      muxUploadId: r.muxUploadId,
-      muxAssetId: r.muxAssetId,
-      thumbnailUrl: pub.thumbnailUrl,
-      videoTitle: pub.videoTitle,
-    };
-  }
-  return pub;
+export function toPublicMuxVideo(r: PatientReview): PublicMuxVideo | null {
+  if (!r.muxPlaybackId) return null;
+
+  return {
+    muxPlaybackId: r.muxPlaybackId,
+    playbackPolicy: "public",
+    thumbnailUrl: r.videoThumbnailUrl,
+    durationSeconds: r.videoDurationSeconds,
+    durationLabel: formatDurationLabel(r.videoDurationSeconds),
+    videoTitle: r.videoTitle,
+    status: "READY",
+  };
 }
 
-/**
- * Full review for admin UIs: core fields at the top level, playback-ready video
- * (and Mux asset ids) nested under `video`, or `video: null`.
- */
+/** One row for GET /patient-reviews/videos. */
+export function toPublicVideoListItem(r: PatientReview) {
+  const video = toPublicMuxVideo(r);
+  if (!video) return null;
+
+  return {
+    reviewId: r.id,
+    title: r.title,
+    video,
+  };
+}
+
+export type AdminMuxVideo = {
+  muxUploadId: string | null;
+  mediaAssetId: string | null;
+  muxPlaybackId: string | null;
+  playbackPolicy: string | null;
+  muxVideoStatus: string | null;
+  thumbnailUrl: string | null;
+  videoTitle: string | null;
+  durationSeconds: number | null;
+  durationLabel: string | null;
+};
+
+export function toAdminMuxVideo(r: PatientReview): AdminMuxVideo | null {
+  const hasVideo =
+    r.muxUploadId != null ||
+    r.mediaAssetId != null ||
+    r.muxPlaybackId != null ||
+    r.muxVideoStatus != null;
+
+  if (!hasVideo) return null;
+
+  return {
+    muxUploadId: r.muxUploadId,
+    mediaAssetId: r.mediaAssetId,
+    muxPlaybackId: r.muxPlaybackId,
+    playbackPolicy: r.muxPlaybackPolicy,
+    muxVideoStatus: r.muxVideoStatus,
+    thumbnailUrl: r.videoThumbnailUrl,
+    videoTitle: r.videoTitle,
+    durationSeconds: r.videoDurationSeconds,
+    durationLabel: formatDurationLabel(r.videoDurationSeconds),
+  };
+}
+
 export function toAdminReviewWithOptionalVideo(r: PatientReview) {
   return {
     id: r.id,
@@ -136,19 +103,6 @@ export function toAdminReviewWithOptionalVideo(r: PatientReview) {
     imagePublicId: r.imagePublicId,
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
-    video: toAdminVideoPayload(r),
-  };
-}
-
-/** One row for GET /patient-reviews/videos aggregate. */
-export function toPublicVideoListItem(r: PatientReview) {
-  const video = toPublicVideoPayload(r);
-  if (!video) return null;
-  return {
-    reviewId: r.id,
-    title: r.title,
-    patientDisplayName: r.patientDisplayName,
-    sortOrder: r.sortOrder,
-    video,
+    video: toAdminMuxVideo(r),
   };
 }

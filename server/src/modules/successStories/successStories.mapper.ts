@@ -4,6 +4,8 @@ export function toPublicSuccessStoryCard(s: SuccessStory) {
   return {
     id: s.id,
     sortOrder: s.sortOrder,
+    patientName: s.patientName,
+    patientReview: s.patientReview,
     age: s.age,
     rating: s.rating,
     problems: s.problems,

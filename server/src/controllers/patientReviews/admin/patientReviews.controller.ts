@@ -1,30 +1,31 @@
 /**
  * Admin HTTP API for `PatientReview` (Prisma). All routes require auth + admin role.
  *
- * Base path (see `routes/index.ts`): `GET|POST|PATCH /api/v1/admin/patient-reviews/...`
+ * Base path: `GET|POST|PATCH /api/v1/admin/patient-reviews/...`
  *
  * | Method | Path | Handler |
  * |--------|------|---------|
  * | GET | `/` | List reviews (flat Prisma rows). Query: `status` |
  * | GET | `/with-videos` | Same filter; each row includes nested `video` |
- * | POST | `/` | Create curated review (optional video fields per schema) |
+ * | POST | `/` | Create curated text/image review |
  * | PATCH | `/:id/status` | Set `status` to PENDING or ACTIVE |
- * | POST | `/:id/video` | Attach EMBED or DIRECT video only (not MUX) |
- * | POST | `/:id/video/mux-upload` | Mux upload URL (501 until media service wired) |
- *
- * Query `status`: omit or `ALL` = all; `ACTIVE`; `PENDING` or `INACTIVE` (unpublished).
+ * | POST | `/:id/thumbnail/upload` | Upload thumbnail (multipart `my_file`) |
+ * | POST | `/:id/video/mux-upload` | Mux direct upload URL (public playback) |
  */
 import type { Request, Response } from "express";
-import {
-  PatientReviewStatus,
-  PatientReviewVideoType,
-  Prisma,
-} from "@prisma/client";
+import multer from "multer";
+import { MuxVideoStatus, PatientReviewStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
-import { createMuxUploadViaMediaService } from "../../../services/media/muxUpload.stub.js";
+import { uploadImageBuffer } from "../../../services/cloudinary/cloudinary.service.js";
+import { createPatientReviewDirectUpload } from "../../../services/mux/muxUpload.service.js";
 import { routeParamString } from "../../../utils/index.js";
 import { parseRating } from "../../../utils/parsers.js";
 import { toAdminReviewWithOptionalVideo } from "../../../modules/patientReviews/patientReviews.mapper.js";
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 export async function listPatientReviewsForAdmin(req: Request, res: Response) {
   try {
@@ -120,13 +121,10 @@ export async function listPatientReviewsWithVideosForAdmin(
   }
 }
 
-/**
- * Curated create: defaults to ACTIVE unless `status: "PENDING"`.
- * Video optional — omit `videoType` and video fields for text-only (matches schema nulls).
- */
+/** Curated create: defaults to ACTIVE unless `status: "PENDING"`. Text/image only. */
 export async function createPatientReview(req: Request, res: Response) {
   try {
-    const body = req.body as Record<string, unknown>;
+    const body = (req.body ?? {}) as Record<string, unknown>;
 
     const description = String(body.description ?? "").trim();
     if (!description) {
@@ -177,130 +175,6 @@ export async function createPatientReview(req: Request, res: Response) {
       sortOrder = Math.trunc(so);
     }
 
-    let videoType: PatientReviewVideoType | null = null;
-    if (body.videoType != null && body.videoType !== "") {
-      const u = String(body.videoType).toUpperCase();
-      if (u === "MUX" || u === "EMBED" || u === "DIRECT") {
-        videoType = u as PatientReviewVideoType;
-      }
-    }
-
-    const thumb =
-      body.videoThumbnailUrl != null
-        ? String(body.videoThumbnailUrl).trim() || null
-        : null;
-    const vTitle =
-      body.videoTitle != null ? String(body.videoTitle).trim() || null : null;
-
-    let videoSlice: Pick<
-      Prisma.PatientReviewCreateInput,
-      | "videoType"
-      | "muxUploadId"
-      | "muxAssetId"
-      | "muxPlaybackId"
-      | "muxPlaybackPolicy"
-      | "videoThumbnailUrl"
-      | "videoTitle"
-      | "embedPayload"
-      | "directVideoUrl"
-    >;
-
-    if (!videoType) {
-      videoSlice = {
-        videoType: null,
-        muxUploadId: null,
-        muxAssetId: null,
-        muxPlaybackId: null,
-        muxPlaybackPolicy: null,
-        videoThumbnailUrl: null,
-        videoTitle: null,
-        embedPayload: Prisma.JsonNull,
-        directVideoUrl: null,
-      };
-    } else if (videoType === PatientReviewVideoType.MUX) {
-      const playbackPolicyRaw = body.muxPlaybackPolicy;
-      const muxPlaybackPolicy =
-        playbackPolicyRaw != null && String(playbackPolicyRaw).trim() !== ""
-          ? String(playbackPolicyRaw).trim()
-          : "signed";
-
-      videoSlice = {
-        videoType: PatientReviewVideoType.MUX,
-        muxUploadId:
-          body.muxUploadId != null
-            ? String(body.muxUploadId).trim() || null
-            : null,
-        muxAssetId:
-          body.muxAssetId != null
-            ? String(body.muxAssetId).trim() || null
-            : null,
-        muxPlaybackId:
-          body.muxPlaybackId != null
-            ? String(body.muxPlaybackId).trim() || null
-            : null,
-        muxPlaybackPolicy,
-        videoThumbnailUrl: thumb,
-        videoTitle: vTitle,
-        embedPayload: Prisma.JsonNull,
-        directVideoUrl: null,
-      };
-    } else if (videoType === PatientReviewVideoType.EMBED) {
-      let embed: Prisma.InputJsonValue | null = null;
-      const embedRaw = body.embedPayload ?? body.embed;
-      if (embedRaw != null) {
-        if (typeof embedRaw === "string") {
-          try {
-            embed = JSON.parse(embedRaw) as Prisma.InputJsonValue;
-          } catch {
-            embed = null;
-          }
-        } else if (typeof embedRaw === "object") {
-          embed = embedRaw as Prisma.InputJsonValue;
-        }
-      }
-
-      if (embed == null) {
-        return res.status(400).json({
-          success: false,
-          message: "embedPayload is required when videoType is EMBED",
-        });
-      }
-
-      videoSlice = {
-        videoType: PatientReviewVideoType.EMBED,
-        embedPayload: embed,
-        videoThumbnailUrl: thumb,
-        videoTitle: vTitle,
-        muxUploadId: null,
-        muxAssetId: null,
-        muxPlaybackId: null,
-        muxPlaybackPolicy: null,
-        directVideoUrl: null,
-      };
-    } else {
-      const url =
-        body.directVideoUrl != null ? String(body.directVideoUrl).trim() : "";
-
-      if (!url) {
-        return res.status(400).json({
-          success: false,
-          message: "directVideoUrl is required when videoType is DIRECT",
-        });
-      }
-
-      videoSlice = {
-        videoType: PatientReviewVideoType.DIRECT,
-        directVideoUrl: url,
-        videoThumbnailUrl: thumb,
-        videoTitle: vTitle,
-        muxUploadId: null,
-        muxAssetId: null,
-        muxPlaybackId: null,
-        muxPlaybackPolicy: null,
-        embedPayload: Prisma.JsonNull,
-      };
-    }
-
     let status: PatientReviewStatus = PatientReviewStatus.ACTIVE;
     if (body.status != null && String(body.status).toUpperCase() === "PENDING") {
       status = PatientReviewStatus.PENDING;
@@ -309,19 +183,14 @@ export async function createPatientReview(req: Request, res: Response) {
     const created = await prisma.patientReview.create({
       data: {
         status,
-        authorUserId: null,
         patientDisplayName,
         title,
         description,
         rating,
-        imageUrl,
-        imagePublicId,
-        sortOrder,
-        ...videoSlice,
       },
     });
 
-    res.status(201).json({ success: true, data: created });
+    res.status(201).json({ success: true, message: "Patient review created successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -382,155 +251,129 @@ export async function updatePatientReviewStatus(req: Request, res: Response) {
   }
 }
 
-export async function attachEmbedOrDirectVideo(req: Request, res: Response) {
+export async function uploadPatientReviewThumbnail(req: Request, res: Response) {
+  const id = routeParamString(req.params.id);
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      message: "Review id is required",
+    });
+  }
+
+  const file = req.file;
+  if (!file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Multipart field "my_file" is required',
+    });
+  }
+
   try {
-    const id = routeParamString(req.params.id);
-    if (!id) {
-      return res.status(400).json({
+    const existing = await prisma.patientReview.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({
         success: false,
-        message: "Review id is required",
-      });
-    }
-    const body = req.body as Record<string, unknown>;
-
-    let videoType: PatientReviewVideoType | null = null;
-    if (body.videoType != null && body.videoType !== "") {
-      const u = String(body.videoType).toUpperCase();
-      if (u === "MUX" || u === "EMBED" || u === "DIRECT") {
-        videoType = u as PatientReviewVideoType;
-      }
-    }
-
-    if (!videoType || videoType === PatientReviewVideoType.MUX) {
-      return res.status(400).json({
-        success: false,
-        message: 'videoType must be "EMBED" or "DIRECT" for this endpoint',
+        message: "Review not found",
       });
     }
 
-    const thumb =
-      body.videoThumbnailUrl != null
-        ? String(body.videoThumbnailUrl).trim() || null
-        : null;
-    const vTitle =
-      body.videoTitle != null ? String(body.videoTitle).trim() || null : null;
+    const uploaded = await uploadImageBuffer(file.buffer);
 
-    let slice: Pick<
-      Prisma.PatientReviewCreateInput,
-      | "videoType"
-      | "muxUploadId"
-      | "muxAssetId"
-      | "muxPlaybackId"
-      | "muxPlaybackPolicy"
-      | "videoThumbnailUrl"
-      | "videoTitle"
-      | "embedPayload"
-      | "directVideoUrl"
-    >;
-
-    if (videoType === PatientReviewVideoType.EMBED) {
-      let embed: Prisma.InputJsonValue | null = null;
-      const embedRaw = body.embedPayload ?? body.embed;
-      if (embedRaw != null) {
-        if (typeof embedRaw === "string") {
-          try {
-            embed = JSON.parse(embedRaw) as Prisma.InputJsonValue;
-          } catch {
-            embed = null;
-          }
-        } else if (typeof embedRaw === "object") {
-          embed = embedRaw as Prisma.InputJsonValue;
-        }
-      }
-
-      if (embed == null) {
-        return res.status(400).json({
-          success: false,
-          message: "embedPayload is required when videoType is EMBED",
-        });
-      }
-
-      slice = {
-        videoType: PatientReviewVideoType.EMBED,
-        embedPayload: embed,
-        videoThumbnailUrl: thumb,
-        videoTitle: vTitle,
-        muxUploadId: null,
-        muxAssetId: null,
-        muxPlaybackId: null,
-        muxPlaybackPolicy: null,
-        directVideoUrl: null,
-      };
-    } else {
-      const url =
-        body.directVideoUrl != null ? String(body.directVideoUrl).trim() : "";
-
-      if (!url) {
-        return res.status(400).json({
-          success: false,
-          message: "directVideoUrl is required when videoType is DIRECT",
-        });
-      }
-
-      slice = {
-        videoType: PatientReviewVideoType.DIRECT,
-        directVideoUrl: url,
-        videoThumbnailUrl: thumb,
-        videoTitle: vTitle,
-        muxUploadId: null,
-        muxAssetId: null,
-        muxPlaybackId: null,
-        muxPlaybackPolicy: null,
-        embedPayload: Prisma.JsonNull,
-      };
-    }
-
-    const updated = await prisma.patientReview.update({
+    await prisma.patientReview.update({
       where: { id },
-      data: { ...slice },
+      data: {
+        imageUrl: uploaded.optimizedUrl,
+        imagePublicId: uploaded.imageId,
+        videoThumbnailUrl: existing.videoThumbnailUrl ?? uploaded.optimizedUrl,
+      },
     });
 
-    res.json({ success: true, data: updated });
+    res.json({
+      success: true,
+      payload: {
+        imageId: uploaded.imageId,
+        optimizedUrl: uploaded.optimizedUrl,
+      },
+    });
   } catch (err) {
     console.error(err);
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === "P2025") {
-        return res.status(404).json({
-          success: false,
-          message: "Review not found",
-        });
-      }
+    if (err instanceof Error && err.message === "CLOUDINARY_NOT_CONFIGURED") {
+      return res.status(501).json({
+        success: false,
+        message: "Cloudinary is not configured on this service",
+      });
     }
     res.status(500).json({
       success: false,
-      message: "Failed to attach video",
+      message: "Failed to upload thumbnail",
     });
   }
 }
 
-/** Contract placeholder: returns 501 until Mux/media is configured (`muxUpload.stub.ts`). */
 export async function createMuxUploadForPatientReview(
   req: Request,
   res: Response,
 ) {
-  const adminId = req.admin?.id;
+  const id = routeParamString(req.params.id);
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      message: "Review id is required",
+    });
+  }
+
   const body = req.body as Record<string, unknown>;
+  const title =
+    body.title != null && String(body.title).trim() !== ""
+      ? String(body.title).trim()
+      : undefined;
 
   try {
-    await createMuxUploadViaMediaService({
-      title: body.title != null ? String(body.title) : "",
-      level: body.level != null ? String(body.level) : "",
-      access: body.access != null ? String(body.access) : "",
-      imageId: body.imageId != null ? String(body.imageId) : "",
-      playbackPolicy:
-        body.playbackPolicy != null ? String(body.playbackPolicy) : "signed",
-      adminId: adminId ?? (body.adminId != null ? String(body.adminId) : null),
+    const existing = await prisma.patientReview.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Review not found",
+      });
+    }
+
+    const muxResult = await createPatientReviewDirectUpload({
+      patientReviewId: id,
+      title: title ?? existing.videoTitle ?? existing.title,
+      playbackPolicy: "public",
     });
-  } catch {
-    return res.status(501).json({
+
+    await prisma.patientReview.update({
+      where: { id },
+      data: {
+        muxUploadId: muxResult.muxUploadId,
+        mediaAssetId: muxResult.mediaAssetId,
+        muxVideoStatus: MuxVideoStatus.PROCESSING,
+        muxPlaybackPolicy: "public",
+        videoTitle: title ?? existing.videoTitle ?? existing.title,
+      },
+    });
+
+    res.json({
+      success: true,
+      payload: {
+        mediaAssetId: muxResult.mediaAssetId,
+        uploadUrl: muxResult.uploadUrl,
+        muxUploadId: muxResult.muxUploadId,
+        status: muxResult.status,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    if (err instanceof Error && err.message === "MUX_NOT_CONFIGURED") {
+      return res.status(501).json({
+        success: false,
+        message: "Mux is not configured on this service",
+      });
+    }
+    res.status(500).json({
       success: false,
-      message:
-        "Video upload URL creation failed — Mux/media integration not configured on this service",
+      message: "Failed to create Mux upload URL",
     });
   }
 }

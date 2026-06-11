@@ -6,6 +6,7 @@
 import type { Request, Response } from "express";
 import { PatientReviewStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
+import { uploadImageBuffer } from "../../../services/cloudinary/cloudinary.service.js";
 import { routeParamString } from "../../../utils/index.js";
 import {
   parseAge,
@@ -60,6 +61,20 @@ export async function listSuccessStoriesForAdmin(req: Request, res: Response) {
 export async function createSuccessStory(req: Request, res: Response) {
   try {
     const body = req.body as Record<string, unknown>;
+
+    const patientName = String(body.patientName ?? "").trim();
+    if (!patientName) {
+      return res
+        .status(400)
+        .json({ success: false, message: "patientName is required" });
+    }
+
+    const patientReview = String(body.patientReview ?? "").trim();
+    if (!patientReview) {
+      return res
+        .status(400)
+        .json({ success: false, message: "patientReview is required" });
+    }
 
     const age = parseAge(body.age);
     if (age == null) {
@@ -124,6 +139,8 @@ export async function createSuccessStory(req: Request, res: Response) {
     const created = await prisma.successStory.create({
       data: {
         status,
+        patientName,
+        patientReview,
         age,
         rating,
         problems,
@@ -208,6 +225,20 @@ export async function updateSuccessStory(req: Request, res: Response) {
 
     const body = req.body as Record<string, unknown>;
 
+    const patientName = String(body.patientName ?? "").trim();
+    if (!patientName) {
+      return res
+        .status(400)
+        .json({ success: false, message: "patientName is required" });
+    }
+
+    const patientReview = String(body.patientReview ?? "").trim();
+    if (!patientReview) {
+      return res
+        .status(400)
+        .json({ success: false, message: "patientReview is required" });
+    }
+
     const age = parseAge(body.age);
     if (age == null) {
       return res
@@ -266,6 +297,8 @@ export async function updateSuccessStory(req: Request, res: Response) {
     const updated = await prisma.successStory.update({
       where: { id },
       data: {
+        patientName,
+        patientReview,
         age,
         rating,
         problems,
@@ -291,6 +324,64 @@ export async function updateSuccessStory(req: Request, res: Response) {
     res.status(500).json({
       success: false,
       message: "Failed to update success story",
+    });
+  }
+}
+
+export async function uploadSuccessStoryImage(req: Request, res: Response) {
+  const id = routeParamString(req.params.id);
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      message: "Success story id is required",
+    });
+  }
+
+  const file = req.file;
+  if (!file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Multipart field "drsa-file" is required',
+    });
+  }
+
+  try {
+    const existing = await prisma.successStory.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Success story not found",
+      });
+    }
+
+    const uploaded = await uploadImageBuffer(file.buffer, "success-stories");
+
+    await prisma.successStory.update({
+      where: { id },
+      data: {
+        imageUrl: uploaded.optimizedUrl,
+        imagePublicId: uploaded.imageId,
+      },
+    });
+
+    res.json({
+      success: true,
+      payload: {
+        imageId: uploaded.imageId,
+        optimizedUrl: uploaded.optimizedUrl,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    if (err instanceof Error && err.message === "CLOUDINARY_NOT_CONFIGURED") {
+      return res.status(501).json({
+        success: false,
+        message: "Cloudinary is not configured on this service",
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: "Failed to upload image",
     });
   }
 }
