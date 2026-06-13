@@ -7,6 +7,7 @@ import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
 import { routeParamString } from "../../../utils/express-params.js";
+import { parseCommaSeparatedField } from "../../../modules/blogs/parse-comma-separated.js";
 
 export async function listBlogsForAdmin(req: Request, res: Response) {
   try {
@@ -89,7 +90,7 @@ export async function listBlogsForAdmin(req: Request, res: Response) {
       where.published = publishedFilter;
     }
     if (categoryFilter != null) {
-      where.category = categoryFilter;
+      where.category = { has: categoryFilter };
     }
     if (!featuredAll && featuredFilter !== null) {
       where.isFeatured = featuredFilter;
@@ -141,19 +142,17 @@ export async function createBlog(req: Request, res: Response) {
   try {
     const body = req.body as Record<string, unknown>;
 
-    const requiredFields: Array<[keyof typeof body, string]> = [
+    const requiredStringFields: Array<[keyof typeof body, string]> = [
       ["title", "title"],
       ["shortDesc", "shortDesc"],
       ["content", "content"],
-      ["category", "category"],
-      ["author", "author"],
       ["slug", "slug"],
       ["image", "image"],
       ["imagePublicId", "imagePublicId"],
     ];
 
     const trimmed: Record<string, string> = {};
-    for (const [key, label] of requiredFields) {
+    for (const [key, label] of requiredStringFields) {
       const raw = body[key];
       if (raw === undefined || raw === null) {
         return res
@@ -167,6 +166,16 @@ export async function createBlog(req: Request, res: Response) {
           .json({ success: false, message: `${label} cannot be empty` });
       }
       trimmed[String(key)] = s;
+    }
+
+    const categoryParsed = parseCommaSeparatedField(body.category, "category");
+    if (!categoryParsed.ok) {
+      return res.status(400).json({ success: false, message: categoryParsed.message });
+    }
+
+    const authorParsed = parseCommaSeparatedField(body.author, "author");
+    if (!authorParsed.ok) {
+      return res.status(400).json({ success: false, message: authorParsed.message });
     }
 
     const featuredRaw = body.isFeatured;
@@ -241,8 +250,8 @@ export async function createBlog(req: Request, res: Response) {
       title: trimmed.title,
       shortDesc: trimmed.shortDesc,
       content: trimmed.content,
-      category: trimmed.category,
-      author: trimmed.author,
+      category: categoryParsed.values,
+      author: authorParsed.values,
       slug: trimmed.slug.trim().toLowerCase(),
       image: trimmed.image,
       imagePublicId: trimmed.imagePublicId,
@@ -305,13 +314,7 @@ export async function updateBlog(req: Request, res: Response) {
       [
         keyof Pick<
           Prisma.BlogUncheckedUpdateInput,
-          | "title"
-          | "shortDesc"
-          | "content"
-          | "category"
-          | "author"
-          | "image"
-          | "imagePublicId"
+          "title" | "shortDesc" | "content" | "image" | "imagePublicId"
         >,
         string,
       ]
@@ -319,8 +322,6 @@ export async function updateBlog(req: Request, res: Response) {
       ["title", "title"],
       ["shortDesc", "shortDesc"],
       ["content", "content"],
-      ["category", "category"],
-      ["author", "author"],
       ["image", "image"],
       ["imagePublicId", "imagePublicId"],
     ];
@@ -336,6 +337,22 @@ export async function updateBlog(req: Request, res: Response) {
           .json({ success: false, message: `${label} cannot be empty` });
       }
       (data as Record<string, string>)[field] = v;
+    }
+
+    if ("category" in body) {
+      const categoryParsed = parseCommaSeparatedField(body.category, "category");
+      if (!categoryParsed.ok) {
+        return res.status(400).json({ success: false, message: categoryParsed.message });
+      }
+      data.category = { set: categoryParsed.values };
+    }
+
+    if ("author" in body) {
+      const authorParsed = parseCommaSeparatedField(body.author, "author");
+      if (!authorParsed.ok) {
+        return res.status(400).json({ success: false, message: authorParsed.message });
+      }
+      data.author = { set: authorParsed.values };
     }
 
     if ("slug" in body) {

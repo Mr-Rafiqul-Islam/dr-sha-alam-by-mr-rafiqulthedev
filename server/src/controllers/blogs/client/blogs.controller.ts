@@ -89,7 +89,7 @@ export async function listBlogs(req: Request, res: Response) {
 
     const where: Prisma.BlogWhereInput = { published: true };
     if (categoryFilter != null) {
-      where.category = categoryFilter;
+      where.category = { has: categoryFilter };
     }
     if (!featuredAll && featuredFilter !== null) {
       where.isFeatured = featuredFilter;

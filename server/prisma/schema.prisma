@@ -174,8 +174,8 @@ model Blog {
   title      String
   shortDesc  String
   content    String
-  category   String
-  author     String
+  category   String[] @default([])
+  author     String[] @default([])
   views      Int      @default(0)
   comments   String[] @default([])
   isFeatured Boolean
@@ -191,7 +191,6 @@ model Blog {
   updatedAt DateTime @updatedAt
 
   @@index([published, createdAt])
-  @@index([category])
 }
 
 model PatientReview {

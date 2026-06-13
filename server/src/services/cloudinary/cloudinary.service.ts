@@ -47,3 +47,18 @@ export async function uploadImageBuffer(
     optimizedUrl: result.secure_url,
   };
 }
+
+export async function deleteImageByPublicId(
+  publicId: string,
+): Promise<"ok" | "not found"> {
+  ensureCloudinaryConfigured();
+
+  const result = await cloudinary.uploader.destroy(publicId, {
+    resource_type: "image",
+  });
+
+  if (result.result === "ok") return "ok";
+  if (result.result === "not found") return "not found";
+
+  throw new Error("Cloudinary delete failed");
+}
