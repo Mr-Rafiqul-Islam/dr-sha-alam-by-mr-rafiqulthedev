@@ -67,6 +67,12 @@ enum PatientReviewStatus {
   ACTIVE
 }
 
+enum ContactMessageStatus {
+  PENDING
+  IN_PROGRESS
+  READ
+}
+
 model User {
   id         String   @id @default(uuid())
   name       String?
@@ -292,4 +298,22 @@ model Purchase {
   @@index([provider])
   @@index([providerStatus])
   @@index([providerValId])
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  status    ContactMessageStatus @default(PENDING)
+
+  name      String
+  email     String?
+  phone     String
+
+  subject   String
+  message   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([phone])
 }

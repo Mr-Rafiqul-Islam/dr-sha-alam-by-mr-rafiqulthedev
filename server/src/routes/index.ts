@@ -3,6 +3,8 @@ import { appointmentAdminRouter } from "./appointment/admin/appointment.routes.j
 import { appointmentClientRouter } from "./appointment/client/appointment.routes.js";
 import { blogsAdminRouter } from "./blogs/admin/blogs.routes.js";
 import { blogsClientRouter } from "./blogs/client/blogs.routes.js";
+import { contactAdminRouter } from "./contact/admin/contact.routes.js";
+import { contactClientRouter } from "./contact/client/contact.routes.js";
 
 
 /**
@@ -13,4 +15,6 @@ export function mountRoutes(app: Express): void {
   app.use("/api/v1/admin/appointments", appointmentAdminRouter);
   app.use("/api/v1/client/blogs", blogsClientRouter);
   app.use("/api/v1/admin/blogs", blogsAdminRouter);
+  app.use("/api/v1/client/contact-messages", contactClientRouter);
+  app.use("/api/v1/admin/contact-messages", contactAdminRouter);
 }
