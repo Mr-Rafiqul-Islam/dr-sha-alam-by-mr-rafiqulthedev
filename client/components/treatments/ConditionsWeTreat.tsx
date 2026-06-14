@@ -3,22 +3,25 @@ import Link from 'next/link';
 
 export default function ConditionsWeTreat() {
   const conditions = [
-    'Arthritis',
+    'PLID (Disc Prolapse)',
+    'Sciatica',
+    'Back Pain',
+    'Neck Pain',
+    'Cervical Spondylosis',
     'Frozen Shoulder',
-    'Tennis Elbow',
-    'Plantar Fasciitis',
-    'Spondylolisthesis',
+    'Shoulder Pain',
+    'Knee Osteoarthritis',
     'Sports Injuries',
-    'Osteoporosis',
-    'Knee Pain',
-    'Hip Pain'
+    'Plantar Fasciitis',
+    'Hip Pain',
+    'Joint Disorders'
   ];
 
   return (
     <section className="py-20 bg-white dark:bg-surface-dark">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <ScrollReveal direction="up">
-          <h2 className="text-3xl font-extrabold text-primary dark:text-white mb-10">Conditions We Treat</h2>
+          <h2 className="text-3xl font-extrabold text-primary dark:text-white mb-10">Conditions We Frequently Manage</h2>
         </ScrollReveal>
         <ScrollReveal direction="up" delay={0.1} className="flex flex-wrap justify-center gap-3">
           {conditions.map((condition, index) => (
