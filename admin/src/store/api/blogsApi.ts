@@ -78,6 +78,21 @@ export const blogsApi = baseApi.injectEndpoints({
         ],
       },
     ),
+    setBlogFeatured: builder.mutation<
+      Blog,
+      { id: string; isFeatured: boolean }
+    >({
+      query: ({ id, isFeatured }) => ({
+        url: `/api/v1/admin/blogs/${id}/featured`,
+        method: "PATCH",
+        body: { isFeatured },
+      }),
+      transformResponse: (response: BlogResponse) => response.data,
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Blog", id },
+        { type: "Blog", id: "LIST" },
+      ],
+    }),
     uploadBlogImage: builder.mutation<
       BlogImageUploadResponse["payload"],
       File
@@ -140,6 +155,7 @@ export const {
   useCreateBlogMutation,
   useUpdateBlogMutation,
   useDeleteBlogMutation,
+  useSetBlogFeaturedMutation,
   useUploadBlogImageMutation,
   useDeleteBlogImageMutation,
 } = blogsApi;

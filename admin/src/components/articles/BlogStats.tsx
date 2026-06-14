@@ -31,7 +31,7 @@ export function BlogStats({ blogs }: BlogStatsProps) {
       />
       <StatCard
         icon={<Icon name="star" size={24} />}
-        label="Featured Blogs"
+        label="Featured Blog"
         value={stats.featured}
         iconBgClassName="bg-primary-fixed/40 text-primary-container"
       />

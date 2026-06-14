@@ -26,7 +26,7 @@ export function BlogViewModal({ blog, onClose }: BlogViewModalProps) {
             <img
               src={blog.image}
               alt={blog.title}
-              className="aspect-[16/9] w-full rounded-lg object-cover"
+              className="aspect-video w-full rounded-lg object-cover"
             />
           ) : null}
           <div className="flex flex-wrap gap-2">

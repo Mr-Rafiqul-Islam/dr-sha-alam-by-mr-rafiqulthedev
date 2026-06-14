@@ -27,7 +27,6 @@ const blogFormSchema = z.object({
   category: z.string().trim().min(1, "Category is required"),
   author: z.string().trim().min(1, "Author is required"),
   published: z.boolean(),
-  isFeatured: z.boolean(),
   image: z.string().trim().min(1, "Featured image is required"),
   imagePublicId: z.string().trim().min(1, "Featured image is required"),
   metaTitle: z.string(),
@@ -254,20 +253,6 @@ export const ArticleForm = forwardRef<ArticleFormRef, ArticleFormProps>(
                     id="published"
                     label="Published"
                     description="Show on live website"
-                    checked={field.value}
-                    onChange={field.onChange}
-                    disabled={isSubmitting}
-                  />
-                )}
-              />
-              <Controller
-                name="isFeatured"
-                control={control}
-                render={({ field }) => (
-                  <ToggleSwitch
-                    id="isFeatured"
-                    label="Featured"
-                    description="Pin to top of blog home"
                     checked={field.value}
                     onChange={field.onChange}
                     disabled={isSubmitting}

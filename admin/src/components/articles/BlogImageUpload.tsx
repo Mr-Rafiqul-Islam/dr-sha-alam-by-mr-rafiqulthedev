@@ -117,7 +117,7 @@ export function BlogImageUpload({
           <img
             src={image}
             alt="Featured"
-            className="aspect-[16/10] w-full object-cover"
+            className="aspect-16/10 w-full object-cover"
           />
           <div className="absolute right-2 top-2 flex gap-2">
             <Button

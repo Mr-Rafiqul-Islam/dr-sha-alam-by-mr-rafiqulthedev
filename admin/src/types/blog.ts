@@ -63,7 +63,6 @@ export type CreateBlogPayload = {
   slug: string;
   image: string;
   imagePublicId: string;
-  isFeatured: boolean;
   published?: boolean;
   meta?: BlogMeta | null;
   notes?: string | Record<string, unknown> | null;
@@ -79,7 +78,6 @@ export type BlogFormData = {
   category: string;
   author: string;
   published: boolean;
-  isFeatured: boolean;
   image: string;
   imagePublicId: string;
   metaTitle: string;
@@ -91,8 +89,7 @@ export type BlogFormData = {
 export type BlogStatusFilter = "" | "published" | "draft";
 
 export type BlogFilterState = {
-  title: string;
-  category: string;
+  search: string;
   author: string;
   status: BlogStatusFilter;
 };

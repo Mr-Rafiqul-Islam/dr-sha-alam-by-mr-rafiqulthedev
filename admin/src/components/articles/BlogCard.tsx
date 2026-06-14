@@ -1,11 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { Avatar, Badge, Button, Icon } from "../common";
-import { cn } from "../../lib/cn";
 import type { Blog } from "../../types/blog";
 import {
   formatBlogDate,
   formatList,
-  getBlogLiveStatus,
   getBlogStatusLabel,
   getInitials,
 } from "../../utils/blog";
@@ -14,15 +12,15 @@ type BlogCardProps = {
   blog: Blog;
   onView: (blog: Blog) => void;
   onDelete: (blog: Blog) => void;
+  onToggleFeatured: (blog: Blog) => void;
 };
 
-export function BlogCard({ blog, onView, onDelete }: BlogCardProps) {
+export function BlogCard({ blog, onView, onDelete, onToggleFeatured }: BlogCardProps) {
   const navigate = useNavigate();
-  const status = getBlogLiveStatus(blog);
 
   return (
     <article className="flex flex-col overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
-      <div className="relative aspect-[16/10] overflow-hidden bg-surface-container-high">
+      <div className="relative aspect-16/10 overflow-hidden bg-surface-container-high">
         {blog.image ? (
           <img
             src={blog.image}
@@ -59,7 +57,7 @@ export function BlogCard({ blog, onView, onDelete }: BlogCardProps) {
           {blog.title}
         </h3>
 
-        <div className="mt-3 flex items-center gap-4 text-label-sm text-on-surface-variant">
+        {/* <div className="mt-3 flex items-center gap-4 text-label-sm text-on-surface-variant">
           <span className="inline-flex items-center gap-1">
             <Icon name="visibility" size={16} />
             {blog.views}
@@ -72,9 +70,9 @@ export function BlogCard({ blog, onView, onDelete }: BlogCardProps) {
             <span className={cn("size-2 rounded-full", status.dotClass)} />
             {status.label}
           </span>
-        </div>
+        </div> */}
 
-        <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+        <div className="mt-auto flex items-center justify-between gap-3 pt-1">
           <div className="flex min-w-0 items-center gap-2">
             <Avatar initials={getInitials(blog.author[0] ?? "")} size="sm" />
             <span className="truncate text-label-sm font-medium text-on-surface">
@@ -86,6 +84,7 @@ export function BlogCard({ blog, onView, onDelete }: BlogCardProps) {
               variant="icon"
               size="sm"
               aria-label="View blog"
+              title="View blog"
               onClick={() => onView(blog)}
             >
               <Icon name="visibility" size={18} />
@@ -94,6 +93,7 @@ export function BlogCard({ blog, onView, onDelete }: BlogCardProps) {
               variant="icon"
               size="sm"
               aria-label="Edit blog"
+              title="Edit blog"
               onClick={() => navigate(`/articles/${blog.id}/edit`)}
             >
               <Icon name="edit" size={18} />
@@ -101,7 +101,26 @@ export function BlogCard({ blog, onView, onDelete }: BlogCardProps) {
             <Button
               variant="icon"
               size="sm"
+              aria-label={blog.isFeatured ? "Remove featured" : "Set as featured"}
+              title={blog.isFeatured ? "Remove featured" : "Set as featured"}
+              onClick={() => onToggleFeatured(blog)}
+              className={
+                blog.isFeatured
+                  ? "text-primary hover:bg-primary-container/20"
+                  : "hover:bg-primary-container/10 hover:text-primary"
+              }
+            >
+              <Icon
+                name={blog.isFeatured ? "star" : "star_outline"}
+                size={18}
+                filled={blog.isFeatured}
+              />
+            </Button>
+            <Button
+              variant="icon"
+              size="sm"
               aria-label="Delete blog"
+              title="Delete blog"
               onClick={() => onDelete(blog)}
               className="hover:bg-error-container/20 hover:text-error"
             >

@@ -41,15 +41,16 @@ export function formatList(values: string[]): string {
 }
 
 export function filterBlogs(blogs: Blog[], filters: BlogFilterState): Blog[] {
-  const titleQuery = filters.title.trim().toLowerCase();
+  const searchQuery = filters.search.trim().toLowerCase();
 
   return blogs.filter((blog) => {
-    if (titleQuery && !blog.title.toLowerCase().includes(titleQuery)) {
-      return false;
-    }
+    if (searchQuery) {
+      const matchesTitle = blog.title.toLowerCase().includes(searchQuery);
+      const matchesShortDesc = blog.shortDesc.toLowerCase().includes(searchQuery);
 
-    if (filters.category && !blog.category.includes(filters.category)) {
-      return false;
+      if (!matchesTitle && !matchesShortDesc) {
+        return false;
+      }
     }
 
     if (filters.author && !blog.author.includes(filters.author)) {
@@ -112,7 +113,7 @@ export function getInitials(name: string): string {
 
 export function collectUniqueValues(
   blogs: Blog[],
-  key: "category" | "author",
+  key: "author",
 ): string[] {
   const values = new Set<string>();
   for (const blog of blogs) {
@@ -166,7 +167,6 @@ export function blogToFormData(blog: Blog): BlogFormData {
     category: blog.category.join(", "),
     author: blog.author.join(", "),
     published: blog.published,
-    isFeatured: blog.isFeatured,
     image: blog.image,
     imagePublicId: blog.imagePublicId,
     metaTitle: meta.title ?? "",
@@ -197,7 +197,6 @@ export function toCreateBlogPayload(
     slug: slugify(data.slug || data.title),
     image: data.image,
     imagePublicId: data.imagePublicId,
-    isFeatured: data.isFeatured,
     published,
     meta: hasMeta ? meta : {},
     notes: data.notes.trim() || null,

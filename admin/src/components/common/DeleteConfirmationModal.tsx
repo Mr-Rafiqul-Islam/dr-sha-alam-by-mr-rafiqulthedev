@@ -9,6 +9,8 @@ type DeleteConfirmationModalProps = {
   itemName?: string;
   description?: string;
   confirmLabel?: string;
+  confirmLoadingLabel?: string;
+  confirmClassName?: string;
   isLoading?: boolean;
 };
 
@@ -20,6 +22,8 @@ export function DeleteConfirmationModal({
   itemName,
   description,
   confirmLabel = "Delete",
+  confirmLoadingLabel = "Deleting...",
+  confirmClassName = "bg-error text-on-error hover:bg-error/90 shadow-sm hover:shadow-md",
   isLoading = false,
 }: DeleteConfirmationModalProps) {
   const bodyText =
@@ -39,9 +43,9 @@ export function DeleteConfirmationModal({
           <Button
             onClick={onConfirm}
             disabled={isLoading}
-            className="bg-error text-on-error hover:bg-error/90 shadow-sm hover:shadow-md"
+            className={confirmClassName}
           >
-            {isLoading ? "Deleting..." : confirmLabel}
+            {isLoading ? confirmLoadingLabel : confirmLabel}
           </Button>
         </div>
       </div>

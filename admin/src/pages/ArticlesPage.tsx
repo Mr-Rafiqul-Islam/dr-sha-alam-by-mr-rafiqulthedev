@@ -16,12 +16,12 @@ import {
   Pagination,
 } from "../components/common";
 import {
-  BLOG_CATEGORIES,
   DEFAULT_BLOG_AUTHOR,
 } from "../constants/blog";
 import {
   useDeleteBlogMutation,
   useGetBlogsQuery,
+  useSetBlogFeaturedMutation,
 } from "../store/api/blogsApi";
 import type { Blog, BlogFilterState } from "../types/blog";
 import {
@@ -34,8 +34,7 @@ import {
 const PAGE_SIZE = 9;
 
 const DEFAULT_FILTERS: BlogFilterState = {
-  title: "",
-  category: "",
+  search: "",
   author: "",
   status: "",
 };
@@ -46,20 +45,23 @@ export function ArticlesPage() {
   const [filters, setFilters] = useState<BlogFilterState>(DEFAULT_FILTERS);
   const [viewingBlog, setViewingBlog] = useState<Blog | null>(null);
   const [deletingBlog, setDeletingBlog] = useState<Blog | null>(null);
+  const [featuringBlog, setFeaturingBlog] = useState<Blog | null>(null);
 
   const { data: blogs = [], isLoading, isError, error } = useGetBlogsQuery();
   const [deleteBlog, { isLoading: isDeleting }] = useDeleteBlogMutation();
+  const [setBlogFeatured, { isLoading: isUpdatingFeatured }] =
+    useSetBlogFeaturedMutation();
+
+  const currentFeaturedBlog = useMemo(
+    () => blogs.find((blog) => blog.isFeatured) ?? null,
+    [blogs],
+  );
 
   useEffect(() => {
     if (isError) {
       toast.error(getApiErrorMessage(error, "Failed to load blogs"));
     }
   }, [isError, error]);
-
-  const categories = useMemo(
-    () => mergeOptions(BLOG_CATEGORIES, collectUniqueValues(blogs, "category")),
-    [blogs],
-  );
 
   const authors = useMemo(() => {
     const fromData = collectUniqueValues(blogs, "author");
@@ -101,6 +103,37 @@ export function ArticlesPage() {
     }
   };
 
+  const handleFeaturedConfirm = async () => {
+    if (!featuringBlog) return;
+
+    const nextFeatured = !featuringBlog.isFeatured;
+
+    try {
+      await setBlogFeatured({
+        id: featuringBlog.id,
+        isFeatured: nextFeatured,
+      }).unwrap();
+      toast.success(
+        nextFeatured
+          ? `"${featuringBlog.title}" is now featured`
+          : `Featured status removed from "${featuringBlog.title}"`,
+      );
+      setFeaturingBlog(null);
+    } catch (err) {
+      toast.error(
+        getApiErrorMessage(err, "Failed to update featured status"),
+      );
+    }
+  };
+
+  const featuredModalDescription = featuringBlog
+    ? featuringBlog.isFeatured
+      ? `Remove featured status from "${featuringBlog.title}"? It will no longer appear as the featured blog on the site.`
+      : currentFeaturedBlog && currentFeaturedBlog.id !== featuringBlog.id
+        ? `Set "${featuringBlog.title}" as the featured blog? "${currentFeaturedBlog.title}" will no longer be featured.`
+        : `Set "${featuringBlog.title}" as the featured blog on the site home page?`
+    : undefined;
+
   return (
     <>
       <PageHeader
@@ -120,7 +153,6 @@ export function ArticlesPage() {
 
       <BlogFilters
         filters={filters}
-        categories={categories}
         authors={authors}
         onChange={handleFilterChange}
         onReset={handleResetFilters}
@@ -139,6 +171,7 @@ export function ArticlesPage() {
                 blog={blog}
                 onView={setViewingBlog}
                 onDelete={setDeletingBlog}
+                onToggleFeatured={setFeaturingBlog}
               />
             ))}
             <NewBlogCard />
@@ -170,6 +203,28 @@ export function ArticlesPage() {
         title="Delete blog?"
         itemName={deletingBlog ? `"${deletingBlog.title}"` : undefined}
         isLoading={isDeleting}
+      />
+
+      <DeleteConfirmationModal
+        open={!!featuringBlog}
+        onClose={() => setFeaturingBlog(null)}
+        onConfirm={handleFeaturedConfirm}
+        title={
+          featuringBlog?.isFeatured ? "Remove featured?" : "Set as featured?"
+        }
+        description={featuredModalDescription}
+        confirmLabel={
+          featuringBlog?.isFeatured ? "Remove featured" : "Set featured"
+        }
+        confirmLoadingLabel={
+          featuringBlog?.isFeatured ? "Removing..." : "Setting..."
+        }
+        confirmClassName={
+          featuringBlog?.isFeatured
+            ? "bg-error text-on-error hover:bg-error/90 shadow-sm hover:shadow-md"
+            : "bg-primary text-on-primary hover:bg-primary/90 shadow-sm hover:shadow-md"
+        }
+        isLoading={isUpdatingFeatured}
       />
     </>
   );

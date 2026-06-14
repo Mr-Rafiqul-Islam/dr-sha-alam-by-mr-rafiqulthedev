@@ -4,7 +4,6 @@ import type { BlogFilterState, BlogStatusFilter } from "../../types/blog";
 
 type BlogFiltersProps = {
   filters: BlogFilterState;
-  categories: string[];
   authors: string[];
   onChange: (filters: BlogFilterState) => void;
   onReset: () => void;
@@ -17,44 +16,26 @@ const selectClass = cn(
 
 export function BlogFilters({
   filters,
-  categories,
   authors,
   onChange,
   onReset,
 }: BlogFiltersProps) {
   const hasActiveFilters =
-    filters.title.trim() !== "" ||
-    filters.category !== "" ||
+    filters.search.trim() !== "" ||
     filters.author !== "" ||
     filters.status !== "";
 
   return (
     <div className="mb-stack-lg flex flex-col gap-3 rounded-xl border border-outline-variant/30 bg-surface-container-low p-4 lg:flex-row lg:items-center">
       <Input
-        value={filters.title}
+        value={filters.search}
         onChange={(event) =>
-          onChange({ ...filters, title: event.target.value })
+          onChange({ ...filters, search: event.target.value })
         }
-        placeholder="Blog Title"
+        placeholder="Search title or short description"
         leftIcon={<Icon name="search" size={20} />}
         className="min-w-0 flex-1"
       />
-
-      <select
-        value={filters.category}
-        onChange={(event) =>
-          onChange({ ...filters, category: event.target.value })
-        }
-        className={cn(selectClass, "min-w-0 flex-1 lg:max-w-[200px]")}
-        aria-label="Filter by category"
-      >
-        <option value="">Category</option>
-        {categories.map((category) => (
-          <option key={category} value={category}>
-            {category}
-          </option>
-        ))}
-      </select>
 
       <select
         value={filters.author}
