@@ -178,7 +178,7 @@ model Blog {
   author     String[] @default([])
   views      Int      @default(0)
   comments   String[] @default([])
-  isFeatured Boolean
+  isFeatured Boolean  @default(false)
   slug       String   @unique
   meta       Json?    @default("{}")
   notes      Json?

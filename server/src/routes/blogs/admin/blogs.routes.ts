@@ -1,4 +1,5 @@
 import { Router } from "express";
+import * as blogFeatured from "../../../controllers/blogs/admin/blog-featured.controller.js";
 import * as blogsAdmin from "../../../controllers/blogs/admin/blogs.controller.js";
 import {
   requireAuth,
@@ -24,5 +25,6 @@ blogsAdminRouter.post(
 blogsAdminRouter.delete("/upload-image", handleBlogImageDelete);
 blogsAdminRouter.get("/:id", blogsAdmin.getBlogByIdForAdmin);
 blogsAdminRouter.post("/", blogsAdmin.createBlog);
+blogsAdminRouter.patch("/:id/featured", blogFeatured.setBlogFeatured);
 blogsAdminRouter.patch("/:id", blogsAdmin.updateBlog);
 blogsAdminRouter.delete("/:id", blogsAdmin.deleteBlog);

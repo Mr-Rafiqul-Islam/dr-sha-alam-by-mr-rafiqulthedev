@@ -178,27 +178,6 @@ export async function createBlog(req: Request, res: Response) {
       return res.status(400).json({ success: false, message: authorParsed.message });
     }
 
-    const featuredRaw = body.isFeatured;
-    let isFeatured: boolean | null = null;
-    if (featuredRaw === undefined || featuredRaw === null || featuredRaw === "") {
-      isFeatured = null;
-    } else if (typeof featuredRaw === "boolean") {
-      isFeatured = featuredRaw;
-    } else if (typeof featuredRaw === "number") {
-      if (featuredRaw === 1) isFeatured = true;
-      else if (featuredRaw === 0) isFeatured = false;
-    } else if (typeof featuredRaw === "string") {
-      const t = featuredRaw.trim().toLowerCase();
-      if (t === "true" || t === "1" || t === "yes") isFeatured = true;
-      else if (t === "false" || t === "0" || t === "no") isFeatured = false;
-    }
-    if (isFeatured === null) {
-      return res.status(400).json({
-        success: false,
-        message: "isFeatured must be a boolean (true/false)",
-      });
-    }
-
     let published = false;
     const publishedRaw = body.published;
     if (
@@ -255,7 +234,7 @@ export async function createBlog(req: Request, res: Response) {
       slug: trimmed.slug.trim().toLowerCase(),
       image: trimmed.image,
       imagePublicId: trimmed.imagePublicId,
-      isFeatured,
+      isFeatured: false,
       published,
       views,
       comments: body.comments as string[],
@@ -368,26 +347,11 @@ export async function updateBlog(req: Request, res: Response) {
       }
     }
 
-    if ("isFeatured" in body && body.isFeatured !== undefined) {
-      const raw = body.isFeatured;
-      let b: boolean | null = null;
-      if (raw === null || raw === "") b = null;
-      else if (typeof raw === "boolean") b = raw;
-      else if (typeof raw === "number") {
-        if (raw === 1) b = true;
-        else if (raw === 0) b = false;
-      } else if (typeof raw === "string") {
-        const t = raw.trim().toLowerCase();
-        if (t === "true" || t === "1" || t === "yes") b = true;
-        else if (t === "false" || t === "0" || t === "no") b = false;
-      }
-      if (b === null) {
-        return res.status(400).json({
-          success: false,
-          message: "isFeatured must be a boolean (true/false)",
-        });
-      }
-      data.isFeatured = b;
+    if ("isFeatured" in body) {
+      return res.status(400).json({
+        success: false,
+        message: "Use PATCH /:id/featured to change featured status",
+      });
     }
 
     if ("published" in body) {
