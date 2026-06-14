@@ -6,9 +6,9 @@ export default function VisualEvidence() {
     <section className="py-20 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="text-center mb-16">
-          <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">See What's Possible</h2>
+          <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">See What&apos;s Possible</h2>
           <h3 className="text-3xl md:text-4xl font-extrabold text-primary dark:text-white">Real Progress. Real Recovery. Real Confidence.</h3>
-          <p className="text-text-sub max-w-2xl mx-auto text-sm lg:text-base mt-2">Recovery is not just about reducing pain. It's about restoring movement, improving function, and helping patients return to the activities they love.</p>
+          <p className="text-text-sub max-w-2xl mx-auto text-sm lg:text-base mt-2">Recovery is not just about reducing pain. It&apos;s about restoring movement, improving function, and helping patients return to the activities they love.</p>
         </ScrollReveal>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <ScrollReveal direction="up" delay={0.1} className="bg-background-light dark:bg-background-dark p-6 rounded-3xl">

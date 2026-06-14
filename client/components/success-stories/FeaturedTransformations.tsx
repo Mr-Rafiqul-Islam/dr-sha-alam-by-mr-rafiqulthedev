@@ -142,7 +142,7 @@ export default function FeaturedTransformations() {
                 work and personal life. I feared permanent nerve damage and
                 worried that surgery was inevitable. After understanding my
                 condition and following the recovery plan consistently, my
-                symptoms improved dramatically. Today, I'm back to work and
+                symptoms improved dramatically. Today, I&apos;m back to work and
                 living an active life again.&quot;
               </p>
               <div

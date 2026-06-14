@@ -49,7 +49,7 @@ export default function BookAppointment() {
                 Book Appointment
               </h1>
               <p className="text-base text-text-sub max-w-2xl mx-auto lg:mx-0 font-medium">
-                Whether you're suffering from PLID, sciatica, back pain, neck
+                Whether you&apos;re suffering from PLID, sciatica, back pain, neck
                 pain, joint pain, or movement limitations, Dr. Shah Alam will
                 help you understand your condition, explore your treatment
                 options, and choose the right path toward recovery.
