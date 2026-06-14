@@ -6,7 +6,7 @@ export default function VideoTestimonials() {
     <section className="py-20 bg-background-light dark:bg-background-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="text-center mb-12">
-          <h3 className="text-2xl md:text-3xl font-bold text-text-main dark:text-white">Hear It Directly From Them</h3>
+          <h3 className="text-2xl md:text-3xl font-bold text-text-main dark:text-white">Hear Their Recovery Stories In Their Own Words</h3>
         </ScrollReveal>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <ScrollReveal direction="up" delay={0.1}>
