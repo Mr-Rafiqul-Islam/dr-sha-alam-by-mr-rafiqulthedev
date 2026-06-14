@@ -19,10 +19,10 @@ export default function Footer() {
             </div>
             <div className="space-y-3 pt-2">
               <p className="text-gray-400 text-sm leading-relaxed">
-                House 42, Road 7, Sector 3 Uttara, Dhaka - 1230, Bangladesh
+              49, Mohakhali, Beside Square Centre, Wireless Gate, Mohakhali, Dhaka 1212, Bangladesh
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Chamber Time: Sat—Thu, 9AM—5PM
+                Chamber Time: Sat—Thu, 9AM—8PM
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Phone: +880 1701313001
