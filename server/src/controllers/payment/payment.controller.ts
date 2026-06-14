@@ -1,5 +1,5 @@
 import { validateSSLPayment } from "../../lib/sslPayment.js";
-import db from "../../lib/db.js";
+import { prisma } from "../../config/db.js";
 import SSLCommerzPayment from "sslcommerz-lts";
 import axios from "axios";
 import dotenv from "dotenv";
@@ -73,7 +73,7 @@ export const startPayment = async (req, res) => {
         };
 
         // Save initial payment
-        await db.payment.create({
+        await prisma.payment.create({
             data: {
                 tranId,
                 userId: userId || null,
@@ -125,7 +125,7 @@ export const paymentSuccess = async (req, res) => {
             return res.redirect(`${process.env.FRONTEND_URL}/payment-failed?error=no_tranId`);
         }
 
-        const payment = await db.payment.findUnique({ where: { tranId } });
+        const payment = await prisma.payment.findUnique({ where: { tranId } });
 
         if (!payment) {
             return res.redirect(`${process.env.FRONTEND_URL}/payment-failed?error=invalid_transaction`);
@@ -219,9 +219,9 @@ export const paymentSuccess = async (req, res) => {
         dayEnd.setHours(23, 59, 59, 999);
 
         // Count how many appointments already exist for that doctor on that date
-        const todayCount = await db.appointment.count({
+        const todayCount = await prisma.appointment.count({
             where: {
-                doctorId: payment.doctorId,
+                doctorId: payment.doctorId as string,
                 appointmentDate: {
                     gte: dayStart,
                     lte: dayEnd,
@@ -243,19 +243,20 @@ export const paymentSuccess = async (req, res) => {
         }
 
 
-        const newAppointment = await db.appointment.create({
+        const newAppointment = await prisma.appointment.create({
             data: {
-                userId: payment.userId,
-                doctorId: payment.doctorId,
-                ...appointmentData,
-                appointmentDate: new Date(appointmentData.appointmentDate),
-                status: "CONFIRMED",
+                name: appointmentData.name,
+                phone: appointmentData.phone,
+                homeAddress: appointmentData.location,
+                problem: appointmentData.problem || "PLID",
+                preferredTime: appointmentData.attendTime || "M10",
+                appointmentDate: new Date(appointmentData.appointmentDate)
             },
         });
 
 
         // Update payment
-        await db.payment.update({
+        await prisma.payment.update({
             where: { tranId },
             data: {
                 status: "SUCCESS",
@@ -315,7 +316,7 @@ export const paymentSuccess = async (req, res) => {
 export const paymentFail = async (req, res) => {
     const { tranId } = req.query;
 
-    await db.payment.update({
+    await prisma.payment.update({
         where: { tranId },
         data: { status: "FAILED" },
     });
@@ -329,7 +330,7 @@ export const paymentFail = async (req, res) => {
 export const paymentCancel = async (req, res) => {
     const { tranId } = req.query;
 
-    await db.payment.update({
+    await prisma.payment.update({
         where: { tranId },
         data: { status: "CANCELLED" },
     });
