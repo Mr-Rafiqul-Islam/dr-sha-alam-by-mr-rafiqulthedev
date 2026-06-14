@@ -5,10 +5,12 @@ export default function ContactForm() {
     <div className="bg-background-light dark:bg-background-dark p-8 md:p-10 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-primary dark:text-white mb-2">
-          Request an Appointment
+          Send Us A Message
         </h2>
         <p className="text-text-sub text-sm">
-          Fill out the form below and we will get back to you shortly.
+          Have questions about your condition, treatment options, MRI findings,
+          online consultation, or appointment booking?<br /> Fill out the form below
+          and our team will get back to you as soon as possible.
         </p>
       </div>
       <form className="space-y-6">
@@ -29,7 +31,7 @@ export default function ContactForm() {
         </div>
         <div className="space-y-2">
           <label className="block text-sm font-bold text-text-main dark:text-gray-300">
-            Phone Number
+          Phone / WhatsApp Number
           </label>
           <div className="relative">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
@@ -44,7 +46,7 @@ export default function ContactForm() {
         </div>
         <div className="space-y-2">
           <label className="block text-sm font-bold text-text-main dark:text-gray-300">
-            Help Needed
+          How Can We Help You?
           </label>
           <div className="relative">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none">
@@ -57,14 +59,14 @@ export default function ContactForm() {
               <option disabled value="">
                 Select a Service
               </option>
-              <option value="general-consultation">General Consultation</option>
               <option value="plid-consultation">PLID Consultation</option>
-              <option value="emergency-consultation">
-                Emergency Consultation
+              <option value="general-consultation">General Consultation</option>
+              <option value="online-consultation">
+                Online Consultation
               </option>
+              <option value="yoga-program">Yoga Program</option>
               <option value="technical-support">Technical Support</option>
               <option value="collaboration">Collaboration</option>
-              <option value="feedback">Feedback</option>
             </select>
             <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
               expand_more
@@ -83,7 +85,7 @@ export default function ContactForm() {
         </div>
         <button className="w-full bg-[#00CBC0] hover:bg-accent-dark text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-accent/30 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
           <span className="material-symbols-outlined">send</span>
-          Send Message
+          Send My Request
         </button>
       </form>
     </div>

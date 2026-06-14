@@ -10,23 +10,23 @@ export default function TreatmentsHero() {
           <ScrollReveal direction="up" className="text-center lg:text-left space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-sm text-sm font-semibold text-primary">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-              Advanced Care
+              ORTHOPEDIC & SPINE CARE
             </div>
             <h1 className="text-4xl lg:text-6xl font-extrabold text-primary dark:text-white leading-tight">
-              Treatments
+            Find The Right Treatment Before It&apos;s Too Late
             </h1>
             <p className="text-xl lg:text-2xl font-medium text-text-main dark:text-gray-200">
               Evidence-Based Orthopedic Treatments for Long-Term Healing
             </p>
             <p className="text-base text-text-sub max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Discover our comprehensive range of non-invasive therapies tailored to restore your mobility and eliminate chronic pain without surgery.
+            Helping patients recover from PLID, sciatica, back pain, neck pain, and joint disorders through evidence-based medical care, therapeutic yoga, lifestyle modification, advanced pain management, and surgery only when truly necessary.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
               <Link href="/book" className="bg-primary hover:bg-primary-dark text-white text-base font-bold h-12 px-8 rounded-full transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 flex items-center justify-center">
-                Book Appointment
+              Book Consultation
               </Link>
               <Link href="/contact" className="bg-white border border-gray-200 hover:border-primary text-text-main hover:text-primary text-base font-bold h-12 px-8 rounded-full transition-all shadow-sm flex items-center justify-center">
-                Contact Now
+              Talk To Our Team
               </Link>
             </div>
           </ScrollReveal>

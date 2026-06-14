@@ -4,32 +4,36 @@ export default function TreatmentJourney() {
   const steps = [
     {
       icon: 'clinical_notes',
-      title: '1. Consultation',
-      description: 'Initial meeting to understand your history and pain points.'
+      title: '1. Comprehensive Assessment',
+      description:
+        'Careful evaluation of symptoms, medical history, examination findings, and investigations.',
     },
     {
       icon: 'radiology',
-      title: '2. Diagnosis',
-      description: 'Precise physical examination and review of reports.'
+      title: '2. Accurate Diagnosis',
+      description:
+        'Understanding the true cause of pain and functional limitations.',
     },
     {
       icon: 'medical_services',
-      title: '3. Treatment Plan',
-      description: 'Customized therapy, yoga, and medication plan.'
+      title: '3. Personalized Treatment Plan',
+      description:
+        'Creating an individualized strategy based on your condition, goals, and lifestyle.',
     },
     {
       icon: 'task_alt',
-      title: '4. Recovery Plan',
-      description: 'Long-term maintenance and lifestyle guidance.'
-    }
+      title: '4. Recovery & Follow-Up',
+      description:
+        'Supporting long-term recovery through education, monitoring, and lifestyle guidance.',
+    },
   ];
 
   return (
     <section className="py-20 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="text-center mb-16">
-          <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">Your Journey</h2>
-          <h3 className="text-3xl font-extrabold text-primary dark:text-white">How We Treat You</h3>
+          <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">YOUR RECOVERY JOURNEY</h2>
+          <h3 className="text-3xl font-extrabold text-primary dark:text-white">How We Help You Recover</h3>
         </ScrollReveal>
         <div className="relative">
           <div className="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-gray-100 dark:bg-gray-700 -z-0"></div>

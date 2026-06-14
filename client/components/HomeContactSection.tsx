@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import ScrollReveal from '@/components/ScrollReveal';
+import Link from 'next/link';
 
 export default function HomeContactSection() {
   return (
@@ -30,7 +31,7 @@ export default function HomeContactSection() {
                     <select className="w-full px-5 py-3.5 rounded-xl bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all appearance-none">
                       <option value="general-consultation">General Consultation</option>
                       <option value="plid-consultation">PLID Consultation</option>
-                      <option value="emergency-consultation">Emergency Consultation</option>
+                      <option value="online-consultation">Online Consultation</option>
                       <option value="technical-support">Technical Support</option>
                       <option value="collaboration">Collaboration</option>
                       <option value="feedback">Feedback</option>
@@ -90,7 +91,7 @@ export default function HomeContactSection() {
                       <div>
                         <p className="font-bold mb-1">Working Hours</p>
                         <p className="text-white/80 text-sm leading-relaxed">
-                          Sat - Thu: 8:00 AM – 10:00 PM<br/>
+                          Sat - Thu: 7:00 AM – 10:00 PM<br/>
                           Friday: Closed
                         </p>
                       </div>
@@ -101,10 +102,10 @@ export default function HomeContactSection() {
               <div className="mt-10 h-64 w-full bg-white/10 rounded-2xl overflow-hidden relative group border border-white/10 shadow-inner">
                 <Image alt="Map location of clinic" className="object-cover opacity-60 group-hover:opacity-80 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_XhY7dbV--FNwz0DYaTdRVQBV5ha5qA3L3XmuwNFJX1yy41E10_9m10F2DQ0ABe1GjW0GeBCf629me4oyOPdwKV9vh5gRLKBkqx6OXbTWN2CmAqxR6BG7PbsPgAZ5Ot6zj6CUtcCTFxC15Xrrh3ZyIG3cTPwh06eOF6CKbuwtGd_SWTGoxjnzMowTIHoFqS3sXLeiZzdFSIZHEaSE5wAoNYUILy-fa0s7D-WIx4F33zdJvRwpDP6yUZiV2yH4hxMvuSPtnzfboRk" fill sizes="100vw" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <button className="bg-white text-primary px-5 py-2.5 rounded-full font-bold text-sm shadow-xl hover:scale-105 transition-transform flex items-center gap-2">
+                  <Link href="https://maps.app.goo.gl/9QeTRrQ9PtqQk6Rj8" target="_blank" rel="noopener noreferrer" className="bg-white text-primary px-5 py-2.5 rounded-full font-bold text-sm shadow-xl hover:scale-105 transition-transform flex items-center gap-2">
                     View on Google Maps
                     <span className="material-symbols-outlined text-sm">open_in_new</span>
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import ScrollReveal from '@/components/ScrollReveal';
+import ScrollReveal from "@/components/ScrollReveal";
 
 export default function BeforeVisitHero() {
   return (
@@ -8,13 +8,20 @@ export default function BeforeVisitHero() {
         <ScrollReveal direction="up" className="max-w-3xl">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-primary/20 text-primary font-semibold text-xs uppercase tracking-wider border border-blue-100 dark:border-primary/30 mb-6">
             <span className="material-symbols-outlined text-sm">info</span>
-            Patient Guide
+            PATIENT PREPARATION GUIDE
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-primary dark:text-white leading-[1.15] mb-6">
-            Before Visit <span className="text-accent">Instructions</span>
+            Before Your Visit{" "}
+            <span className="text-accent">
+              Prepare Today For A More Productive Consultation Tomorrow
+            </span>
           </h1>
           <p className="text-lg text-text-sub leading-relaxed font-medium">
-            To ensure your appointment runs smoothly and you receive the best possible care, please review the following guidelines before your visit. Being prepared helps Dr. Alam focus entirely on your recovery plan.
+            Your consultation is an important step toward understanding your
+            condition and finding the right treatment path. A little preparation
+            can help us better understand your symptoms, review your medical
+            history, and provide the most appropriate recommendations for your
+            recovery.
           </p>
         </ScrollReveal>
       </div>

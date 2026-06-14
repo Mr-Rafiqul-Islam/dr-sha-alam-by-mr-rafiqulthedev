@@ -1,60 +1,203 @@
-import Image from 'next/image';
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
 import ScrollReveal from '@/components/ScrollReveal';
 
+function getInitials(name: string) {
+  return name
+    .replace(/\./g, '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
+
+const stories = [
+  {
+    name: 'Rahman Ali',
+    title: 'PLID Recovery Journey',
+    quote:
+      'I was terrified when my MRI showed a disc prolapse. I thought surgery was unavoidable. Dr. Shah Alam explained my condition clearly and guided me through a structured recovery plan. Today, my leg pain and numbness are almost gone, and I\'m back to my normal routine.',
+  },
+  {
+    name: 'Fatema Begum',
+    title: 'Sciatica Relief',
+    quote:
+      'For months, I couldn\'t sit comfortably for more than 10 minutes because of severe sciatica. The treatment plan, exercises, and guidance helped me recover step by step. I can now travel, work, and sleep comfortably again.',
+  },
+  {
+    name: 'Md. Hasan',
+    title: 'Avoided Unnecessary Surgery',
+    quote:
+      'Several people told me I needed surgery immediately. After consulting Dr. Shah Alam, I learned that surgery wasn\'t necessary in my case. With proper treatment and rehabilitation, my symptoms improved significantly.',
+  },
+  {
+    name: 'Shila Akter',
+    title: 'PLID Rehabilitation Success',
+    quote:
+      'The pain in my lower back and leg affected every part of my life. I lost confidence and became afraid of movement. The recovery program helped me regain strength, flexibility, and peace of mind.',
+  },
+  {
+    name: 'Abdul Karim',
+    title: 'Recovery From Severe Nerve Pain',
+    quote:
+      'My leg pain was so intense that I could barely walk. I was worried about permanent nerve damage. Thanks to proper evaluation and treatment, the pain gradually disappeared, and I can now walk without fear.',
+  },
+  {
+    name: 'Nurjahan Begum',
+    title: 'Back To Daily Activities',
+    quote:
+      'Simple tasks like praying, cooking, and walking became difficult because of PLID. The personalized treatment plan gave me a clear direction. I\'m now able to perform my daily activities with much greater comfort.',
+  },
+  {
+    name: 'Kamrul Islam',
+    title: 'Return To Work',
+    quote:
+      'As a working professional, I was worried that my back problem would affect my career. Dr. Shah Alam helped me understand the condition and taught me how to manage it properly. I\'m back at work and feeling much more confident.',
+  },
+  {
+    name: 'Jannatul Ferdous',
+    title: 'Relief From Tingling & Numbness',
+    quote:
+      'The constant tingling and numbness in my leg made me anxious. I feared the condition would worsen over time. After following the treatment plan consistently, those symptoms improved dramatically.',
+  },
+  {
+    name: 'Saiful Rahman',
+    title: 'Long-Term Improvement',
+    quote:
+      'What impressed me most was the honest guidance. Instead of rushing into procedures, Dr. Shah Alam focused on understanding the root cause of my problem. My pain is now under control, and my quality of life has improved greatly.',
+  },
+  {
+    name: 'Mizanur Rahman',
+    title: 'Regained Confidence',
+    quote:
+      'PLID affected not only my body but also my mental well-being. I constantly worried about my future. The combination of medical guidance, rehabilitation, and lifestyle advice helped me regain confidence and return to an active life.',
+  },
+];
+
 export default function MoreStories() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(1);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const containerRect = container.getBoundingClientRect();
+      const containerCenter = containerRect.left + containerRect.width / 2;
+
+      let closestIndex = 0;
+      let minDistance = Infinity;
+
+      const cards = container.querySelectorAll('.story-card');
+      cards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(containerCenter - cardCenter);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setActiveIndex(closestIndex);
+    };
+
+    handleScroll();
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
+
+  const scroll = (direction: 'left' | 'right') => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const scrollAmount =
+      container.clientWidth >= 1024
+        ? container.clientWidth / 3
+        : container.clientWidth >= 768
+          ? container.clientWidth / 2
+          : container.clientWidth;
+
+    container.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
+  };
+
   return (
-    <section className="py-20 bg-background-light dark:bg-background-dark">
+    <section className="py-20 bg-background-light dark:bg-background-dark overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal direction="up" className="flex justify-between items-center mb-12">
-          <h3 className="text-2xl md:text-3xl font-bold text-text-main dark:text-white">More Recovery Stories</h3>
-          <div className="hidden sm:flex gap-2">
-            <button className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-white dark:hover:bg-surface-dark transition-colors"><span className="material-symbols-outlined">chevron_left</span></button>
-            <button className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-white dark:hover:bg-surface-dark transition-colors"><span className="material-symbols-outlined">chevron_right</span></button>
+        <ScrollReveal direction="up" className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-6">
+          <h3 className="text-2xl md:text-3xl font-bold text-text-main dark:text-white">
+            More Recovery Stories
+          </h3>
+          <div className="flex gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => scroll('left')}
+              className="w-12 h-12 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 bg-white dark:bg-surface-dark"
+              aria-label="Previous stories"
+            >
+              <span className="material-symbols-outlined">arrow_back</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scroll('right')}
+              className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary-dark transition-all duration-300 shadow-lg shadow-primary/20"
+              aria-label="Next stories"
+            >
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </button>
           </div>
         </ScrollReveal>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <ScrollReveal direction="up" delay={0.1} className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="flex items-center gap-4 mb-4">
-              <Image alt="Patient" className="w-14 h-14 rounded-full object-cover ring-2 ring-accent/30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAchIq37o2xXDIDWX5zkGTEAwcwwyKXCxkMV4WVXizJrkIZnetTwArwvWQAtLiJC3f1TNMLOKsHSut970m7kZUt4IcjkIaYHWJXWJaM1H8cDtIUMKh4cKlVmEbbewveBLHQ7FaRFY6hzAbI50PfC6x9rCdSASX36L-zBrxlYIsyHzsnRnOV_ENVtew1s9WWiZlEqu5VYsrYzWpHAl_xAdujq9J0KPRjJrsY18X1MnOnlBjagsahagYvzxbq_pRfzzNtDRzbKAzIMCI" width={56} height={56} sizes="56px" />
-              <div>
-                <h5 className="font-bold text-text-main dark:text-white">Rahim Uddin</h5>
-                <div className="flex text-yellow-400 text-xs">
-                  <i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i>
+
+        <div
+          ref={scrollContainerRef}
+          className="flex overflow-x-auto snap-x snap-mandatory gap-8 pb-12 pt-8 px-4 -mx-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        >
+          {stories.map((story, index) => {
+            const isActive = index === activeIndex;
+
+            return (
+              <article
+                key={story.name}
+                className={`story-card min-w-[100%] md:min-w-[calc(50%-1rem)] lg:min-w-[calc(33.333%-1.33rem)] snap-center bg-white dark:bg-surface-dark p-6 rounded-2xl transition-all duration-500 relative group h-full ${
+                  isActive
+                    ? 'scale-105 shadow-2xl shadow-primary/20 border-b-4 border-accent z-10'
+                    : 'scale-95 shadow-sm opacity-60 hover:opacity-100 hover:shadow-md z-0'
+                }`}
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div
+                    className="w-14 h-14 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center ring-2 ring-accent/30 shrink-0"
+                    aria-hidden="true"
+                  >
+                    {getInitials(story.name)}
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-text-main dark:text-white">{story.name}</h5>
+                    <div className="flex text-yellow-400 text-xs">
+                      {Array.from({ length: 5 }).map((_, starIndex) => (
+                        <i key={starIndex} className="fas fa-star"></i>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <h6 className="font-bold text-primary mb-2">Frozen Shoulder Recovery</h6>
-            <p className="text-text-sub text-sm mb-6 line-clamp-3">&quot;I couldn&apos;t lift my arm above my shoulder. The manual therapy sessions were painful at first, but necessary. Now I have full range of motion.&quot;</p>
-            {/* <button className="text-accent font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Read Full Story <span className="material-symbols-outlined text-sm">arrow_forward</span></button> */}
-          </ScrollReveal>
-          <ScrollReveal direction="up" delay={0.2} className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="flex items-center gap-4 mb-4">
-              <Image alt="Patient" className="w-14 h-14 rounded-full object-cover ring-2 ring-accent/30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwVjILOEgiuZDM2rFbqxM8d2BgREh6IsiPSRBWc-KzGFP7PYblvZai9IJXy5dL_C0fU2dCp2vsicH2Ox3el3YXPb6WK4s8LASd_t7gUyeQ2Iq4TIkJuuJDD3sWUk5LfffVybg503Xl-p61Y-ELhZgQYZfkV1h3x5OgjSD0WIduUY9ieZwwjR7pe7NTK1FnEPqDXUAlyQqKD9Dug8DiKJLVVpxh3EyGHGjh3WfMDq2NrV4FBhcGtmq1zOGFYglmQs-2XZpJdbK_Qto" width={56} height={56} sizes="56px" />
-              <div>
-                <h5 className="font-bold text-text-main dark:text-white">Nusrat Jahan</h5>
-                <div className="flex text-yellow-400 text-xs">
-                  <i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i>
-                </div>
-              </div>
-            </div>
-            <h6 className="font-bold text-primary mb-2">Chronic Back Pain Relief</h6>
-            <p className="text-text-sub text-sm mb-6 line-clamp-3">&quot;Years of office work destroyed my posture. The yoga therapy not only fixed my pain but taught me how to sit and work correctly.&quot;</p>
-            {/* <button className="text-accent font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Read Full Story <span className="material-symbols-outlined text-sm">arrow_forward</span></button> */}
-          </ScrollReveal>
-          <ScrollReveal direction="up" delay={0.3} className="bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="flex items-center gap-4 mb-4">
-              <Image alt="Patient" className="w-14 h-14 rounded-full object-cover ring-2 ring-accent/30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfe4SJbreJKGAn4RqCIcYNZg00YDwiLOaa5FxgtcRJF7vY5EbiKG71yjTsQRe89qMlGN7p6aXJ4GeF0mI8GchiVvlunWOzY-nmP6K7MrFxhd5Tspse8pbdbr5M2sAC0p0XOg_cFNMPKIj3zKlUva34pZcwJ3XHzFrLuBP3JgkHX91vyXaud2Qx5JULCf9XZ7fegip8MZHMTkm1URf5qW9EbXP8xHzQhA_j48W8pbmhvYvTst6tUnl7A5bkvAnahz6Xa49QGj6APO0" width={56} height={56} sizes="56px" />
-              <div>
-                <h5 className="font-bold text-text-main dark:text-white">Kamal Hossain</h5>
-                <div className="flex text-yellow-400 text-xs">
-                  <i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star"></i><i className="fas fa-star-half-alt"></i>
-                </div>
-              </div>
-            </div>
-            <h6 className="font-bold text-primary mb-2">Sciatica Treatment</h6>
-            <p className="text-text-sub text-sm mb-6 line-clamp-3">&quot;The shooting pain down my leg was unbearable. Dr. Alam&apos;s diagnosis was spot on. No surgery needed, just targeted exercises.&quot;</p>
-            {/* <button className="text-accent font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Read Full Story <span className="material-symbols-outlined text-sm">arrow_forward</span></button> */}
-          </ScrollReveal>
+                <h6 className="font-bold text-primary mb-2">{story.title}</h6>
+                <p className="text-text-sub text-sm">&quot;{story.quote}&quot;</p>
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>

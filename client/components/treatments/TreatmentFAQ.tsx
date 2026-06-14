@@ -3,16 +3,16 @@ import ScrollReveal from '@/components/ScrollReveal';
 export default function TreatmentFAQ() {
   const faqs = [
     {
-      question: 'Are the treatments safe for seniors?',
-      answer: 'Yes, absolutely. Our treatments are non-invasive and customized. We take special care with senior patients to ensure exercises are low-impact and safe for bone health.'
+      question: 'Do all PLID patients need surgery?',
+      answer: 'No. Many patients improve with appropriate conservative treatment, rehabilitation, and lifestyle modification.'
     },
     {
-      question: 'How long does a typical treatment plan last?',
-      answer: 'Duration varies by condition. Acute pain might resolve in 2-4 weeks, while chronic conditions like PLID may require a 3-month comprehensive rehabilitation plan for lasting results.'
+      question: 'How do I know which treatment is right for me?',
+      answer: 'The right treatment depends on symptoms, examination findings, imaging results, and individual goals.'
     },
     {
-      question: 'Do I need an MRI before consultation?',
-      answer: 'It is helpful but not mandatory. Dr. Alam can perform a physical diagnosis first and recommend specific imaging only if absolutely necessary to save you cost and time.'
+      question: 'Can therapeutic yoga help recovery?',
+      answer: 'Therapeutic yoga may support mobility, posture, flexibility, and long-term recovery when properly prescribed.'
     }
   ];
 
