@@ -2,6 +2,29 @@ import Link from "next/link";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+
+  const socialLinks = [
+    {
+      name: "Facebook",
+      href: "https://www.facebook.com/doctorshahalam",
+      iconClass: "fab fa-facebook-f",
+    },
+    {
+      name: "YouTube",
+      href: "https://www.youtube.com/c/DoctorShahAlam",
+      iconClass: "fab fa-youtube",
+    },
+    {
+      name: "TikTok",
+      href: "https://www.tiktok.com/@doctorshahalam",
+      iconClass: "fab fa-tiktok",
+    },
+    {
+      name: "LinkedIn",
+      href: "https://www.linkedin.com/in/doctorshahalam",
+      iconClass: "fab fa-linkedin-in",
+    },
+  ];
   return (
     <footer className="bg-footer-bg text-gray-300 pt-20 pb-12 border-t border-gray-800">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
@@ -22,7 +45,7 @@ export default function Footer() {
               49, Mohakhali, Beside Square Centre, Wireless Gate, Mohakhali, Dhaka 1212, Bangladesh
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Chamber Time: Sat—Thu, 9AM—8PM
+                Chamber Time: Sat—Thu, 9AM—7PM
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Phone: +880 1701313001
@@ -35,31 +58,18 @@ export default function Footer() {
               </p>
             </div>
             <div className="flex gap-4 pt-4">
-              <Link
-                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white"
-                href="https://www.facebook.com/doctorshahalam/"
-                target="_blank"
-              >
-                <i className="fab fa-facebook-f text-sm"></i>
-              </Link>
-              <Link
-                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white"
-                href="#"
-              >
-                <i className="fab fa-instagram text-sm"></i>
-              </Link>
-              <Link
-                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white"
-                href="#"
-              >
-                <i className="fab fa-youtube text-sm"></i>
-              </Link>
-              <Link
-                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white"
-                href="#"
-              >
-                <i className="fab fa-twitter text-sm"></i>
-              </Link>
+              {socialLinks.map((social) => (
+                <Link
+                  key={social.name}
+                  className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-accent transition-colors text-white"
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.name}
+                >
+                  <i className={`${social.iconClass} text-sm`}></i>
+                </Link>
+              ))}
             </div>
           </div>
           <div>

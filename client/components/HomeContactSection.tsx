@@ -31,7 +31,7 @@ export default function HomeContactSection() {
                     <select className="w-full px-5 py-3.5 rounded-xl bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all appearance-none">
                       <option value="general-consultation">General Consultation</option>
                       <option value="plid-consultation">PLID Consultation</option>
-                      <option value="emergency-consultation">Emergency Consultation</option>
+                      <option value="online-consultation">Online Consultation</option>
                       <option value="technical-support">Technical Support</option>
                       <option value="collaboration">Collaboration</option>
                       <option value="feedback">Feedback</option>
@@ -91,7 +91,7 @@ export default function HomeContactSection() {
                       <div>
                         <p className="font-bold mb-1">Working Hours</p>
                         <p className="text-white/80 text-sm leading-relaxed">
-                          Sat - Thu: 8:00 AM – 10:00 PM<br/>
+                          Sat - Thu: 7:00 AM – 10:00 PM<br/>
                           Friday: Closed
                         </p>
                       </div>

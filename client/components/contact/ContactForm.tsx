@@ -61,7 +61,7 @@ export default function ContactForm() {
               </option>
               <option value="plid-consultation">PLID Consultation</option>
               <option value="general-consultation">General Consultation</option>
-              <option value="emergency-consultation">
+              <option value="online-consultation">
                 Online Consultation
               </option>
               <option value="yoga-program">Yoga Program</option>
