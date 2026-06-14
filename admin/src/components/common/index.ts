@@ -6,6 +6,7 @@ export { Icon } from "./Icon";
 export { Modal } from "./Modal";
 export { Input } from "./Input";
 export { PageHeader } from "./PageHeader";
+export { PageLoadingFallback } from "./PageLoadingFallback";
 export { Pagination } from "./Pagination";
 export { StatCard } from "./StatCard";
 export {

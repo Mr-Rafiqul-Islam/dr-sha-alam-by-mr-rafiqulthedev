@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
+import { PageLoadingFallback } from "../common";
 import { SidebarProvider, useSidebar } from "../../contexts/SidebarContext";
 import { cn } from "../../lib/cn";
 import { Sidebar } from "./Sidebar";
@@ -19,7 +21,9 @@ function LayoutContent() {
         <TopBar />
         <main className="flex-1 p-4 md:p-6 lg:p-margin-desktop">
           <div className="max-w-container-max mx-auto w-full min-w-0">
-            <Outlet />
+            <Suspense fallback={<PageLoadingFallback />}>
+              <Outlet />
+            </Suspense>
           </div>
         </main>
       </div>

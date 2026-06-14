@@ -1,12 +1,46 @@
+import { lazy, type ComponentType } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AdminLayout } from "./components/layout/AdminLayout";
-import { AppointmentsPage } from "./pages/AppointmentsPage";
-import { CreateAppointmentPage } from "./pages/CreateAppointmentPage";
-import { ArticlesPage } from "./pages/ArticlesPage";
-import { CreateArticlePage } from "./pages/CreateArticlePage";
-import { ContactMessagesPage } from "./pages/ContactMessagesPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { SettingsPage } from "./pages/SettingsPage";
+
+function lazyNamed<T extends Record<string, ComponentType<object>>>(
+  loader: () => Promise<T>,
+  exportName: keyof T,
+) {
+  return lazy(() => loader().then((m) => ({ default: m[exportName] })));
+}
+
+const DashboardPage = lazyNamed(
+  () => import("./pages/DashboardPage"),
+  "DashboardPage",
+);
+const AppointmentsPage = lazyNamed(
+  () => import("./pages/AppointmentsPage"),
+  "AppointmentsPage",
+);
+const CreateAppointmentPage = lazyNamed(
+  () => import("./pages/CreateAppointmentPage"),
+  "CreateAppointmentPage",
+);
+const ArticlesPage = lazyNamed(
+  () => import("./pages/ArticlesPage"),
+  "ArticlesPage",
+);
+const CreateArticlePage = lazyNamed(
+  () => import("./pages/CreateArticlePage"),
+  "CreateArticlePage",
+);
+const ContactMessagesPage = lazyNamed(
+  () => import("./pages/ContactMessagesPage"),
+  "ContactMessagesPage",
+);
+const ContactMessageDetailPage = lazyNamed(
+  () => import("./pages/ContactMessageDetailPage"),
+  "ContactMessageDetailPage",
+);
+const SettingsPage = lazyNamed(
+  () => import("./pages/SettingsPage"),
+  "SettingsPage",
+);
 
 function App() {
   return (
@@ -19,6 +53,7 @@ function App() {
         <Route path="articles/new" element={<CreateArticlePage />} />
         <Route path="articles/:id/edit" element={<CreateArticlePage />} />
         <Route path="articles" element={<ArticlesPage />} />
+        <Route path="contact-messages/:id" element={<ContactMessageDetailPage />} />
         <Route path="contact-messages" element={<ContactMessagesPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
