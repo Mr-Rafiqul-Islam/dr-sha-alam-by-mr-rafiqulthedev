@@ -17,7 +17,7 @@ const FALLBACK_DEV_PASSWORD = "ChangeMeLocalDev123!";
 
 const adminsToSeed = [
   { email: "admin@doctorshahalam.test", name: "Default Admin" },
-  { email: "superadmin@doctorshahalam.test", name: "Super Admin" },
+  { email: "thesakibdev@gmail.com", name: "Sakib" },
 ];
 
 const DEFAULT_DOCTOR = {
