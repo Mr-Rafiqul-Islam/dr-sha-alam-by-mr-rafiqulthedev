@@ -5,6 +5,7 @@ const allowedOrigins: string[] = [
   "https://doctorshahalam.com",
   "https://www.doctorshahalam.com",
   "http://localhost:5173",
+  "http://localhost:5000",
 ];
 
 export const corsOptions: CorsOptions = {

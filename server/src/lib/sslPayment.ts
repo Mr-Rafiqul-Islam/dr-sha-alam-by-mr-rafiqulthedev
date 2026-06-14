@@ -1,33 +1,45 @@
 
 
 export const validateSSLPayment = async (valId: string) => {
-    const isProduction = process.env.NODE_ENV === 'production';
+  const isLive = process.env.SSL_IS_LIVE === "true";
 
-    const baseURL = isProduction
-        ? 'https://securepay.sslcommerz.com'
-        : 'https://sandbox.sslcommerz.com';
+  const baseURL = isLive
+    ? "https://securepay.sslcommerz.com"
+    : "https://sandbox.sslcommerz.com";
 
-    const url = `${baseURL}/validator/api/validationserverAPI.php?val_id=${valId}&store_id=${process.env.STORE_ID}&store_passwd=${process.env.STORE_PASSWORD}&v=1&format=json`;
+  const storeId = process.env.SSLCOMMERZ_STORE_ID;
+  const storePassword = process.env.SSLCOMMERZ_STORE_PASSWORD;
 
-    try {
-        const response = await fetch(url);
+  if (!storeId || !storePassword) {
+    throw new Error("SSLCommerz credentials are not configured");
+  }
 
-        if (!response.ok) {
-            throw new Error(`Validation API error: ${response.status}`);
-        }
+  const url =
+    `${baseURL}/validator/api/validationserverAPI.php?` +
+    `val_id=${encodeURIComponent(valId)}` +
+    `&store_id=${encodeURIComponent(storeId)}` +
+    `&store_passwd=${encodeURIComponent(storePassword)}` +
+    `&v=1&format=json`;
 
-        const data = await response.json();
+  try {
+    const response = await fetch(url);
 
-        console.log(`Payment Validation ${isProduction ? 'Production' : 'Sandbox'}:`, {
-            valId,
-            status: data.status,
-            tran_id: data.tran_id,
-            amount: data.amount
-        });
-
-        return data;
-    } catch (error) {
-        console.error("Validation Error:", error);
-        throw error;
+    if (!response.ok) {
+      throw new Error(`Validation API error: ${response.status}`);
     }
+
+    const data = await response.json();
+
+    console.log(`Payment Validation ${isLive ? "Production" : "Sandbox"}:`, {
+      valId,
+      status: data.status,
+      tran_id: data.tran_id,
+      amount: data.amount,
+    });
+
+    return data;
+  } catch (error) {
+    console.error("Validation Error:", error);
+    throw error;
+  }
 };
