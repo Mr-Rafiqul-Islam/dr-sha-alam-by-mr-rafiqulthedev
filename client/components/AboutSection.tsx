@@ -39,7 +39,7 @@ export default function AboutSection() {
                     <Image
                       alt=""
                       className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-surface-dark object-cover bg-gray-200 dark:bg-gray-700"
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=80"
+                      src="/success-patient1.jpeg"
                       width={32}
                       height={32}
                       sizes="32px"
@@ -47,7 +47,7 @@ export default function AboutSection() {
                     <Image
                       alt=""
                       className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-surface-dark object-cover bg-gray-200 dark:bg-gray-700"
-                      src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=96&h=96&q=80"
+                      src="/success-patient2.jpeg"
                       width={32}
                       height={32}
                       sizes="32px"
@@ -55,7 +55,7 @@ export default function AboutSection() {
                     <Image
                       alt=""
                       className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-surface-dark object-cover bg-gray-200 dark:bg-gray-700"
-                      src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&h=96&q=80"
+                      src="/clients.jpg"
                       width={32}
                       height={32}
                       sizes="32px"
