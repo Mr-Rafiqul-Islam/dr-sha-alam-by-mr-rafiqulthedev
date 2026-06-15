@@ -9,8 +9,14 @@ export default function MedicalDisclaimerNotice() {
         </div>
         <div>
           <h2 className="text-xl font-bold text-text-main dark:text-white mt-0 mb-2">Important Notice</h2>
-          <p className="text-text-sub text-base m-0 font-medium">
-            The information provided on this website is for general informational purposes only and is <strong>not intended as a substitute for professional medical advice</strong>, diagnosis, or treatment.
+          <p className="font-bold text-text-main dark:text-white mb-3">
+            Information Is Not A Substitute For Professional Medical Advice
+          </p>
+          <p className="text-text-sub text-base mb-3">
+            The content available on this website should not be used as a replacement for professional medical consultation, diagnosis, treatment, or individualized healthcare advice.
+          </p>
+          <p className="text-text-sub text-base m-0">
+            Every patient is unique, and medical decisions should always be made in consultation with a qualified healthcare professional.
           </p>
         </div>
       </div>

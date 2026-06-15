@@ -1,81 +1,238 @@
+import Link from 'next/link';
 import ScrollReveal from '@/components/ScrollReveal';
+
+const cardClass =
+  'bg-background-light dark:bg-background-dark p-8 rounded-3xl border border-gray-100 dark:border-gray-800 mb-10';
+
+function ChecklistItem({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex gap-3 text-text-sub">
+      <span className="text-accent shrink-0 font-bold">✔</span>
+      <span>{children}</span>
+    </li>
+  );
+}
 
 export default function TermsContent() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <ScrollReveal direction="up" className="bg-white dark:bg-surface-dark p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-        <div className="prose prose-lg dark:prose-invert max-w-none text-text-main dark:text-gray-300">
-          <p className="lead text-lg font-medium text-gray-700 dark:text-gray-300 mb-8">
-            Welcome to the official website of Dr. Shah Alam (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). By accessing or using this website, you agree to comply with and be bound by the following terms and conditions of use. If you disagree with any part of these terms and conditions, please do not use our website.
+      <div className="prose prose-lg dark:prose-invert max-w-none text-text-main dark:text-gray-300">
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">1. Medical Information Disclaimer</h2>
+          <p className="font-bold text-text-main dark:text-white mb-3">Educational Information Only</p>
+          <p className="text-text-sub mb-4">
+            The information provided on this website is intended for general educational and informational purposes only.
+            Content found on this website, including articles, videos, success stories, blog posts, and educational resources, should not be considered medical advice, diagnosis, or treatment.
           </p>
-
-          <h2 className="text-primary font-bold text-2xl mt-10 mb-4">1. Medical Disclaimer</h2>
-          <p className="mb-4 leading-relaxed text-gray-700 dark:text-gray-400">
-            The content provided on this website, including text, graphics, images, and other material, is for informational purposes only. It is not intended to be a substitute for professional medical advice, diagnosis, or treatment.
-          </p>
-          <ul className="list-disc ml-5 text-gray-600 dark:text-gray-400 space-y-2 mb-6">
-            <li>Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.</li>
-            <li>Never disregard professional medical advice or delay in seeking it because of something you have read on this website.</li>
-            <li>If you think you may have a medical emergency, call your doctor or emergency services immediately.</li>
+          <p className="font-bold text-text-main dark:text-white mb-3">Important Reminder</p>
+          <ul className="space-y-3">
+            <ChecklistItem>Always consult a qualified healthcare professional regarding your medical condition.</ChecklistItem>
+            <ChecklistItem>Never ignore professional medical advice because of information found on this website.</ChecklistItem>
+            <ChecklistItem>Individual treatment recommendations require a proper medical evaluation.</ChecklistItem>
           </ul>
+        </ScrollReveal>
 
-          <h2 className="text-primary font-bold text-2xl mt-10 mb-4">2. Use of Services</h2>
-          <p className="mb-4 leading-relaxed text-gray-700 dark:text-gray-400">
-            By booking an appointment or using our rehabilitation services, you acknowledge that:
-          </p>
-          <ol className="list-decimal ml-5 text-gray-600 dark:text-gray-400 space-y-2 mb-6">
-            <li>You will provide accurate and complete health history information to ensure safe treatment.</li>
-            <li>Results from treatments may vary from person to person depending on individual conditions and adherence to prescribed rehabilitation protocols.</li>
-            <li>Dr. Shah Alam reserves the right to refuse service to anyone for any reason at any time, particularly if a condition is deemed outside our scope of practice.</li>
-          </ol>
-
-          <h2 className="text-primary font-bold text-2xl mt-10 mb-4">3. Appointment Policy</h2>
-          <p className="mb-4 leading-relaxed text-gray-700 dark:text-gray-400">
-            We value your time and the time of our medical staff. Please review our appointment policies:
-          </p>
-          <ul className="list-disc ml-5 text-gray-600 dark:text-gray-400 space-y-2 mb-6">
-            <li><strong>Cancellations:</strong> Please provide at least 24 hours&apos; notice if you need to cancel or reschedule an appointment. Late cancellations may be subject to a fee.</li>
-            <li><strong>Late Arrivals:</strong> Arriving late may result in a shortened session time to accommodate the next patient.</li>
-            <li><strong>No-Shows:</strong> Repeated no-shows may result in the inability to book future appointments.</li>
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">2. Use of Our Services</h2>
+          <p className="font-bold text-text-main dark:text-white mb-3">Patient Responsibilities</p>
+          <p className="text-text-sub mb-4">By booking a consultation or receiving services from Dr. Shah Alam, you agree to:</p>
+          <ul className="space-y-3 mb-6">
+            <ChecklistItem>Provide accurate and complete personal and medical information.</ChecklistItem>
+            <ChecklistItem>Inform us of any significant changes in your medical condition.</ChecklistItem>
+            <ChecklistItem>Follow treatment recommendations and safety instructions.</ChecklistItem>
+            <ChecklistItem>Attend scheduled appointments or provide notice if unable to attend.</ChecklistItem>
           </ul>
-
-          <h2 className="text-primary font-bold text-2xl mt-10 mb-4">4. Privacy &amp; Data Protection</h2>
-          <p className="mb-4 leading-relaxed text-gray-700 dark:text-gray-400">
-            Your privacy is critically important to us. We are committed to protecting your personal and medical information in accordance with applicable medical privacy laws.
+          <p className="font-bold text-text-main dark:text-white mb-3">Right To Refuse Service</p>
+          <p className="text-text-sub">
+            Dr. Shah Alam reserves the right to decline or discontinue services when medically appropriate, unsafe, or outside the scope of practice.
           </p>
-          <p className="mb-6 leading-relaxed text-gray-700 dark:text-gray-400">
-            We collect personal information solely for the purpose of providing medical care and improving our services. We do not sell, trade, or otherwise transfer your personally identifiable information to outside parties without your consent, except as required by law or for necessary medical referrals.
-          </p>
+        </ScrollReveal>
 
-          <h2 className="text-primary font-bold text-2xl mt-10 mb-4">5. Intellectual Property</h2>
-          <p className="mb-6 leading-relaxed text-gray-700 dark:text-gray-400">
-            All content included on this site, such as text, graphics, logos, images, video clips, and digital downloads, is the property of Dr. Shah Alam or its content suppliers and protected by international copyright laws. The compilation of all content on this site is the exclusive property of Dr. Shah Alam.
-          </p>
-
-          <h2 className="text-primary font-bold text-2xl mt-10 mb-4">6. Limitation of Liability</h2>
-          <p className="mb-6 leading-relaxed text-gray-700 dark:text-gray-400">
-            In no event shall Dr. Shah Alam, nor any of its officers, directors, and employees, be held liable for anything arising out of or in any way connected with your use of this website, whether such liability is under contract. Dr. Shah Alam, including its officers, directors, and employees shall not be held liable for any indirect, consequential, or special liability arising out of or in any way related to your use of this website.
-          </p>
-
-          <h2 className="text-primary font-bold text-2xl mt-10 mb-4">7. Governing Law</h2>
-          <p className="mb-6 leading-relaxed text-gray-700 dark:text-gray-400">
-            These Terms shall be governed by and interpreted in accordance with the laws of Bangladesh, and you submit to the non-exclusive jurisdiction of the state and federal courts located in Bangladesh for the resolution of any disputes.
-          </p>
-
-          <h2 className="text-primary font-bold text-2xl mt-10 mb-4">8. Changes to Terms</h2>
-          <p className="mb-6 leading-relaxed text-gray-700 dark:text-gray-400">
-            We reserve the right to modify these terms at any time. We do so by posting and drawing attention to the updated terms on the Site. Your decision to continue to visit and make use of the Site after such changes have been made constitutes your formal acceptance of the new Terms of Service.
-          </p>
-
-          <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-            <p className="font-bold text-lg text-text-main dark:text-white mb-2">Contact Us</p>
-            <p className="text-gray-600 dark:text-gray-400">
-              If you have any questions about these Terms &amp; Conditions, please contact us at:<br/>
-              <a className="text-primary hover:text-accent font-medium transition-colors" href="mailto:info@drshahalam.com">info@drshahalam.com</a> or call us at <span className="font-medium text-text-main dark:text-white">+880 1712 345 678</span>.
-            </p>
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">3. Appointment Policy</h2>
+          <div className="space-y-5 text-text-sub">
+            <div>
+              <p className="font-bold text-text-main dark:text-white mb-2">Booking Appointments</p>
+              <p className="mb-2">Appointments may be scheduled through our website, WhatsApp, phone, or clinic staff.</p>
+              <p>Submitting an appointment request does not guarantee a confirmed appointment until confirmation has been provided by our team.</p>
+            </div>
+            <div>
+              <p className="font-bold text-text-main dark:text-white mb-2">Cancellation &amp; Rescheduling</p>
+              <p className="mb-2">We kindly request advance notice if you need to cancel or reschedule your appointment.</p>
+              <p>This helps us accommodate other patients who may be waiting for care.</p>
+            </div>
+            <div>
+              <p className="font-bold text-text-main dark:text-white mb-2">Late Arrivals</p>
+              <p>Patients arriving significantly late may need to wait, shorten their consultation, or reschedule depending on clinic availability.</p>
+            </div>
+            <div>
+              <p className="font-bold text-text-main dark:text-white mb-2">Missed Appointments</p>
+              <p>Repeated missed appointments without notice may affect future scheduling priority.</p>
+            </div>
           </div>
-        </div>
-      </ScrollReveal>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">4. Online Consultations</h2>
+          <p className="font-bold text-text-main dark:text-white mb-3">Limitations Of Virtual Care</p>
+          <p className="text-text-sub mb-4">Online consultations may be available for selected conditions. However:</p>
+          <ul className="space-y-3 mb-4">
+            <ChecklistItem>Physical examination limitations exist.</ChecklistItem>
+            <ChecklistItem>Certain conditions may require in-person evaluation.</ChecklistItem>
+            <ChecklistItem>Emergency conditions should never rely solely on online consultation.</ChecklistItem>
+          </ul>
+          <p className="text-text-sub">The treating physician may recommend an in-person visit whenever necessary.</p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">5. Privacy &amp; Data Protection</h2>
+          <p className="font-bold text-text-main dark:text-white mb-3">Protection Of Personal Information</p>
+          <p className="text-text-sub mb-4">
+            We are committed to protecting your privacy and maintaining the confidentiality of your personal and medical information.
+            Information collected through our website or clinic is handled according to our Privacy Policy and applicable healthcare regulations.
+          </p>
+          <p className="text-text-sub">
+            For more details, please review our{' '}
+            <Link className="text-primary hover:text-accent font-medium transition-colors" href="/privacy-policy">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">6. Intellectual Property</h2>
+          <p className="font-bold text-text-main dark:text-white mb-3">Ownership Of Website Content</p>
+          <p className="text-text-sub mb-4">All content on this website, including:</p>
+          <ul className="list-disc pl-6 space-y-2 text-text-sub marker:text-accent mb-4">
+            <li>Text</li>
+            <li>Images</li>
+            <li>Graphics</li>
+            <li>Logos</li>
+            <li>Videos</li>
+            <li>Educational Materials</li>
+            <li>Blog Articles</li>
+            <li>Course Materials</li>
+          </ul>
+          <p className="text-text-sub mb-4">is the intellectual property of Dr. Shah Alam unless otherwise stated.</p>
+          <p className="text-text-sub">
+            No content may be copied, reproduced, distributed, modified, or used commercially without prior written permission.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">7. Success Stories &amp; Testimonials</h2>
+          <p className="font-bold text-text-main dark:text-white mb-3">Individual Results May Vary</p>
+          <p className="text-text-sub mb-4">
+            Patient testimonials and success stories represent individual experiences.
+            Recovery outcomes depend on multiple factors, including:
+          </p>
+          <ul className="space-y-3 mb-4">
+            <ChecklistItem>Diagnosis</ChecklistItem>
+            <ChecklistItem>Severity of condition</ChecklistItem>
+            <ChecklistItem>Patient compliance</ChecklistItem>
+            <ChecklistItem>Lifestyle factors</ChecklistItem>
+            <ChecklistItem>Overall health status</ChecklistItem>
+          </ul>
+          <p className="text-text-sub">Testimonials should not be interpreted as guarantees of specific results.</p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">8. Limitation of Liability</h2>
+          <p className="font-bold text-text-main dark:text-white mb-3">Website Use At Your Own Risk</p>
+          <p className="text-text-sub mb-4">
+            While every effort is made to provide accurate and current information, Dr. Shah Alam makes no guarantees regarding the completeness, accuracy, or applicability of website content.
+          </p>
+          <p className="text-text-sub">
+            Dr. Shah Alam shall not be liable for any direct, indirect, incidental, or consequential damages arising from the use of this website or reliance upon its content.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">9. External Links</h2>
+          <p className="text-text-sub mb-4">
+            This website may contain links to third-party websites for educational or informational purposes.
+            We are not responsible for:
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-sub marker:text-accent mb-4">
+            <li>Third-party content</li>
+            <li>Privacy practices</li>
+            <li>Website availability</li>
+            <li>Services provided by external websites</li>
+          </ul>
+          <p className="text-text-sub">Users access third-party websites at their own discretion.</p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">10. Emergency Medical Conditions</h2>
+          <p className="font-bold text-text-main dark:text-white mb-3">Do Not Use This Website For Emergencies</p>
+          <p className="text-text-sub mb-4">If you experience:</p>
+          <ul className="space-y-3 mb-4">
+            <ChecklistItem>Severe chest pain</ChecklistItem>
+            <ChecklistItem>Sudden weakness</ChecklistItem>
+            <ChecklistItem>Loss of bladder or bowel control</ChecklistItem>
+            <ChecklistItem>Difficulty breathing</ChecklistItem>
+            <ChecklistItem>Severe injury</ChecklistItem>
+            <ChecklistItem>Any life-threatening condition</ChecklistItem>
+          </ul>
+          <p className="text-text-sub">
+            Please contact emergency services or visit the nearest emergency department immediately.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">11. Modifications to Terms</h2>
+          <p className="text-text-sub mb-4">
+            We reserve the right to update, modify, or replace these Terms &amp; Conditions at any time.
+          </p>
+          <p className="text-text-sub mb-4">
+            Changes become effective immediately upon publication on this website.
+          </p>
+          <p className="text-text-sub">
+            Continued use of the website constitutes acceptance of any revised terms.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className={cardClass}>
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">12. Governing Law</h2>
+          <p className="text-text-sub mb-4">
+            These Terms &amp; Conditions shall be governed and interpreted in accordance with the laws of Bangladesh.
+          </p>
+          <p className="text-text-sub">
+            Any disputes arising from the use of this website or services shall be subject to the jurisdiction of the courts of Bangladesh.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal direction="up" className="bg-primary/5 p-8 rounded-3xl border border-primary/10 mb-10">
+          <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">13. Contact Information</h2>
+          <p className="font-bold text-text-main dark:text-white mb-4">Questions About These Terms?</p>
+          <p className="text-text-sub mb-4">
+            If you have questions regarding these Terms &amp; Conditions, please contact us:
+          </p>
+          <p className="font-bold text-text-main dark:text-white mb-2">Dr. Shah Alam</p>
+          <p className="text-text-sub mb-1">
+            49, Mohakhali, Beside Square Centre, Wireless Gate, Mohakhali, Dhaka 1212, Bangladesh
+          </p>
+          <p className="text-text-sub mb-1">
+            Phone:{' '}
+            <a className="text-primary hover:text-accent font-medium transition-colors" href="tel:+8801701313001">
+              +880 1701313001
+            </a>
+          </p>
+          <p className="text-text-sub mb-1">
+            Email:{' '}
+            <a className="text-primary hover:text-accent font-medium transition-colors" href="mailto:info@doctorshahalam.com">
+              info@doctorshahalam.com
+            </a>
+          </p>
+          <p className="text-text-sub">
+            Website:{' '}
+            <a className="text-primary hover:text-accent font-medium transition-colors" href="https://doctorshahalam.com" target="_blank" rel="noopener noreferrer">
+              doctorshahalam.com
+            </a>
+          </p>
+        </ScrollReveal>
+      </div>
     </div>
   );
 }
