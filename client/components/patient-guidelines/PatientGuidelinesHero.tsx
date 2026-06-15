@@ -11,13 +11,16 @@ export default function PatientGuidelinesHero() {
         <ScrollReveal direction="up">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-primary/20 text-primary font-semibold text-xs uppercase tracking-wider border border-blue-100 dark:border-primary/30 mb-6">
             <span className="material-symbols-outlined text-sm">info</span>
-            Patient Information
+            PATIENT RESOURCES
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-primary dark:text-white mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-primary dark:text-white mb-4">
             Patient Guidelines
           </h1>
-          <p className="text-xl text-text-sub dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Essential Instructions for Your Treatment Journey. Follow these steps for a smooth recovery and effective consultation.
+          <p className="text-lg sm:text-xl font-semibold text-text-main dark:text-white max-w-3xl mx-auto mb-2 leading-relaxed">
+            Everything You Need To Know For A Smooth Consultation And Recovery
+          </p>
+          <p className="text-sm sm:text-base text-text-sub dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            Whether you are visiting for the first time, undergoing treatment, or continuing your recovery journey, these guidelines will help you prepare, stay informed, and achieve the best possible outcome.
           </p>
         </ScrollReveal>
       </div>

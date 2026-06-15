@@ -13,9 +13,9 @@ export default function PatientGuidelinesEmergency() {
             </div>
             <div className="flex-grow">
               <h3 className="text-2xl font-extrabold text-white mb-3">In Case of Emergency</h3>
-              <p className="text-accent text-lg font-medium mb-4">Sudden severe pain? Numbness? Don&apos;t wait.</p>
+              <p className="text-accent text-lg font-medium mb-2">Do Not Ignore Serious Symptoms</p>
               <p className="text-white/90 leading-relaxed text-sm md:text-base">
-                If you experience sudden, unbearable pain, loss of bowel/bladder control, or severe numbness in your limbs, please proceed to the nearest emergency room immediately or contact our emergency line.
+                If you experience sudden weakness, severe numbness, loss of bladder or bowel control, or rapidly worsening symptoms, seek immediate medical attention.
               </p>
             </div>
             <div className="flex-shrink-0">
