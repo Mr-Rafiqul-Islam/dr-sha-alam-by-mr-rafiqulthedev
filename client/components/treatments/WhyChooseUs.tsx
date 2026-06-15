@@ -70,7 +70,7 @@ export default function WhyChooseUs() {
             <Image
               alt="Doctor Shah Alam Portrait"
               className="object-cover transition-transform duration-700 group-hover:scale-105"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_LNiCeXAvPIoUTLppf7wYTjy2RGFc0-_EywOKq10U9lA6rUXXZd3CsbbziQ5ZgQrUpDOVhITmQTMKm8hGUY0e2PjlIDQUN3QBS27aXYWrBNBeNV_YDaLFm06K6Bjc9Frry6ggCNeVmO3lZkgxUzig3S1C2xHrqvzZY_y-TaEXwC0USE25n0P62jwBqTq-Fdda34tgmmVIP1vRCA6mexX-94JVBV3AsDzFJsmsmAdg93NpRxpvZcNpE6_UyBVXtBn3PUge_kI_OTY"
+              src="/sir-1.jpg"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
             />

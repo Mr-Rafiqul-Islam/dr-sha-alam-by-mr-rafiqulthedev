@@ -27,7 +27,7 @@ export default function AboutSection() {
                 <Image
                   alt="Dr. Shah Alam consulting with a patient in a modern office"
                   className="w-full h-auto object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOTjSAc1-lI6k7AWc9vIFTe1T3qZTUMpLURsHX5VugOOkg0mk7bhLy3jL078SBvDZ7AjPA-yAfXfo2ZuDvQk1elqdntezlYPbZNCaagEAoeiTm6OIGzSBjn7runX6jW9bo51kg7kNnf8adIw5D3wXSXevUB2M8XGTE22l-C5_FGsE_vJGMgkuHkFQP9QF1a02KMIdRHlNaAHoldCZkUlnsNhjAmGIY2q-xH9kpdQsNzlIi9ATCjHUhJPWvf3wARUi04_zChL0EQQ4"
+                  src="/patient-visiting-chamber.jpg"
                   width={1200}
                   height={900}
                   sizes="(max-width: 1024px) 100vw, 50vw"

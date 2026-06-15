@@ -31,12 +31,9 @@ export default function TreatmentsHero() {
             </div>
           </ScrollReveal>
           <ScrollReveal direction="left" delay={0.2} className="relative lg:h-[500px] flex items-center justify-center">
-            <div className="relative z-10 w-full max-w-lg aspect-square bg-blue-100/50 dark:bg-surface-dark rounded-[2rem] overflow-hidden flex items-center justify-center border-4 border-white shadow-2xl">
-              <Image alt="Medical Illustration" className="object-cover opacity-90 hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFRTKHWUkh61C4v_VI5OCw44_znwJvluBmYaM7iCtlKdyzWGA1KPTvO3OD2GdGgD14xIvI0iLE60E-p5CSKZ1Xir5NnnLbOUrOP1HB5Pt3oMQy-2F0u15yMROahF6B1nY2D_ycPyRASAOUXdpi4rnKOAXUxyoVPDFId7HnyGhicmJvxVR5bke9_tR_6Z4jrrxtW8prRKFdfleA7C25SfsGxjMqrDQ7agFMkfK5qV-KTxzb5ZSdhkRkkMAD7SzbF0zmZ-eiVwQqcBE" fill sizes="(max-width: 1024px) 100vw, 512px" />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent"></div>
+            <div className="relative z-10 w-full max-w-lg aspect-square rounded-[2rem] overflow-hidden flex items-center justify-center border-4 border-white shadow-2xl">
+              <Image alt="Medical Illustration" className="object-cover hover:scale-105 transition-transform duration-700" src="/treatment.jpg" fill sizes="(max-width: 1024px) 100vw, 512px" />
             </div>
-            <div className="absolute -z-10 top-10 right-10 w-64 h-64 bg-accent/20 rounded-full blur-3xl"></div>
-            <div className="absolute -z-10 bottom-10 left-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
           </ScrollReveal>
         </div>
       </div>

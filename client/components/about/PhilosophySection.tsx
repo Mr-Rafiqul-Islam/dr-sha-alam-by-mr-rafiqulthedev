@@ -7,7 +7,7 @@ export default function PhilosophySection() {
       className="py-32 relative flex items-center justify-center bg-fixed bg-cover bg-center"
       style={{
         backgroundImage:
-          "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDfVy-hECVBOGFvnbBAq98jhu2deQmdnGQPyKmxaUPMVIJ0vWY-1oLCLh83-7dKhjon8k0n-s6T68LyWsUCDWfPIWHPepKRLhMzCFk7qduw7ab4qTGf81kQCVsKAjmH1CMo4RQGc1atnYsN5LW36XFAsiQO0crLozphvXNMiTR1wlZWQY_MDR9WnItGQV5hpWkO4PCFLBy83SA4tApD0TbvNTDZKiAsxJ0HD5fLdn3QOeoEAOkF055LuRfYg68iHlm8_tulxhjDZL0')",
+          "url('/team.jpg')",
       }}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-primary-dark/90 to-primary/80"></div>
