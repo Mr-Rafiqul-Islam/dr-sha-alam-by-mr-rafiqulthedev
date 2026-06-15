@@ -1,19 +1,33 @@
 import type { CorsOptions } from "cors";
 
-const allowedOrigins: string[] = [
+function parseExtraOrigins(value: string | undefined): string[] {
+  if (!value?.trim()) {
+    return [];
+  }
+  return value.split(",").map((entry) => entry.trim()).filter(Boolean);
+}
+
+const allowedOrigins = [
   "http://localhost:3000",
+  "http://localhost:5173",
   "https://doctorshahalam.com",
   "https://www.doctorshahalam.com",
-  "http://localhost:5173",
-  "http://localhost:5000",
-];
+  "https://sandbox.sslcommerz.com",
+  "https://securepay.sslcommerz.com",
+  process.env.FRONTEND_URL,
+  process.env.BACKEND_URL,
+  ...parseExtraOrigins(process.env.CORS_ALLOWED_ORIGINS),
+].filter((origin): origin is string => Boolean(origin));
+
+const uniqueAllowedOrigins = [...new Set(allowedOrigins)];
 
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || uniqueAllowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      // Allow the request through without CORS headers (payment redirects, IPN, etc.).
+      callback(null, false);
     }
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
