@@ -12,7 +12,7 @@ export default function TreatmentCallToAction() {
           <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-10">
           Whether you&apos;re struggling with PLID, sciatica, back pain, neck pain, or joint problems, expert guidance can help you move forward with confidence.
           </p>
-          <Link href="/book" className="inline-block bg-accent hover:bg-white hover:text-primary text-white font-bold py-4 px-10 rounded-full text-lg transition-all shadow-lg transform hover:-translate-y-1">
+          <Link href="/appointment" className="inline-block bg-accent hover:bg-white hover:text-primary text-white font-bold py-4 px-10 rounded-full text-lg transition-all shadow-lg transform hover:-translate-y-1">
           Book Consultation
           </Link>
         </div>

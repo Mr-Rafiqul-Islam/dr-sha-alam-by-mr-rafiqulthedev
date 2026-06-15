@@ -68,7 +68,7 @@ export default function BlogSidebar({ toc, relatedArticles }: BlogSidebarProps) 
           <span className="material-symbols-outlined text-4xl mb-3">medical_services</span>
           <h3 className="text-xl font-bold mb-2">Pain Won&apos;t Go Away?</h3>
           <p className="text-white/80 text-sm mb-6">Schedule a consultation with Dr. Alam today.</p>
-          <Link href="/book" className="block w-full bg-accent hover:bg-accent-dark text-white font-bold py-3 rounded-xl transition-colors shadow-md text-sm">
+          <Link href="/appointment" className="block w-full bg-accent hover:bg-accent-dark text-white font-bold py-3 rounded-xl transition-colors shadow-md text-sm">
             Book Now
           </Link>
         </div>

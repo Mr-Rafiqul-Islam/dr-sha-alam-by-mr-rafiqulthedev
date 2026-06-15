@@ -35,7 +35,7 @@ export default function SuccessHero() {
             </p>
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <Link
-                href="/book"
+                href="/appointment"
                 className="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white text-base font-bold h-14 px-10 rounded-full transition-all duration-300 shadow-lg hover:shadow-primary/30 flex items-center justify-center"
               >
                 Start Your Journey

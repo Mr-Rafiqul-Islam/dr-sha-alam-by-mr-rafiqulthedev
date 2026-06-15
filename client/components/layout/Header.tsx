@@ -67,7 +67,7 @@ export default function Header() {
           {/* Desktop Book Button */}
           <div className="hidden lg:flex flex-shrink-0">
             <Link
-              href="/book"
+              href="/appointment"
               className="bg-[#00CBC0] hover:bg-accent-dark text-white text-sm xl:text-base font-bold py-3 px-6 xl:px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
             >
               Book Appointment
@@ -120,7 +120,7 @@ export default function Header() {
               })}
               <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
                 <Link
-                  href="/book"
+                  href="/appointment"
                   onClick={closeMenu}
                   className="flex justify-center w-full bg-[#00CBC0] hover:bg-accent-dark text-white text-lg font-bold py-4 px-8 rounded-full transition-all duration-300 shadow-md"
                 >

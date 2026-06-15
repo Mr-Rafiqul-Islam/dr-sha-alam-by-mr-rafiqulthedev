@@ -22,7 +22,7 @@ export default function PaymentCancelledPage() {
 
         <ScrollReveal direction="up" delay={0.1}>
           <Link
-            href="/book"
+            href="/appointment"
             className="inline-flex items-center justify-center bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full transition-all"
           >
             Back to Booking

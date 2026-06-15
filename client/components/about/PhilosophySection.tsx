@@ -32,7 +32,7 @@ export default function PhilosophySection() {
         </p>
         <Link
           className="inline-block bg-accent hover:bg-accent-dark text-white font-bold py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-          href="/book"
+          href="/appointment"
         >
           Book A Consultation
         </Link>

@@ -136,7 +136,7 @@ export default function Footer() {
               <li>
                 <Link
                   className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/book"
+                  href="/appointment"
                 >
                   Book Appointment
                 </Link>

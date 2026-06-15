@@ -22,7 +22,7 @@ export default function CallToAction() {
               your condition, the sooner you can begin your recovery.
             </p>
             <Link
-              href="/book"
+              href="/appointment"
               className="inline-block bg-accent hover:bg-accent-dark hover:scale-105 text-white text-lg font-bold py-4 px-12 rounded-full transition-all duration-300 shadow-xl shadow-accent/20"
             >
               Start My Recovery Journey

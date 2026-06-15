@@ -69,7 +69,7 @@ export default function AfterTreatmentSupport() {
           </div>
 
           <Link
-            href="/book"
+            href="/appointment"
             className="inline-flex items-center gap-2 bg-[#00CBC0] hover:bg-accent-dark text-white text-base font-bold py-3.5 px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5"
           >
             Book Follow-Up Appointment
