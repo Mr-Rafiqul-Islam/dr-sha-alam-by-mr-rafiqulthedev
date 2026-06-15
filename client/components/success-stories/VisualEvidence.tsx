@@ -67,7 +67,7 @@ export default function VisualEvidence() {
                 <Image
                   alt="Sciatica and leg pain before recovery"
                   className="object-cover filter grayscale opacity-80 transition-transform duration-300 group-hover:scale-105"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhTGHZH_tVhunqU02gLYkQeRWW8aroNv8osjeXGsibyxNCbSE-6ArcXLQ5B3vtG2GlbgjSzZMBLUkp54R_bLFm55bqV7yPo8mzltYGHnvHDa3Uzj7HQMHI3wkRKMQAlkWiLhOqcwYPg7mW0U6i8VDCckrTQbERH1BuB8N5X0uYHJ2jH2A5cL-_jA1Q-KnMYiU7N1uTCtVVSNT8txcB20X0zk6gPCqsuH6Bw3SjEJKKz20Yfa7cmDi0e7XDUrJakZR3YGuBZUARakk"
+                  src="/before-2.jpeg"
                   fill
                   sizes="(max-width: 1024px) 45vw, 400px"
                 />
@@ -84,7 +84,7 @@ export default function VisualEvidence() {
                 <Image
                   alt="Sciatica and leg pain after recovery"
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5W4oJBSyqMRhFxyzxBLpytWKudk91QDeKhXemcBA9exoBM0HDmg5vqfRy5Vd0IZmyHaMwytMqSRfybA-Zari2fEiBQHSMW0XHkh8wVcCqFutUNdRQwQQIR2DkahsDtxCdU21fL9SchGqo8kQyGn9Yc0G_zTIhuvDuvlV7_6zIofy4ApLZIXUtrYzI4JEKcGfYwk1MEMMrphQ2GqH9luWElaCQZvnkh69wMBiLGd66Fo-IziNfJDMewpSYo0t79nnaJcLGKTe1ADs"
+                  src="/after-2.jpeg"
                   fill
                   sizes="(max-width: 1024px) 45vw, 400px"
                 />
