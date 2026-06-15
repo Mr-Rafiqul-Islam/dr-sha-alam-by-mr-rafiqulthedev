@@ -1,4 +1,4 @@
-import ScrollReveal from '@/components/ScrollReveal';
+import ScrollReveal from "@/components/ScrollReveal";
 
 export default function AfterTreatmentHero() {
   return (
@@ -8,12 +8,18 @@ export default function AfterTreatmentHero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         <ScrollReveal direction="up">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white font-semibold text-xs uppercase tracking-wider border border-white/20 mb-6">
-            <span className="material-symbols-outlined text-sm">medical_services</span>
-            Patient Resources
+            <span className="material-symbols-outlined text-sm">
+              medical_services
+            </span>
+            PATIENT RECOVERY GUIDE
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6">After Treatment Instructions</h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
+            After Treatment Instructions
+          </h1>
           <p className="text-lg text-white/80 max-w-2xl mx-auto">
-            Your journey to full recovery continues at home. Follow these guidelines carefully to ensure the best possible outcome from your treatment.
+            Successful recovery depends not only on treatment but also on what
+            you do afterward. Follow these guidelines carefully to support
+            healing, reduce discomfort, and maximize long-term results.
           </p>
         </ScrollReveal>
       </div>
