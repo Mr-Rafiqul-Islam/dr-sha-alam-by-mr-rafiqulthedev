@@ -141,7 +141,7 @@ function Checklist({ heading, intro, items }: { heading: string; intro?: string;
       <ul className="space-y-2.5">
         {items.map((item) => (
           <li key={item} className="flex items-start gap-2.5 text-sm text-text-sub">
-            <span className="text-accent mt-0.5 shrink-0 font-bold">✔</span>
+            <span className="material-symbols-outlined text-accent">check_circle</span>
             <span>{item}</span>
           </li>
         ))}
