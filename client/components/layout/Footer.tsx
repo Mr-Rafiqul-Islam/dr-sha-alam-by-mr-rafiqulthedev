@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
@@ -30,16 +31,15 @@ export default function Footer() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-24 mb-16">
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white text-lg font-bold">
-                D
-              </div>
-              <div className="flex flex-col">
-                <h2 className="text-xl font-bold text-white leading-none">
-                  Dr. Shah Alam
-                </h2>
-              </div>
-            </div>
+            <Link href="/" className="inline-block">
+              <Image
+                src="/logo-in-dark.png"
+                alt="Dr. Shah Alam"
+                width={180}
+                height={40}
+                className="h-10 w-auto object-contain"
+              />
+            </Link>
             <div className="space-y-3 pt-2">
               <p className="text-gray-400 text-sm leading-relaxed">
               49, Mohakhali, Beside Square Centre, Wireless Gate, Mohakhali, Dhaka 1212, Bangladesh

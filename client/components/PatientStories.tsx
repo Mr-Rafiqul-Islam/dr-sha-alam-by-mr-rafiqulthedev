@@ -7,21 +7,21 @@ const stories = [
   {
     id: 1,
     quote: "After understanding my condition and following the recovery roadmap, my pain improved significantly and I returned to normal activities.",
-    name: "Rahman Khan",
+    name: "Mizanur Rahman",
     condition: "Recovered from PLID",
     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDUmaPVbPNx_wkwUKO6yQCE23MeytyZNNs0PHyKEKubJYwopu7Z25myusFo2ct2xB1HBhqsT5lAyMax83RCg844HmfostNthsW2_c0dxfw2lh6W-orM46HktkU6fU3g3VGaS5PebsxCZ8tkhYwjVbqoqYAOHLbSZp16iUUmvVQl8G06Wk1bZQS7mSDahydriS7ERCLLwJJcuFJ_BAqxEGhigdmjme9vhyKVuwFdMTLYjl9Pxz3_lTp-BtabfSqn3S-N2Ts2xBLgoxY",
   },
   {
     id: 2,
     quote: "I was struggling with severe sciatica. Proper evaluation helped me avoid unnecessary surgery and recover faster.",
-    name: "Sarah Ahmed",
+    name: "Jannatul Ferdous",
     condition: "Recovered from Sciatica",
     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBmcOC0zZjsNKoYJx-YRKI8lewO5-QT4vfQW6dQnvq91n-WgKI0aczFhkhfVA-V3EL5CcTPJnJ_-dOLQVOFFB9pZB9EtIprizpBPOCt975DlEHS-IvJ2RRwSJofygXcEmJRlaGte5EVu3GGygnI1Lqkd095w2yEv0zsSnPuN6sa461QEssVAVSNABmxAuUgwo32O_d5xzOwAhEvAaJJIAelfcTcmaHb_894l0rDLet2r12GvTkZgYA9blXimmH5wyvqKBjLP12-JOg",
   },
   {
     id: 3,
     quote: "Dr. Shah Alam explained my condition clearly. For the first time, I knew exactly what treatment I needed.",
-    name: "James Wilson",
+    name: "Saiful Rahman",
     condition: "Shoulder Mobility Restored",
     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBHJW2_Ueex3EXL5Qm1ynM3CDW_ngk9ABTRhBqlYy00Hm5ild8A74BOrumslVmZ7DA93O8Bh-MWFZ3CrSPIW3ZdmYNYUxeQszmLe-f2YCLH63r06O9-9vmxVTwxz9iKmtEpJzc3m4OEQhfSkoYF_nJ6nk-PsYpDzarNbuhTbJotueF8x23NsQWPHTLeONZrUgUmHe7iuU2FGxDZQ9VKqUcfB5dfUJWEtMMpfK526StBGfZLpSAkYOKtGOVcdoNCrnOMDWuIGbquntk",
   },
@@ -165,7 +165,7 @@ export default function PatientStories() {
   return (
     <section className="lg:py-24 py-16 bg-background-light overflow-hidden" id="success-stories">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-end lg:mb-16 mb-4 gap-6">
           <div className="max-w-2xl">
             <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">Patient Stories</h2>
             <h3 className="text-3xl md:text-4xl font-extrabold text-primary">Real Patients. Real Recovery Stories.</h3>
