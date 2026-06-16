@@ -1,12 +1,16 @@
-import { AppointmentStatus } from "@prisma/client";
+import { AppointmentStatus, SiteRef } from "@prisma/client";
 import type { Request, Response } from "express";
 import { prisma } from "../../config/db.js";
 import { sendAppointmentSms } from "../../modules/appointment/appointment.sms.js";
 import {
-  parsePreferredTimeCode,
   toPublicAppointment,
   toPublicAppointments,
 } from "../../modules/appointment/appointment.mapper.js";
+import {
+  parseSlotCodeString,
+  runSerializableTransaction,
+  validateAppointmentSlotAvailability,
+} from "../../modules/appointment/appointment.slot-availability.js";
 import {
   AppointmentValidationError,
   getDayRange,
@@ -43,17 +47,22 @@ export async function createAppointment(req: Request, res: Response) {
     const emailText = parseEmail(req.body.email);
     const problemText = parseOptionalString(req.body.problem);
     const selectedDate = parseFutureAppointmentDate(req.body.preferredDate, "preferredDate");
-
-    const slotCode = parsePreferredTimeCode(req.body.preferredTime);
-    if (!slotCode) {
-      throw new AppointmentValidationError(
-        "preferredTime must be one of: P-9, OP-4, G-5",
-      );
-    }
+    const slotCode = parseSlotCodeString(req.body.preferredTime);
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
 
-    const newAppointment = await prisma.$transaction(async (tx) => {
+    let smsLabel: string | null | undefined;
+
+    const newAppointment = await runSerializableTransaction(async (tx) => {
+      const slotAvailability = await validateAppointmentSlotAvailability({
+        appointmentDate: selectedDate,
+        preferredTime: slotCode,
+        siteRef: SiteRef.DOCTOR_SHA_ALAM,
+        tx,
+      });
+
+      smsLabel = slotAvailability.smsLabel;
+
       const existingAppointment = await tx.appointment.findFirst({
         where: {
           phone,
@@ -91,6 +100,8 @@ export async function createAppointment(req: Request, res: Response) {
           preferredTime: slotCode,
           appointmentDate: selectedDate,
           serialNumber,
+          scheduleId: slotAvailability.scheduleId,
+          slotId: slotAvailability.slotId,
         },
       });
     });
@@ -100,6 +111,7 @@ export async function createAppointment(req: Request, res: Response) {
       phone,
       serialNumber: newAppointment.serialNumber,
       slotCode,
+      smsLabel,
     }).catch((smsError) => {
       console.error("Failed to send appointment SMS:", smsError);
     });

@@ -1,4 +1,3 @@
-import type { PreferredTimeCode } from "../appointment/appointment.mapper.js";
 import type { SiteRef } from "@prisma/client";
 
 export type PaymentAppointmentPayload = {
@@ -8,9 +7,11 @@ export type PaymentAppointmentPayload = {
   homeAddress: string;
   problem?: string | null;
   preferredDate: string;
-  preferredTime: PreferredTimeCode;
+  preferredTime: string;
   gender?: string | null;
   siteRef?: SiteRef;
+  scheduleId?: string | null;
+  slotId?: string | null;
 };
 
 export function isPaymentAppointmentPayload(

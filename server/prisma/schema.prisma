@@ -73,6 +73,11 @@ enum ContactMessageStatus {
   READ
 }
 
+enum ScheduleStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model User {
   id         String   @id @default(uuid())
   name       String?
@@ -129,11 +134,60 @@ model Appointment {
   status          AppointmentStatus @default(PENDING)
   siteRef         SiteRef           @default(DOCTOR_SHA_ALAM)
   transactionId   String?           @unique
+  scheduleId      String?
+  slotId          String?
+
+  schedule AppointmentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  slot     AppointmentSlot?     @relation(fields: [slotId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([appointmentDate])
+  @@index([scheduleId])
+  @@index([slotId])
+  @@index([appointmentDate, preferredTime, siteRef, status])
+}
+
+model AppointmentSchedule {
+  id       String         @id @default(uuid())
+  siteRef  SiteRef        @default(DOCTOR_SHA_ALAM)
+  status   ScheduleStatus @default(ACTIVE)
+  title    String?
+  date     DateTime
+  isClosed Boolean        @default(false)
+
+  slots        AppointmentSlot[]
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([siteRef, date])
+  @@index([siteRef, date, status])
+}
+
+model AppointmentSlot {
+  id         String @id @default(uuid())
+  scheduleId String
+
+  code      String
+  label     String
+  smsLabel  String?
+  startTime String
+  endTime   String?
+
+  seatLimit Int
+  isActive  Boolean @default(true)
+
+  schedule     AppointmentSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([scheduleId, code])
+  @@index([scheduleId, isActive])
 }
 
 model Payment {
@@ -301,15 +355,15 @@ model Purchase {
 }
 
 model ContactMessage {
-  id        String   @id @default(uuid())
-  status    ContactMessageStatus @default(PENDING)
+  id     String               @id @default(uuid())
+  status ContactMessageStatus @default(PENDING)
 
-  name      String
-  email     String?
-  phone     String
+  name  String
+  email String?
+  phone String
 
-  subject   String
-  message   String?
+  subject String
+  message String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
