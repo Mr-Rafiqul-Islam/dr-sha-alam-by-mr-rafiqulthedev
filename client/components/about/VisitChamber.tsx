@@ -16,8 +16,9 @@ export default function VisitChamber() {
                   <span className="material-symbols-outlined">location_on</span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-text-main dark:text-white">Primary Clinic Location</h4>
-                  <p className="text-text-sub text-sm">House 42, Road 7, Sector 3, Uttara, Dhaka - 1230</p>
+                  <h4 className="font-bold text-text-main dark:text-white">TruCare Diagnostic Centre</h4>
+                  <p className="text-text-sub text-sm">49, Mohakhali, Beside Square Centre, Wireless Gate,
+                  Mohakhali, Dhaka 1212</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -26,16 +27,16 @@ export default function VisitChamber() {
                 </div>
                 <div>
                   <h4 className="font-bold text-text-main dark:text-white">Visiting Hours</h4>
-                  <p className="text-text-sub text-sm">Saturday to Thursday: 9:00 AM - 10:00 PM</p>
+                  <p className="text-text-sub text-sm">Saturday to Thursday: 9:00 AM – 8:00 PM</p>
                 </div>
               </div>
             </div>
           </div>
           <div className="md:w-2/5 w-full flex flex-col gap-4">
             <div className="aspect-video rounded-xl overflow-hidden shadow-md bg-gray-200">
-              <Image alt="Clinic Location Map" width={500} height={500} className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_XhY7dbV--FNwz0DYaTdRVQBV5ha5qA3L3XmuwNFJX1yy41E10_9m10F2DQ0ABe1GjW0GeBCf629me4oyOPdwKV9vh5gRLKBkqx6OXbTWN2CmAqxR6BG7PbsPgAZ5Ot6zj6CUtcCTFxC15Xrrh3ZyIG3cTPwh06eOF6CKbuwtGd_SWTGoxjnzMowTIHoFqS3sXLeiZzdFSIZHEaSE5wAoNYUILy-fa0s7D-WIx4F33zdJvRwpDP6yUZiV2yH4hxMvuSPtnzfboRk"/>
+              <Image alt="Clinic Location Map" width={500} height={500} className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/gps-cs-s/APNQkAHCBSsBaS4eMQ_p_RsiAcskgPV6yRNa40PZonYxd0LI_vZvC8we7w1hhX1nelBronI6dviFmmSAZp788YIWrSUkfHevD_zFTD5CQdngQwfoHUSaH52ExnDWB7UXrwztS77BDpojV64BN_Rd=w408-h311-k-no"/>
             </div>
-            <Link href="/book" className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-primary/30 flex items-center justify-center gap-2">
+            <Link href="/appointment" className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-primary/30 flex items-center justify-center gap-2">
               Book Appointment Now
               <span className="material-symbols-outlined">calendar_month</span>
             </Link>

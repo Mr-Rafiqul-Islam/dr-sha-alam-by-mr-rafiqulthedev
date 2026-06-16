@@ -2,6 +2,7 @@ import PatientGuidelinesHero from '@/components/patient-guidelines/PatientGuidel
 import PatientGuidelinesNav from '@/components/patient-guidelines/PatientGuidelinesNav';
 import PatientGuidelinesBeforeVisit from '@/components/patient-guidelines/PatientGuidelinesBeforeVisit';
 import PatientGuidelinesPostTreatment from '@/components/patient-guidelines/PatientGuidelinesPostTreatment';
+import PatientGuidelinesExercise from '@/components/patient-guidelines/PatientGuidelinesExercise';
 import PatientGuidelinesEmergency from '@/components/patient-guidelines/PatientGuidelinesEmergency';
 import PatientGuidelinesContact from '@/components/patient-guidelines/PatientGuidelinesContact';
 
@@ -12,6 +13,7 @@ export default function PatientGuidelinesPage() {
       <PatientGuidelinesNav />
       <PatientGuidelinesBeforeVisit />
       <PatientGuidelinesPostTreatment />
+      <PatientGuidelinesExercise />
       <PatientGuidelinesEmergency />
       <PatientGuidelinesContact />
     </main>

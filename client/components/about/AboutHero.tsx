@@ -17,8 +17,8 @@ export default function AboutHero() {
             <div className="relative z-10 min-h-[500px] rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background-light dark:border-background-dark transform rotate-2 hover:rotate-0 transition-transform duration-500">
               <Image
                 alt="Dr. Shah Alam Portrait"
-                className="object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXyswzoTx0Ks3xnTRTj39uHpQsl1ZuUMtsAAL9aHcJuQLx8alBskvzCXQXp8Oi4vlwgGBhwQaG70s3K0GJyOzq-GchzxNoFsAStwzkgWzPkat2_XMpTiGt8hmpOZR3JxvM6PFxuxtsWfxWpKzOMMQ4bh39Kd-6aTgnq5e7asU2WjtjG7TiHe6KRX39buIcw5iIq7cHHlDh5dWKWJIRshM8iluJ7k3EJWtyHQQq8ZlJyY2TzlNbeAMYY3NJE8t3-uwIIZsf1UtPcEU"
+                className="object-cover object-bottom"
+                src="/about-image.jpg"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />

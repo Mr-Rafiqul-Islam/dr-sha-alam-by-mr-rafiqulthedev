@@ -61,7 +61,7 @@ export default function BookAppointment() {
                 <Image
                   alt="Professional photo of Dr Shah Alam"
                   className="z-10 object-cover rounded-full border-8 border-white dark:border-surface-dark shadow-2xl"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXyswzoTx0Ks3xnTRTj39uHpQsl1ZuUMtsAAL9aHcJuQLx8alBskvzCXQXp8Oi4vlwgGBhwQaG70s3K0GJyOzq-GchzxNoFsAStwzkgWzPkat2_XMpTiGt8hmpOZR3JxvM6PFxuxtsWfxWpKzOMMQ4bh39Kd-6aTgnq5e7asU2WjtjG7TiHe6KRX39buIcw5iIq7cHHlDh5dWKWJIRshM8iluJ7k3EJWtyHQQq8ZlJyY2TzlNbeAMYY3NJE8t3-uwIIZsf1UtPcEU"
+                  src="/sir-3.jpg"
                   fill
                   sizes="(max-width: 768px) 288px, 384px"
                 />

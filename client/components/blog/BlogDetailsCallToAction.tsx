@@ -12,7 +12,7 @@ export default function BlogDetailsCallToAction() {
             <p className="text-white/90 text-lg md:text-xl font-medium leading-relaxed">
               While these articles provide general guidance, every body is unique. Book a consultation for a thorough assessment and a tailored recovery plan.
             </p>
-            <Link href="/book" className="bg-accent hover:bg-accent-dark text-white text-lg font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 inline-flex items-center gap-2">
+            <Link href="/appointment" className="bg-accent hover:bg-accent-dark text-white text-lg font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 inline-flex items-center gap-2">
               Book Appointment <span className="material-symbols-outlined">calendar_month</span>
             </Link>
           </div>

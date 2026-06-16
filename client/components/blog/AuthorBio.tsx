@@ -17,8 +17,8 @@ export default function AuthorBio() {
             <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl transform translate-x-2 translate-y-2"></div>
             <Image
               alt="Dr. Shah Alam Portrait"
-              className="rounded-full object-cover border-4 border-white dark:border-background-dark shadow-xl"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXyswzoTx0Ks3xnTRTj39uHpQsl1ZuUMtsAAL9aHcJuQLx8alBskvzCXQXp8Oi4vlwgGBhwQaG70s3K0GJyOzq-GchzxNoFsAStwzkgWzPkat2_XMpTiGt8hmpOZR3JxvM6PFxuxtsWfxWpKzOMMQ4bh39Kd-6aTgnq5e7asU2WjtjG7TiHe6KRX39buIcw5iIq7cHHlDh5dWKWJIRshM8iluJ7k3EJWtyHQQq8ZlJyY2TzlNbeAMYY3NJE8t3-uwIIZsf1UtPcEU"
+              className="rounded-full object-cover object-center border-4 border-white dark:border-background-dark shadow-xl"
+              src="/sir-3.jpg"
               fill
               sizes="(max-width: 768px) 192px, 256px"
             />

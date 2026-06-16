@@ -34,6 +34,79 @@ const stories = [
   }
 ];
 
+// const stories = [
+//   {
+//     id: 1,
+//     name: 'Rahman Ali',
+//     condition: 'PLID Recovery Journey',
+//     quote:
+//       'I was terrified when my MRI showed a disc prolapse. I thought surgery was unavoidable. Dr. Shah Alam explained my condition clearly and guided me through a structured recovery plan. Today, my leg pain and numbness are almost gone, and I\'m back to my normal routine.',
+//   },
+//   {
+//     id: 2,
+//     name: 'Fatema Begum',
+//     condition: 'Sciatica Relief',
+//     quote:
+//       'For months, I couldn\'t sit comfortably for more than 10 minutes because of severe sciatica. The treatment plan, exercises, and guidance helped me recover step by step. I can now travel, work, and sleep comfortably again.',
+//   },
+//   {
+//     id: 3,
+//     name: 'Md. Hasan',
+//     condition: 'Avoided Unnecessary Surgery',
+//     quote:
+//       'Several people told me I needed surgery immediately. After consulting Dr. Shah Alam, I learned that surgery wasn\'t necessary in my case. With proper treatment and rehabilitation, my symptoms improved significantly.',
+//   },
+//   {
+//     id: 4,
+//     name: 'Shila Akter',
+//     condition: 'PLID Rehabilitation Success',
+//     quote:
+//       'The pain in my lower back and leg affected every part of my life. I lost confidence and became afraid of movement. The recovery program helped me regain strength, flexibility, and peace of mind.',
+//   },
+//   {
+//     id: 5,
+//     name: 'Abdul Karim',
+//     condition: 'Recovery From Severe Nerve Pain',
+//     quote:
+//       'My leg pain was so intense that I could barely walk. I was worried about permanent nerve damage. Thanks to proper evaluation and treatment, the pain gradually disappeared, and I can now walk without fear.',
+//   },
+//   {
+//     id: 6,
+//     name: 'Nurjahan Begum',
+//     condition: 'Back To Daily Activities',
+//     quote:
+//       'Simple tasks like praying, cooking, and walking became difficult because of PLID. The personalized treatment plan gave me a clear direction. I\'m now able to perform my daily activities with much greater comfort.',
+//   },
+//   {
+//     id: 7,
+//     name: 'Kamrul Islam',
+//     condition: 'Return To Work',
+//     quote:
+//       'As a working professional, I was worried that my back problem would affect my career. Dr. Shah Alam helped me understand the condition and taught me how to manage it properly. I\'m back at work and feeling much more confident.',
+//   },
+//   {
+//     id: 8,
+//     name: 'Jannatul Ferdous',
+//     condition: 'Relief From Tingling & Numbness',
+//     quote:
+//       'The constant tingling and numbness in my leg made me anxious. I feared the condition would worsen over time. After following the treatment plan consistently, those symptoms improved dramatically.',
+//   },
+//   {
+//     id: 9,
+//     name: 'Saiful Rahman',
+//     condition: 'Long-Term Improvement',
+//     quote:
+//       'What impressed me most was the honest guidance. Instead of rushing into procedures, Dr. Shah Alam focused on understanding the root cause of my problem. My pain is now under control, and my quality of life has improved greatly.',
+//   },
+//   {
+//     id: 10,
+//     name: 'Mizanur Rahman',
+//     condition: 'Regained Confidence',
+//     quote:
+//       'PLID affected not only my body but also my mental well-being. I constantly worried about my future. The combination of medical guidance, rehabilitation, and lifestyle advice helped me regain confidence and return to an active life.',
+//   },
+// ];
+
 export default function PatientStories() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(1); // Default to second item on desktop

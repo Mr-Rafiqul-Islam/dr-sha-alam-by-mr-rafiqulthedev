@@ -35,7 +35,7 @@ export default function SuccessHero() {
             </p>
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <Link
-                href="/book"
+                href="/appointment"
                 className="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white text-base font-bold h-14 px-10 rounded-full transition-all duration-300 shadow-lg hover:shadow-primary/30 flex items-center justify-center"
               >
                 Start Your Journey
@@ -48,11 +48,11 @@ export default function SuccessHero() {
             className="relative lg:h-[500px] flex items-center justify-center"
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-accent/10 to-primary/10 rounded-full blur-3xl transform scale-90 z-0"></div>
-            <div className="relative z-10 w-full h-full min-h-[280px] lg:min-h-0 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white dark:border-surface-dark group">
+            <div className="relative bg-white z-10 w-full h-full min-h-[280px] lg:min-h-0 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white dark:border-surface-dark group">
               <Image
                 alt="Smiling patient enjoying renewed mobility outdoors"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBup9j_Bta9rvZplDrDCCftNQRfMvIcBu-XB76-6jxypvguW3OqALlRiP95ZB9yfp2puihtoVzI3remBK7r2emI-DNB4q-K3kAMdM_n8liv0W2l_Fnr7hmnQxkpirr_pfmAvLdVUDEJ7gWUtWgZ6w8wJVHQKeKw5AZGyu0_5YKX_KNkIxt6GDbN40VSHi8tJnDImV9MLYTKiquZXVBWczVKhqDOk4XlBPMAf39rrCUewkPPFvbhuAAxgLtsOlc6fTOoRGhBp62XeAE"
+                className="object-contain object-center transition-transform duration-700 group-hover:scale-105"
+                src="/success-patient1.jpeg"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
@@ -61,7 +61,7 @@ export default function SuccessHero() {
                   &quot;I never thought I&apos;d walk pain-free again.&quot;
                 </p>
                 <p className="text-gray-200 text-sm">
-                  — Anisul Islam, recovered from PLID
+                  — Shonjoy Kumar Mondol, recovered from PLID
                 </p>
               </div>
             </div>

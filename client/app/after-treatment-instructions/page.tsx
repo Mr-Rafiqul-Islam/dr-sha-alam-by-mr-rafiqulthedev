@@ -4,6 +4,9 @@ import AfterTreatmentRecoveryTips from '@/components/after-treatment/AfterTreatm
 import AfterTreatmentExercise from '@/components/after-treatment/AfterTreatmentExercise';
 import AfterTreatmentWarning from '@/components/after-treatment/AfterTreatmentWarning';
 import AfterTreatmentFAQ from '@/components/after-treatment/AfterTreatmentFAQ';
+import AfterTreatmentRecoverySuccess from '@/components/after-treatment/AfterTreatmentRecoverySuccess';
+import AfterTreatmentFinalMessage from '@/components/after-treatment/AfterTreatmentFinalMessage';
+import AfterTreatmentSupport from '@/components/after-treatment/AfterTreatmentSupport';
 
 export default function AfterTreatmentInstructionsPage() {
   return (
@@ -17,9 +20,12 @@ export default function AfterTreatmentInstructionsPage() {
             <AfterTreatmentExercise />
             <AfterTreatmentWarning />
             <AfterTreatmentFAQ />
+            <AfterTreatmentRecoverySuccess />
           </div>
         </div>
       </section>
+      <AfterTreatmentFinalMessage />
+      <AfterTreatmentSupport />
     </main>
   );
 }

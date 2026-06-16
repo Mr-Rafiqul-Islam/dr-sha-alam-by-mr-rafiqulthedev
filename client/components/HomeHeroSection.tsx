@@ -25,7 +25,7 @@ export default function HomeHeroSection() {
             Helping patients overcome PLID, sciatica, back pain, neck pain, and nerve-related disorders through evidence-based medical care, therapeutic yoga, lifestyle correction, and patient education.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-              <Link href="/book" className="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white xl:text-base text-sm font-bold h-14 px-10 rounded-full transition-all duration-300 shadow-xl shadow-primary/20 hover:shadow-primary/40 transform hover:-translate-y-1 flex items-center justify-center">
+              <Link href="/appointment" className="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white xl:text-base text-sm font-bold h-14 px-10 rounded-full transition-all duration-300 shadow-xl shadow-primary/20 hover:shadow-primary/40 transform hover:-translate-y-1 flex items-center justify-center">
                 Book Appointment
               </Link>
               <Link href="/success-stories" className="w-full sm:w-auto bg-white border-2 border-gray-100 hover:border-primary/30 text-text-main hover:text-primary xl:text-base text-sm font-bold h-14 px-10 rounded-full transition-all duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow-md">

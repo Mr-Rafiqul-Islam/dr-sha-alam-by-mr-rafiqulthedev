@@ -23,7 +23,7 @@ export default function BlogCallToAction() {
               options for your situation.
             </p>
             <Link
-              href="/book"
+              href="/appointment"
               className="inline-flex bg-accent hover:bg-accent-dark text-white text-lg font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 items-center gap-2"
             >
               Schedule Your Consultation Today{" "}

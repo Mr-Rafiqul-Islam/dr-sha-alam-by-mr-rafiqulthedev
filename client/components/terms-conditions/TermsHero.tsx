@@ -6,8 +6,16 @@ export default function TermsHero() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <ScrollReveal direction="up">
           <h1 className="text-4xl md:text-5xl font-extrabold text-primary dark:text-white mb-4">Terms &amp; Conditions</h1>
-          <p className="text-lg text-text-sub dark:text-gray-400">Please read these terms carefully before using our services.</p>
-          <p className="text-sm text-gray-500 mt-4">Last Updated: October 24, 2023</p>
+          <p className="text-lg text-text-sub dark:text-gray-400 mb-4">
+            Please Read These Terms Carefully Before Using Our Website Or Services
+          </p>
+          <p className="text-text-sub text-sm xl:text-base max-w-2xl mx-auto mb-4">
+            By accessing, browsing, booking appointments, or using any services provided through this website, you agree to comply with the following Terms &amp; Conditions.
+          </p>
+          <p className="text-text-sub text-sm xl:text-base max-w-2xl mx-auto">
+            If you do not agree with any part of these terms, please discontinue use of this website and related services.
+          </p>
+          <p className="text-sm text-gray-500 mt-4">Last Updated: June 15, 2026</p>
         </ScrollReveal>
       </div>
     </div>

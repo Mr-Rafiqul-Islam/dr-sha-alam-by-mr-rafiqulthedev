@@ -14,7 +14,7 @@ export default function PersonalNote() {
               <Image
                 alt="Dr. Alam at seminar"
                 className="rounded-2xl shadow-lg object-cover h-64 w-full transform translate-y-8"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOTjSAc1-lI6k7AWc9vIFTe1T3qZTUMpLURsHX5VugOOkg0mk7bhLy3jL078SBvDZ7AjPA-yAfXfo2ZuDvQk1elqdntezlYPbZNCaagEAoeiTm6OIGzSBjn7runX6jW9bo51kg7kNnf8adIw5D3wXSXevUB2M8XGTE22l-C5_FGsE_vJGMgkuHkFQP9QF1a02KMIdRHlNaAHoldCZkUlnsNhjAmGIY2q-xH9kpdQsNzlIi9ATCjHUhJPWvf3wARUi04_zChL0EQQ4"
+                src="/treatment-1.jpg"
                 width={600}
                 height={256}
                 sizes="(max-width: 1024px) 45vw, 400px"
@@ -22,7 +22,7 @@ export default function PersonalNote() {
               <Image
                 alt="Dr. Alam with patient"
                 className="rounded-2xl shadow-lg object-cover h-64 w-full"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUmaPVbPNx_wkwUKO6yQCE23MeytyZNNs0PHyKEKubJYwopu7Z25myusFo2ct2xB1HBhqsT5lAyMax83RCg844HmfostNthsW2_c0dxfw2lh6W-orM46HktkU6fU3g3VGaS5PebsxCZ8tkhYwjVbqoqYAOHLbSZp16iUUmvVQl8G06Wk1bZQS7mSDahydriS7ERCLLwJJcuFJ_BAqxEGhigdmjme9vhyKVuwFdMTLYjl9Pxz3_lTp-BtabfSqn3S-N2Ts2xBLgoxY"
+                src="/Dr. Shah Alam-3.jpeg"
                 width={600}
                 height={256}
                 sizes="(max-width: 1024px) 45vw, 400px"

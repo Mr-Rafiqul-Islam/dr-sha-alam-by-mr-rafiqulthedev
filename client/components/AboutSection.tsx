@@ -27,7 +27,7 @@ export default function AboutSection() {
                 <Image
                   alt="Dr. Shah Alam consulting with a patient in a modern office"
                   className="w-full h-auto object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOTjSAc1-lI6k7AWc9vIFTe1T3qZTUMpLURsHX5VugOOkg0mk7bhLy3jL078SBvDZ7AjPA-yAfXfo2ZuDvQk1elqdntezlYPbZNCaagEAoeiTm6OIGzSBjn7runX6jW9bo51kg7kNnf8adIw5D3wXSXevUB2M8XGTE22l-C5_FGsE_vJGMgkuHkFQP9QF1a02KMIdRHlNaAHoldCZkUlnsNhjAmGIY2q-xH9kpdQsNzlIi9ATCjHUhJPWvf3wARUi04_zChL0EQQ4"
+                  src="/patient-visiting-chamber.jpg"
                   width={1200}
                   height={900}
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -39,7 +39,7 @@ export default function AboutSection() {
                     <Image
                       alt=""
                       className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-surface-dark object-cover bg-gray-200 dark:bg-gray-700"
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=80"
+                      src="/success-patient1.jpeg"
                       width={32}
                       height={32}
                       sizes="32px"
@@ -47,7 +47,7 @@ export default function AboutSection() {
                     <Image
                       alt=""
                       className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-surface-dark object-cover bg-gray-200 dark:bg-gray-700"
-                      src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=96&h=96&q=80"
+                      src="/success-patient2.jpeg"
                       width={32}
                       height={32}
                       sizes="32px"
@@ -55,7 +55,7 @@ export default function AboutSection() {
                     <Image
                       alt=""
                       className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-surface-dark object-cover bg-gray-200 dark:bg-gray-700"
-                      src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&h=96&q=80"
+                      src="/clients.jpg"
                       width={32}
                       height={32}
                       sizes="32px"

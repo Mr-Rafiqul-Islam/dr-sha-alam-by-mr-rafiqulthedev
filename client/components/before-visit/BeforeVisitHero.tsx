@@ -10,7 +10,7 @@ export default function BeforeVisitHero() {
             <span className="material-symbols-outlined text-sm">info</span>
             PATIENT PREPARATION GUIDE
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-primary dark:text-white leading-[1.15] mb-6">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-primary dark:text-white leading-[1.15] mb-6">
             Before Your Visit{" "}
             <span className="text-accent">
               Prepare Today For A More Productive Consultation Tomorrow
