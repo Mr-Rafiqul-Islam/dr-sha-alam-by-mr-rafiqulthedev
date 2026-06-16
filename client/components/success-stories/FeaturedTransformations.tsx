@@ -19,17 +19,17 @@ export default function FeaturedTransformations() {
             treatment, and expert guidance.
           </p>
         </ScrollReveal>
-        <div className="space-y-12">
+        <div className="gap-x-6 lg:gap-y-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1">
           <ScrollReveal
             direction="up"
             delay={0.1}
             className="bg-background-light dark:bg-background-dark rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col lg:flex-row"
           >
-            <div className="lg:w-2/5 relative h-64 lg:h-full lg:min-h-[280px] lg:self-stretch">
+            <div className="relative aspect-square lg:w-2/5">
               <Image
                 alt="Elderly woman doing yoga stretches"
                 className="object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT6knM8_QcNLiYcX0uBqxrdRM-3ULKLBLk2xSqOO-N2XcVLXMuZS9OvlVsPA_If2Er5pHWFxdk9iYIfnGXJGkgTPgb5lxc5680G7BXKTlbieUstsQqpcN29lphzNHuXZRjnSLNkIeINreYGH4GBA9zRo06mbcaoqro8EQ9DJhhEwDisP037XwjQoOAAbJHHz_m4EUCGEzNY9tu_ISGWiWKgPt2mf61KOpdWO336Bi-oDr7ywCICo00co53GdzWziv-S7iHXdz2IEs"
+                src="/fetaured-stories-1.jpeg"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
               />
@@ -102,7 +102,7 @@ export default function FeaturedTransformations() {
             delay={0.2}
             className="bg-background-light dark:bg-background-dark rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col lg:flex-row-reverse"
           >
-            <div className="lg:w-2/5 relative h-64 lg:h-full lg:min-h-[280px] lg:self-stretch">
+            <div className="relative aspect-square lg:w-2/5">
               <Image
                 alt="Young man playing sports"
                 className="object-cover"
