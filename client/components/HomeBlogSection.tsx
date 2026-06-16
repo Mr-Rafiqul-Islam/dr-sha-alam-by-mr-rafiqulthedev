@@ -3,6 +3,7 @@ import Link from 'next/link';
 import ScrollReveal from '@/components/ScrollReveal';
 
 export default function HomeBlogSection() {
+  
   return (
     <ScrollReveal direction="up">
       <section className="py-24 bg-background-light dark:bg-background-dark" id="blog">

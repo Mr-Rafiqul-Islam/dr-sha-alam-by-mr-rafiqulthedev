@@ -29,7 +29,7 @@ export default function FeaturedTransformations() {
               <Image
                 alt="Elderly woman doing yoga stretches"
                 className="object-cover"
-                src="/fetaured-stories-1.jpeg"
+                src="/fetaured-stories-female.jpeg"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
               />
@@ -106,7 +106,7 @@ export default function FeaturedTransformations() {
               <Image
                 alt="Young man playing sports"
                 className="object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1CMgguKxAby2FKgSxEstybmrrl4t2G1gKVCjop4zkBYnXZrIj_KZQbaTxjtLcMx6QQsqO8RJiGgrZccotm_KWA73E-vP7TDzLEhYRXSsPSAUyUxacRar2VdYxVlXgPZRxzh8iMmvaTi9Zt2cRvv1qKtKMCTVoEQb9l1aSQKtPF6KBPrczSFDRHBW8IfAfysjTmGXmWwB8cVbiIqgSpXAwla8ECuGrhigOBjq4UUzofqoURzyFOBUcFP-EEieq9_whuopYkGe-DaU"
+                src="/fetaured-stories-male.jpeg"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
               />
