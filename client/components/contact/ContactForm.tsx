@@ -1,8 +1,6 @@
-import ScrollReveal from "@/components/ScrollReveal";
-
 export default function ContactForm() {
   return (
-    <div className="bg-background-light dark:bg-background-dark p-8 md:p-10 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+    <div className="w-full min-w-0 bg-background-light dark:bg-background-dark p-8 md:p-10 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-primary dark:text-white mb-2">
           Send Us A Message

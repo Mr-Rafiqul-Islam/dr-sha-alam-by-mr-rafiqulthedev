@@ -12,10 +12,10 @@ export default function CallToAction() {
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
           <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
           <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
+            <h2 className="text-2xl md:text-3xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">
               Don&apos;t Let PLID Control Your Life
             </h2>
-            <p className="text-gray-300 text-lg mb-10">
+            <p className="text-gray-300 lg:text-lg text-base mb-10">
               Thousands of patients have regained confidence, mobility, and
               peace of mind through proper diagnosis, personalized treatment,
               rehabilitation, and expert guidance. The sooner you understand
@@ -23,7 +23,7 @@ export default function CallToAction() {
             </p>
             <Link
               href="/appointment"
-              className="inline-block bg-accent hover:bg-accent-dark hover:scale-105 text-white text-lg font-bold py-4 px-12 rounded-full transition-all duration-300 shadow-xl shadow-accent/20"
+              className="inline-block bg-accent hover:bg-accent-dark hover:scale-105 text-white lg:text-lg text-base font-bold py-4 px-12 rounded-full transition-all duration-300 shadow-xl shadow-accent/20"
             >
               Start My Recovery Journey
             </Link>
