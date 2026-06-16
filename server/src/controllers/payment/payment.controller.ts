@@ -5,7 +5,7 @@ import {
   AppointmentValidationError,
 } from "../../modules/appointment/appointment.utils.js";
 import {
-  buildPaymentAppointmentPayload,
+  buildPaymentAppointmentPayloadWithSlotValidation,
   fulfillSuccessfulPayment,
   getBackendUrl,
   getFrontendUrl,
@@ -37,11 +37,12 @@ function redirectPaymentFailed(res: Response, error: string) {
 
 export async function startPayment(req: Request, res: Response) {
   try {
+    const appointmentPayload = await buildPaymentAppointmentPayloadWithSlotValidation(req.body);
+
     const doctorId = await resolveDoctorId(
       typeof req.body.doctorId === "string" ? req.body.doctorId : undefined,
     );
     const amount = await resolveConsultationFee(doctorId);
-    const appointmentPayload = buildPaymentAppointmentPayload(req.body);
     const userId =
       typeof req.body.userId === "string" && req.body.userId.trim()
         ? req.body.userId.trim()
@@ -162,6 +163,10 @@ export async function paymentSuccess(req: Request, res: Response) {
       providerRaw: validator,
     });
 
+    if (!result.appointmentId) {
+      return redirectPaymentFailed(res, "slot_full");
+    }
+
     return res.redirect(
       `${getFrontendUrl()}/thank-you?appointmentId=${encodeURIComponent(result.appointmentId)}`,
     );
@@ -169,6 +174,9 @@ export async function paymentSuccess(req: Request, res: Response) {
     if (error instanceof AppointmentValidationError) {
       if (error.message.includes("future dates")) {
         return redirectPaymentFailed(res, "today_or_past_date_not_allowed");
+      }
+      if (error.message === "slot_full") {
+        return redirectPaymentFailed(res, "slot_full");
       }
       if (error.message.includes("val_id") || error.message.includes("validation")) {
         return redirectPaymentFailed(res, "validation_failed");

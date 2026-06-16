@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { appointmentAdminRouter } from "./appointment/admin/appointment.routes.js";
 import { appointmentClientRouter } from "./appointment/client/appointment.routes.js";
+import { appointmentScheduleAdminRouter } from "../modules/appointmentSchedule/appointmentSchedule.routes.js";
 import { blogsAdminRouter } from "./blogs/admin/blogs.routes.js";
 import { blogsClientRouter } from "./blogs/client/blogs.routes.js";
 import { contactAdminRouter } from "./contact/admin/contact.routes.js";
@@ -14,6 +15,7 @@ import { paymentRouter } from "./payment/payment.routes.js";
 export function mountRoutes(app: Express): void {
   app.use("/api/v1/client/appointments", appointmentClientRouter);
   app.use("/api/v1/admin/appointments", appointmentAdminRouter);
+  app.use("/api/v1/admin/appointment-schedules", appointmentScheduleAdminRouter);
   app.use("/api/v1/client/blogs", blogsClientRouter);
   app.use("/api/v1/admin/blogs", blogsAdminRouter);
   app.use("/api/v1/client/contact-messages", contactClientRouter);

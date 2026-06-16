@@ -1,6 +1,10 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { Avatar, Button, Icon } from "../common";
-import { adminUser, mainNavItems } from "../../constants/navigation";
+import {
+  adminUser,
+  mainNavItems,
+  type NavItem,
+} from "../../constants/navigation";
 import { useSidebar } from "../../contexts/SidebarContext";
 import { cn } from "../../lib/cn";
 
@@ -43,6 +47,64 @@ function NavItemLink({
           </>
         )}
       </NavLink>
+    </li>
+  );
+}
+
+function NavGroup({
+  item,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  onNavigate: () => void;
+}) {
+  const location = useLocation();
+  const isGroupActive =
+    location.pathname === item.path ||
+    item.children?.some((child) => location.pathname === child.path);
+
+  if (!item.children?.length) {
+    return (
+      <NavItemLink
+        {...item}
+        collapsed={collapsed}
+        onNavigate={onNavigate}
+      />
+    );
+  }
+
+  return (
+    <li>
+      <div
+        className={cn(
+          "flex items-center gap-3 py-2 rounded-lg text-label-md font-medium",
+          collapsed ? "px-4 lg:justify-center lg:px-2" : "px-4",
+          isGroupActive
+            ? "text-primary font-bold"
+            : "text-primary/70",
+        )}
+        title={collapsed ? item.label : undefined}
+      >
+        <Icon name={item.icon} size={24} filled={isGroupActive} />
+        <span className={cn(collapsed && "lg:sr-only")}>{item.label}</span>
+      </div>
+      <ul
+        className={cn(
+          "mt-1 flex flex-col gap-1",
+          collapsed ? "lg:hidden" : "ml-7",
+        )}
+      >
+        {item.children.map((child) => (
+          <NavItemLink
+            key={child.path}
+            {...child}
+            collapsed={false}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </ul>
     </li>
   );
 }
@@ -144,11 +206,11 @@ export function Sidebar() {
           </div>
         </div>
 
-        <ul className="flex flex-col gap-2 flex-grow">
+        <ul className="flex flex-col gap-2 grow">
           {mainNavItems.map((item) => (
-            <NavItemLink
+            <NavGroup
               key={item.path}
-              {...item}
+              item={item}
               collapsed={isCollapsed}
               onNavigate={handleNavigate}
             />

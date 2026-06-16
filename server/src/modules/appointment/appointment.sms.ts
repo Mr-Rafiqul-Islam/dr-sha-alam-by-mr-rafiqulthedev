@@ -11,21 +11,25 @@ type AppointmentSmsPayload = {
   name: string;
   phone: string;
   serialNumber: number;
-  slotCode: PreferredTimeCode;
+  slotCode: string;
+  smsLabel?: string | null;
 };
 
 function buildAppointmentSmsMessage({
   name,
   serialNumber,
   slotCode,
+  smsLabel,
 }: Omit<AppointmentSmsPayload, "phone">): string {
-  const smsLabel = getPreferredTimeSmsLabel(slotCode);
+  const resolvedLabel =
+    smsLabel ??
+    getPreferredTimeSmsLabel(slotCode as PreferredTimeCode);
 
   return `${CHAMBER_SMS_FOOTER}
 
 রোগীর নাম: ${name}
 আপনার সিরিয়াল নং: ${serialNumber}
-উপস্থিতি সময়ঃ ${smsLabel}
+উপস্থিতি সময়ঃ ${resolvedLabel}
 
 ${CHAMBER_SMS_CONTACT}`;
 }

@@ -1,8 +1,10 @@
 import { Router } from "express";
 import * as appointmentController from "../../../controllers/appointment/appointment.controller.js";
+import { getAvailableSlotsHandler } from "../../../modules/appointmentSchedule/appointmentSchedule.controller.js";
 
 export const appointmentClientRouter = Router();
 
+appointmentClientRouter.get("/schedules/available", getAvailableSlotsHandler);
 appointmentClientRouter.post("/", appointmentController.createAppointment);
 appointmentClientRouter.get(
   "/phone/:phone",

@@ -30,7 +30,31 @@ export function getPreferredTimeLabel(code: string): string {
   return slot?.label ?? code;
 }
 
-export function getPreferredTimeSmsLabel(code: PreferredTimeCode): string {
+export function resolveSlotLabels(
+  code: string,
+  slot?: { label: string; smsLabel?: string | null } | null,
+): { label: string; smsLabel: string } {
+  if (slot?.label) {
+    const fallback = PREFERRED_TIME_SLOTS[code as PreferredTimeCode];
+    return {
+      label: slot.label,
+      smsLabel: slot.smsLabel ?? fallback?.smsLabel ?? code,
+    };
+  }
+  const fallback = PREFERRED_TIME_SLOTS[code as PreferredTimeCode];
+  return {
+    label: fallback?.label ?? code,
+    smsLabel: fallback?.smsLabel ?? code,
+  };
+}
+
+export function getPreferredTimeSmsLabel(
+  code: PreferredTimeCode,
+  override?: string | null,
+): string {
+  if (override) {
+    return override;
+  }
   return PREFERRED_TIME_SLOTS[code].smsLabel;
 }
 

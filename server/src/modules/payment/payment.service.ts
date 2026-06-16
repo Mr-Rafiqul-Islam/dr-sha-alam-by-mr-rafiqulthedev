@@ -1,7 +1,11 @@
-import { AppointmentStatus, Prisma } from "@prisma/client";
+import { AppointmentStatus, Prisma, SiteRef } from "@prisma/client";
 import type { Payment } from "@prisma/client";
 import { prisma } from "../../config/db.js";
-import { parsePreferredTimeCode } from "../appointment/appointment.mapper.js";
+import {
+  runSerializableTransaction,
+  validateAppointmentSlotAvailability,
+} from "../appointment/appointment.slot-availability.js";
+import { parseSlotCodeString } from "../appointment/appointment.slot-availability.js";
 import { sendAppointmentSms } from "../appointment/appointment.sms.js";
 import {
   AppointmentValidationError,
@@ -23,8 +27,9 @@ const ACTIVE_APPOINTMENT_STATUSES = {
 } as const;
 
 type FulfillPaymentResult = {
-  appointmentId: string;
+  appointmentId: string | null;
   alreadyProcessed: boolean;
+  slotFull?: boolean;
 };
 
 function parsePaymentPayload(value: unknown): PaymentAppointmentPayload {
@@ -37,13 +42,7 @@ function parsePaymentPayload(value: unknown): PaymentAppointmentPayload {
   const homeAddress = parseRequiredString(value.homeAddress, "homeAddress");
   const email = parseEmail(value.email);
   const problem = parseOptionalString(value.problem);
-  const preferredTime = parsePreferredTimeCode(value.preferredTime);
-
-  if (!preferredTime) {
-    throw new AppointmentValidationError(
-      "preferredTime must be one of: P-9, OP-4, G-5",
-    );
-  }
+  const preferredTime = parseSlotCodeString(value.preferredTime);
 
   const selectedDate = parseAppointmentDate(value.preferredDate);
   if (!selectedDate) {
@@ -63,6 +62,8 @@ function parsePaymentPayload(value: unknown): PaymentAppointmentPayload {
     preferredTime,
     gender: parseOptionalString(value.gender),
     siteRef: value.siteRef,
+    scheduleId: value.scheduleId,
+    slotId: value.slotId,
   };
 }
 
@@ -131,6 +132,21 @@ export async function validateSslOrThrow(valId: string | undefined) {
   return validator;
 }
 
+export async function validatePaymentSlotAvailability(
+  payload: PaymentAppointmentPayload,
+): Promise<void> {
+  const selectedDate = parseAppointmentDate(payload.preferredDate);
+  if (!selectedDate) {
+    throw new AppointmentValidationError("Invalid preferredDate");
+  }
+
+  await validateAppointmentSlotAvailability({
+    appointmentDate: selectedDate,
+    preferredTime: payload.preferredTime,
+    siteRef: payload.siteRef ?? SiteRef.DOCTOR_SHA_ALAM,
+  });
+}
+
 export async function fulfillSuccessfulPayment(
   payment: Payment,
   options: { valId?: string; providerRaw?: unknown },
@@ -148,10 +164,11 @@ export async function fulfillSuccessfulPayment(
     throw new AppointmentValidationError("Invalid preferredDate");
   }
 
-  const { dayStart, dayEnd } = getDayRange(selectedDate);
+  const siteRef = payload.siteRef ?? SiteRef.DOCTOR_SHA_ALAM;
   const slotCode = payload.preferredTime;
+  const { dayStart, dayEnd } = getDayRange(selectedDate);
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await runSerializableTransaction(async (tx) => {
     const currentPayment = await tx.payment.findUnique({
       where: { tranId: payment.tranId },
     });
@@ -165,7 +182,40 @@ export async function fulfillSuccessfulPayment(
         appointmentId: currentPayment.appointmentId,
         alreadyProcessed: true,
         smsPayload: null as null,
+        slotFull: false,
       };
+    }
+
+    let slotAvailability;
+    try {
+      slotAvailability = await validateAppointmentSlotAvailability({
+        appointmentDate: selectedDate,
+        preferredTime: slotCode,
+        siteRef,
+        tx,
+      });
+    } catch (error) {
+      if (
+        error instanceof AppointmentValidationError &&
+        error.message.includes("No seats available")
+      ) {
+        await tx.payment.update({
+          where: { tranId: payment.tranId },
+          data: {
+            status: "SUCCESS",
+            valId: options.valId ?? currentPayment.valId,
+            providerValId: options.valId ?? currentPayment.providerValId,
+            providerStatusReason: "SLOT_FULL",
+            providerRaw: options.providerRaw
+              ? (options.providerRaw as Prisma.InputJsonValue)
+              : currentPayment.providerRaw ?? undefined,
+            paymentResolvedAt: new Date(),
+          },
+        });
+
+        throw new AppointmentValidationError("slot_full");
+      }
+      throw error;
     }
 
     const existingAppointment = await tx.appointment.findFirst({
@@ -206,7 +256,9 @@ export async function fulfillSuccessfulPayment(
         appointmentDate: selectedDate,
         serialNumber,
         gender: payload.gender,
-        siteRef: payload.siteRef ?? "DOCTOR_SHA_ALAM",
+        siteRef,
+        scheduleId: slotAvailability.scheduleId,
+        slotId: slotAvailability.slotId,
         transactionId: payment.tranId,
       },
     });
@@ -233,7 +285,9 @@ export async function fulfillSuccessfulPayment(
         phone: payload.phoneNumber,
         serialNumber,
         slotCode,
+        smsLabel: slotAvailability.smsLabel,
       },
+      slotFull: false,
     };
   });
 
@@ -246,6 +300,7 @@ export async function fulfillSuccessfulPayment(
   return {
     appointmentId: result.appointmentId,
     alreadyProcessed: result.alreadyProcessed,
+    slotFull: result.slotFull,
   };
 }
 
@@ -261,4 +316,21 @@ export function buildPaymentAppointmentPayload(body: Record<string, unknown>): P
     gender: body.gender,
     siteRef: body.siteRef,
   });
+}
+
+export async function buildPaymentAppointmentPayloadWithSlotValidation(
+  body: Record<string, unknown>,
+): Promise<PaymentAppointmentPayload> {
+  const payload = buildPaymentAppointmentPayload(body);
+  const slotResult = await validateAppointmentSlotAvailability({
+    appointmentDate: parseAppointmentDate(payload.preferredDate)!,
+    preferredTime: payload.preferredTime,
+    siteRef: payload.siteRef ?? SiteRef.DOCTOR_SHA_ALAM,
+  });
+
+  return {
+    ...payload,
+    scheduleId: slotResult.scheduleId,
+    slotId: slotResult.slotId,
+  };
 }

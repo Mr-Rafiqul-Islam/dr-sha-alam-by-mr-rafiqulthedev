@@ -4,4 +4,4 @@ import * as blogsClient from "../../../controllers/blogs/client/blogs.controller
 export const blogsClientRouter = Router();
 
 blogsClientRouter.get("/", blogsClient.listBlogs);
-blogsClientRouter.get("/slug/:slug", blogsClient.getBlogBySlug);
+blogsClientRouter.get("/:slug", blogsClient.getBlogBySlug);
