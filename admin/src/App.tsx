@@ -21,6 +21,10 @@ const CreateAppointmentPage = lazyNamed(
   () => import("./pages/CreateAppointmentPage"),
   "CreateAppointmentPage",
 );
+const AppointmentSchedulesPage = lazyNamed(
+  () => import("./pages/AppointmentSchedulesPage"),
+  "AppointmentSchedulesPage",
+);
 const ArticlesPage = lazyNamed(
   () => import("./pages/ArticlesPage"),
   "ArticlesPage",
@@ -48,6 +52,10 @@ function App() {
       <Route element={<AdminLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route
+          path="dashboard/appointments/schedules"
+          element={<AppointmentSchedulesPage />}
+        />
         <Route path="appointments/new" element={<CreateAppointmentPage />} />
         <Route path="appointments" element={<AppointmentsPage />} />
         <Route path="articles/new" element={<CreateArticlePage />} />
