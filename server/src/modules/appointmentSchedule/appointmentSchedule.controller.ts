@@ -6,6 +6,7 @@ import {
   deleteScheduleById,
   getAvailableSlots,
   getScheduleById,
+  listAllSchedules,
   listSchedules,
   updateScheduleById,
   upsertScheduleByDate,
@@ -74,6 +75,16 @@ export async function listSchedulesHandler(req: Request, res: Response) {
     const endDate = parseOptionalScheduleDate(req.query.endDate, "endDate");
 
     const schedules = await listSchedules({ siteRef, startDate, endDate });
+
+    return res.status(200).json({ success: true, data: schedules });
+  } catch (error) {
+    return handleScheduleError(res, error, "Failed to list schedules");
+  }
+}
+
+export async function listClientSchedulesHandler(_req: Request, res: Response) {
+  try {
+    const schedules = await listAllSchedules();
 
     return res.status(200).json({ success: true, data: schedules });
   } catch (error) {
