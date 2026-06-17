@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import ShareArticle from './ShareArticle';
 
 interface AuthorInfo {
   name: string;
@@ -9,37 +10,25 @@ interface AuthorInfo {
 
 interface BlogContentProps {
   imageUrl: string;
-  content: React.ReactNode;
+  content: string;
   author: AuthorInfo;
+  slug: string;
 }
 
-export default function BlogContent({ imageUrl, content, author }: BlogContentProps) {
+export default function BlogContent({ imageUrl, content, author, slug }: BlogContentProps) {
+  const url = `${process.env.NEXT_PUBLIC_FRONTEND_URL}/blog/${slug}`;
   return (
     <div className="lg:w-2/3">
       <div className="rounded-3xl overflow-hidden shadow-sm mb-10 w-full aspect-video relative">
         <Image alt="Article Cover" className="object-cover" src={imageUrl} fill sizes="(max-width: 1024px) 100vw, 66vw" />
       </div>
-      <article className="prose dark:prose-invert max-w-none text-lg prose-headings:text-primary prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4 prose-h2:text-2xl prose-h3:font-semibold prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-xl prose-p:mb-5 prose-p:leading-relaxed prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-ul:mb-5 prose-ul:list-disc prose-ul:pl-6 prose-li:mb-2 prose-strong:text-primary prose-blockquote:border-l-4 prose-blockquote:border-accent prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400 prose-blockquote:my-8 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-primary/5 prose-blockquote:py-6 prose-blockquote:pr-6 prose-blockquote:rounded-r-2xl">
-        {content}
-      </article>
+      <article
+        className="prose dark:prose-invert max-w-none text-lg prose-headings:text-primary prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4 prose-h2:text-2xl prose-h3:font-semibold prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-xl prose-p:mb-5 prose-p:leading-relaxed prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-ul:mb-5 prose-ul:list-disc prose-ul:pl-6 prose-li:mb-2 prose-strong:text-primary prose-blockquote:border-l-4 prose-blockquote:border-accent prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400 prose-blockquote:my-8 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-primary/5 prose-blockquote:py-6 prose-blockquote:pr-6 prose-blockquote:rounded-r-2xl"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
       
-      <div className="border-t border-b border-gray-200 dark:border-gray-700 py-6 my-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <span className="font-bold text-text-main dark:text-white">Share this article:</span>
-        <div className="flex gap-3">
-          <Link href="#" className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors">
-            <i className="fab fa-facebook-f"></i>
-          </Link>
-          <Link href="#" className="w-10 h-10 rounded-full bg-sky-100 text-sky-500 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors">
-            <i className="fab fa-twitter"></i>
-          </Link>
-          <Link href="#" className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center hover:bg-blue-700 hover:text-white transition-colors">
-            <i className="fab fa-linkedin-in"></i>
-          </Link>
-          <Link href="#" className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center hover:bg-green-600 hover:text-white transition-colors">
-            <i className="fab fa-whatsapp"></i>
-          </Link>
-        </div>
-      </div>
+      <ShareArticle url={url} />
+ 
 
       <div className="bg-white dark:bg-surface-dark rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row items-center md:items-start gap-8">
         <div className="shrink-0 relative">

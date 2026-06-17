@@ -70,3 +70,90 @@ export function filterBlogs(
 
   return result;
 }
+
+export type BlogTocItem = {
+  id: string;
+  title: string;
+};
+
+export function slugifyHeading(text: string): string {
+  return text
+    .replace(/<[^>]*>/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").trim();
+}
+
+function createUniqueId(baseId: string, usedIds: Set<string>): string {
+  let id = baseId || "section";
+  let suffix = 2;
+
+  while (usedIds.has(id)) {
+    id = `${baseId}-${suffix}`;
+    suffix += 1;
+  }
+
+  usedIds.add(id);
+  return id;
+}
+
+export function processBlogContent(html: string): {
+  html: string;
+  toc: BlogTocItem[];
+} {
+  const toc: BlogTocItem[] = [];
+  const usedIds = new Set<string>();
+
+  const processedHtml = html.replace(
+    /<h2(\s[^>]*)?>([\s\S]*?)<\/h2>/gi,
+    (match, attributes = "", innerHtml: string) => {
+      const title = stripHtml(innerHtml);
+      if (!title) {
+        return match;
+      }
+
+      const baseId = slugifyHeading(title);
+      const id = createUniqueId(baseId, usedIds);
+      toc.push({ id, title });
+
+      if (/\sid\s*=/i.test(attributes)) {
+        return `<h2${attributes.replace(
+          /\sid\s*=\s*["'][^"']*["']/i,
+          ` id="${id}"`,
+        )} style="scroll-margin-top: 7rem">${innerHtml}</h2>`;
+      }
+
+      return `<h2 id="${id}" style="scroll-margin-top: 7rem"${attributes}>${innerHtml}</h2>`;
+    },
+  );
+
+  return { html: processedHtml, toc };
+}
+
+export function estimateReadTime(html: string): string {
+  const text = stripHtml(html);
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(wordCount / 200));
+  return `${minutes} min read`;
+}
+
+export function getRelatedBlogs(
+  allBlogs: PublicBlog[],
+  current: PublicBlog,
+  limit = 3,
+): PublicBlog[] {
+  return allBlogs
+    .filter(
+      (blog) =>
+        blog.id !== current.id &&
+        blog.category.some((category) => current.category.includes(category)),
+    )
+    .slice(0, limit);
+}

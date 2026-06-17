@@ -1,18 +1,16 @@
 "use server";
 
 import { getApiBaseUrl } from "@/lib/api";
-import type { BlogsListMeta, PublicBlog } from "@/types/blog";
+import type { PublicBlog } from "@/types/blog";
 
 type GetBlogDetailsBySlugResponse = {
   success: boolean;
-  data?: PublicBlog[];
-  meta?: BlogsListMeta;
+  data?: PublicBlog;
   message?: string;
 };
 
 export type GetBlogDetailsBySlugResult = {
   blog: PublicBlog;
-  meta: BlogsListMeta;
 };
 
 export async function getBlogDetailsBySlug(
@@ -33,9 +31,9 @@ export async function getBlogDetailsBySlug(
   const response = await fetch(url, { next: { revalidate: 60 } });
   const json = (await response.json()) as GetBlogDetailsBySlugResponse;
 
-  if (!response.ok || !json.success || !json.data?.length || !json.meta) {
+  if (!response.ok || !json.success || !json.data) {
     throw new Error(json.message ?? "Failed to load blog");
   }
 
-  return { blog: json.data[0], meta: json.meta };
+  return { blog: json.data };
 }
