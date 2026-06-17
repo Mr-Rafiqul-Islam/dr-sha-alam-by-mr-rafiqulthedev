@@ -37,6 +37,109 @@ import {
 
 const PAGE_SIZE = 10;
 
+type AppointmentActionsProps = {
+  appointment: Appointment;
+  onView: (appointment: Appointment) => void;
+  onEdit: (appointment: Appointment) => void;
+  onDelete: (appointment: Appointment) => void;
+};
+
+function AppointmentActions({
+  appointment,
+  onView,
+  onEdit,
+  onDelete,
+}: AppointmentActionsProps) {
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="View appointment"
+        onClick={() => onView(appointment)}
+      >
+        <Icon name="visibility" size={20} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="Edit appointment status"
+        onClick={() => onEdit(appointment)}
+      >
+        <Icon name="edit" size={20} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="hover:bg-error-container/50 hover:text-error"
+        aria-label="Delete appointment"
+        onClick={() => onDelete(appointment)}
+      >
+        <Icon name="delete" size={20} />
+      </Button>
+    </div>
+  );
+}
+
+function AppointmentCard({
+  appointment,
+  onView,
+  onEdit,
+  onDelete,
+}: AppointmentActionsProps) {
+  return (
+    <article className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <Avatar initials={getInitials(appointment.name)} size="sm" />
+          <div className="min-w-0">
+            <p className="truncate text-body-md font-semibold text-on-surface">
+              {appointment.name}
+            </p>
+            <p className="truncate text-label-sm text-on-surface-variant">
+              {appointment.email ?? "—"}
+            </p>
+          </div>
+        </div>
+        <AppointmentActions
+          appointment={appointment}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge
+          variant="neutral"
+          className="gap-2 rounded-md px-3 py-1.5"
+        >
+          <Icon name="event" size={16} className="text-primary" />
+          {formatAppointmentDateTime(appointment)}
+        </Badge>
+        <Badge variant={getStatusBadgeVariant(appointment.status)}>
+          {getStatusLabel(appointment.status)}
+        </Badge>
+      </div>
+
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+        <div>
+          <dt className="text-label-sm text-on-surface-variant">Phone</dt>
+          <dd className="mt-0.5 text-body-sm text-on-surface">
+            {appointment.phone}
+          </dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-label-sm text-on-surface-variant">Problems</dt>
+          <dd className="mt-0.5 wrap-break-word text-body-sm text-on-surface-variant">
+            {appointment.problem ?? "—"}
+          </dd>
+        </div>
+      </dl>
+    </article>
+  );
+}
+
 export function AppointmentsPage() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
@@ -148,6 +251,7 @@ export function AppointmentsPage() {
         action={
           <Button
             leftIcon={<Icon name="add" size={20} />}
+            fullWidthOnMobile
             onClick={() => navigate("/appointments/new")}
           >
             Add New Appointment
@@ -250,7 +354,27 @@ export function AppointmentsPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="xl:hidden">
+              {paginatedAppointments.length === 0 ? (
+                <div className="px-4 py-12 text-center text-on-surface-variant">
+                  No appointments found.
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4 p-4">
+                  {paginatedAppointments.map((appointment) => (
+                    <AppointmentCard
+                      key={appointment.id}
+                      appointment={appointment}
+                      onView={openViewModal}
+                      onEdit={openStatusModal}
+                      onDelete={setDeletingAppointment}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="hidden overflow-x-auto xl:block">
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-outline-variant/50 bg-surface/50 hover:bg-surface/50">
@@ -299,7 +423,7 @@ export function AppointmentsPage() {
                         <TableCell>
                           <Badge
                             variant="neutral"
-                            className="gap-2 px-3 py-1.5 rounded-md"
+                            className="gap-2 rounded-md px-3 py-1.5"
                           >
                             <Icon
                               name="event"
@@ -310,7 +434,7 @@ export function AppointmentsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-body-md text-on-surface-variant line-clamp-1 max-w-[200px] block">
+                          <span className="line-clamp-1 block max-w-[200px] text-body-md text-on-surface-variant">
                             {appointment.problem ?? "—"}
                           </span>
                         </TableCell>
@@ -322,33 +446,12 @@ export function AppointmentsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2 transition-opacity">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              aria-label="View appointment"
-                              onClick={() => openViewModal(appointment)}
-                            >
-                              <Icon name="visibility" size={20} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              aria-label="Edit appointment status"
-                              onClick={() => openStatusModal(appointment)}
-                            >
-                              <Icon name="edit" size={20} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="hover:text-error hover:bg-error-container/50"
-                              aria-label="Delete appointment"
-                              onClick={() => setDeletingAppointment(appointment)}
-                            >
-                              <Icon name="delete" size={20} />
-                            </Button>
-                          </div>
+                          <AppointmentActions
+                            appointment={appointment}
+                            onView={openViewModal}
+                            onEdit={openStatusModal}
+                            onDelete={setDeletingAppointment}
+                          />
                         </TableCell>
                       </TableRow>
                     ))

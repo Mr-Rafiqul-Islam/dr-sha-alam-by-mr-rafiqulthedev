@@ -51,6 +51,102 @@ function getApiErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+type ScheduleActionsProps = {
+  schedule: AppointmentSchedule;
+  onEdit: (schedule: AppointmentSchedule) => void;
+  onDelete: (schedule: AppointmentSchedule) => void;
+};
+
+function ScheduleActions({ schedule, onEdit, onDelete }: ScheduleActionsProps) {
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="Edit schedule"
+        onClick={() => onEdit(schedule)}
+      >
+        <Icon name="edit" size={20} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="hover:bg-error-container/50 hover:text-error"
+        aria-label="Delete schedule"
+        onClick={() => onDelete(schedule)}
+      >
+        <Icon name="delete" size={20} />
+      </Button>
+    </div>
+  );
+}
+
+function ScheduleCard({
+  schedule,
+  onEdit,
+  onDelete,
+}: ScheduleActionsProps) {
+  return (
+    <article className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-body-md font-semibold text-on-surface">
+            {schedule.date}
+          </p>
+          <p className="mt-0.5 truncate text-body-md text-on-surface">
+            {schedule.title || "—"}
+          </p>
+        </div>
+        <ScheduleActions
+          schedule={schedule}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge
+          variant="neutral"
+          className={getStatusClassName(schedule.status)}
+        >
+          {schedule.status}
+        </Badge>
+        {schedule.isClosed ? (
+          <Badge
+            variant="cancel"
+            className="border-error/30 bg-error-container text-on-error-container"
+          >
+            Closed
+          </Badge>
+        ) : (
+          <Badge variant="neutral">Open</Badge>
+        )}
+      </div>
+
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+        <div>
+          <dt className="text-label-sm text-on-surface-variant">Site</dt>
+          <dd className="mt-0.5 text-body-sm text-on-surface">
+            {schedule.siteRef}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-label-sm text-on-surface-variant">Slots</dt>
+          <dd className="mt-0.5 text-body-sm text-on-surface">
+            {schedule.slots.length}
+          </dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-label-sm text-on-surface-variant">Slot Summary</dt>
+          <dd className="mt-0.5 wrap-break-word text-body-sm text-on-surface-variant">
+            {formatSlotSummary(schedule)}
+          </dd>
+        </div>
+      </dl>
+    </article>
+  );
+}
+
 export function AppointmentSchedulesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
@@ -137,6 +233,7 @@ export function AppointmentSchedulesPage() {
         action={
           <Button
             leftIcon={<Icon name="add" size={20} />}
+            fullWidthOnMobile
             onClick={openCreateModal}
           >
             Create Schedule
@@ -180,105 +277,106 @@ export function AppointmentSchedulesPage() {
             <p className="text-body-md">Failed to load schedules.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-b border-outline-variant/50 bg-surface/50 hover:bg-surface/50">
-                  <TableHead>Date</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Site</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Closed?</TableHead>
-                  <TableHead>Slots Count</TableHead>
-                  <TableHead>Slot Summary</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {schedules.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="py-12 text-center text-on-surface-variant"
-                    >
-                      No appointment schedules found.
-                    </TableCell>
+          <>
+            <div className="xl:hidden">
+              {schedules.length === 0 ? (
+                <div className="px-4 py-12 text-center text-on-surface-variant">
+                  No appointment schedules found.
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4 p-4">
+                  {schedules.map((schedule) => (
+                    <ScheduleCard
+                      key={schedule.id}
+                      schedule={schedule}
+                      onEdit={openEditModal}
+                      onDelete={setDeletingSchedule}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="hidden overflow-x-auto xl:block">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-outline-variant/50 bg-surface/50 hover:bg-surface/50">
+                    <TableHead>Date</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Closed?</TableHead>
+                    <TableHead>Slots Count</TableHead>
+                    <TableHead>Slot Summary</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ) : (
-                  schedules.map((schedule) => (
-                    <TableRow key={schedule.id}>
-                      <TableCell>
-                        <span className="text-body-md font-medium text-on-surface">
-                          {schedule.date}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-body-md text-on-surface">
-                          {schedule.title || "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-label-md text-on-surface-variant">
-                          {schedule.siteRef}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="neutral"
-                          className={getStatusClassName(schedule.status)}
-                        >
-                          {schedule.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {schedule.isClosed ? (
-                          <Badge
-                            variant="cancel"
-                            className="bg-error-container text-on-error-container border-error/30"
-                          >
-                            Closed
-                          </Badge>
-                        ) : (
-                          <Badge variant="neutral">Open</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-body-md text-on-surface">
-                          {schedule.slots.length}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="block max-w-[260px] truncate text-body-sm text-on-surface-variant">
-                          {formatSlotSummary(schedule)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            aria-label="Edit schedule"
-                            onClick={() => openEditModal(schedule)}
-                          >
-                            <Icon name="edit" size={20} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="hover:text-error hover:bg-error-container/50"
-                            aria-label="Delete schedule"
-                            onClick={() => setDeletingSchedule(schedule)}
-                          >
-                            <Icon name="delete" size={20} />
-                          </Button>
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {schedules.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={8}
+                        className="py-12 text-center text-on-surface-variant"
+                      >
+                        No appointment schedules found.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  ) : (
+                    schedules.map((schedule) => (
+                      <TableRow key={schedule.id}>
+                        <TableCell>
+                          <span className="text-body-md font-medium text-on-surface">
+                            {schedule.date}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-body-md text-on-surface">
+                            {schedule.title || "—"}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="neutral"
+                            className={getStatusClassName(schedule.status)}
+                          >
+                            {schedule.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {schedule.isClosed ? (
+                            <Badge
+                              variant="cancel"
+                              className="border-error/30 bg-error-container text-on-error-container"
+                            >
+                              Closed
+                            </Badge>
+                          ) : (
+                            <Badge variant="neutral">Open</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-body-md text-on-surface">
+                            {schedule.slots.length}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="block max-w-[260px] truncate text-body-sm text-on-surface-variant">
+                            {formatSlotSummary(schedule)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <ScheduleActions
+                            schedule={schedule}
+                            onEdit={openEditModal}
+                            onDelete={setDeletingSchedule}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </div>
     </>

@@ -48,6 +48,111 @@ const DEFAULT_FILTERS: ContactMessageFilterState = {
   status: "",
 };
 
+type ContactMessageActionsProps = {
+  message: ContactMessage;
+  onView: (message: ContactMessage) => void;
+  onEdit: (message: ContactMessage) => void;
+  onDelete: (message: ContactMessage) => void;
+};
+
+function ContactMessageActions({
+  message,
+  onView,
+  onEdit,
+  onDelete,
+}: ContactMessageActionsProps) {
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="View contact message"
+        onClick={() => onView(message)}
+      >
+        <Icon name="visibility" size={20} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="Edit contact message status"
+        onClick={() => onEdit(message)}
+      >
+        <Icon name="edit" size={20} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="hover:bg-error-container/50 hover:text-error"
+        aria-label="Delete contact message"
+        onClick={() => onDelete(message)}
+      >
+        <Icon name="delete" size={20} />
+      </Button>
+    </div>
+  );
+}
+
+function ContactMessageCard({
+  message,
+  onView,
+  onEdit,
+  onDelete,
+}: ContactMessageActionsProps) {
+  return (
+    <article className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <Avatar initials={getInitials(message.name)} size="sm" />
+          <div className="min-w-0">
+            <p className="truncate text-body-md font-semibold text-on-surface">
+              {message.name}
+            </p>
+            <p className="truncate text-label-sm text-on-surface-variant">
+              {message.email ?? "—"}
+            </p>
+          </div>
+        </div>
+        <ContactMessageActions
+          message={message}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge variant={getStatusBadgeVariant(message.status)}>
+          {getStatusLabel(message.status)}
+        </Badge>
+      </div>
+
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+        <div>
+          <dt className="text-label-sm text-on-surface-variant">Phone</dt>
+          <dd className="mt-0.5 text-body-sm text-on-surface">
+            {message.phone}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-label-sm text-on-surface-variant">Created</dt>
+          <dd className="mt-0.5 text-body-sm text-on-surface">
+            {formatContactDate(message.createdAt)}
+          </dd>
+          <dd className="text-label-sm text-on-surface-variant">
+            {formatContactTime(message.createdAt)}
+          </dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-label-sm text-on-surface-variant">Subject</dt>
+          <dd className="mt-0.5 wrap-break-word text-body-sm text-on-surface-variant">
+            {message.subject}
+          </dd>
+        </div>
+      </dl>
+    </article>
+  );
+}
+
 export function ContactMessagesPage() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
@@ -160,6 +265,7 @@ export function ContactMessagesPage() {
         action={
           <Button
             leftIcon={<Icon name="description" size={20} />}
+            fullWidthOnMobile
             onClick={handleExportCsv}
           >
             Export CSV
@@ -245,7 +351,27 @@ export function ContactMessagesPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="xl:hidden">
+              {paginatedMessages.length === 0 ? (
+                <div className="px-4 py-12 text-center text-on-surface-variant">
+                  No contact messages found.
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4 p-4">
+                  {paginatedMessages.map((message) => (
+                    <ContactMessageCard
+                      key={message.id}
+                      message={message}
+                      onView={(item) => navigate(`/contact-messages/${item.id}`)}
+                      onEdit={openStatusModal}
+                      onDelete={setDeletingMessage}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="hidden overflow-x-auto xl:block">
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-outline-variant/50 bg-surface/50 hover:bg-surface/50">
@@ -253,7 +379,7 @@ export function ContactMessagesPage() {
                     <TableHead>Phone</TableHead>
                     <TableHead>Subject</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Created At</TableHead>
+                    <TableHead>Submitted At</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -312,35 +438,14 @@ export function ContactMessagesPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              aria-label="View contact message"
-                              onClick={() =>
-                                navigate(`/contact-messages/${message.id}`)
-                              }
-                            >
-                              <Icon name="visibility" size={20} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              aria-label="Edit contact message status"
-                              onClick={() => openStatusModal(message)}
-                            >
-                              <Icon name="edit" size={20} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="hover:bg-error-container/50 hover:text-error"
-                              aria-label="Delete contact message"
-                              onClick={() => setDeletingMessage(message)}
-                            >
-                              <Icon name="delete" size={20} />
-                            </Button>
-                          </div>
+                          <ContactMessageActions
+                            message={message}
+                            onView={(item) =>
+                              navigate(`/contact-messages/${item.id}`)
+                            }
+                            onEdit={openStatusModal}
+                            onDelete={setDeletingMessage}
+                          />
                         </TableCell>
                       </TableRow>
                     ))
