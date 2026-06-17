@@ -1,14 +1,10 @@
 import { Router } from "express";
 import * as contactController from "../../../controllers/contact/admin/contact.controller.js";
-import {
-  requireAdmin,
-  requireAuth,
-} from "../../../shared/middleware/admin/admin.middleware.js";
+import { requireAdminAuth } from "../../../modules/adminAuth/adminAuth.middleware.js";
 
 export const contactAdminRouter = Router();
 
-// contactAdminRouter.use(requireAuth);
-// contactAdminRouter.use(requireAdmin);
+contactAdminRouter.use(requireAdminAuth);
 
 contactAdminRouter.get("/", contactController.listContactMessages);
 contactAdminRouter.get("/:id", contactController.getContactMessageById);

@@ -6,12 +6,11 @@ import {
   listSchedulesHandler,
   updateScheduleHandler,
 } from "./appointmentSchedule.controller.js";
-// import { requireAdmin, requireAuth } from "../../shared/middleware/admin/admin.middleware.js";
+import { requireAdminAuth } from "../adminAuth/adminAuth.middleware.js";
 
 export const appointmentScheduleAdminRouter = Router();
 
-// appointmentScheduleAdminRouter.use(requireAuth);
-// appointmentScheduleAdminRouter.use(requireAdmin);
+appointmentScheduleAdminRouter.use(requireAdminAuth);
 
 appointmentScheduleAdminRouter.get("/", listSchedulesHandler);
 appointmentScheduleAdminRouter.get("/:id", getScheduleByIdHandler);

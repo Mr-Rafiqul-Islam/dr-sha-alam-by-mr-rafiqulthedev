@@ -1,7 +1,7 @@
 import type { Request } from "express";
 import jwt, { type SignOptions } from "jsonwebtoken";
 
-const DEFAULT_ACCESS_EXPIRY = "15m";
+const DEFAULT_ACCESS_EXPIRY = "7d";
 
 /**
  * Reads `Authorization: Bearer <token>`. Returns `null` if missing or not Bearer.

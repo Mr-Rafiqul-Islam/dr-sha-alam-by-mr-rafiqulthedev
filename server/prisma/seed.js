@@ -16,6 +16,7 @@ const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 const FALLBACK_DEV_PASSWORD = "ChangeMeLocalDev123!";
 
 const adminsToSeed = [
+  { email: "admin@example.com", name: "Admin" },
   { email: "admin@doctorshahalam.test", name: "Default Admin" },
   { email: "thesakibdev@gmail.com", name: "Sakib" },
 ];

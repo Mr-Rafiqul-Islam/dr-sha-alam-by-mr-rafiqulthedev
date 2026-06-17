@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "../../config/env";
+import { adminApiFetch } from "../../lib/adminAuth";
 import type {
   Blog,
   BlogImageDeleteResponse,
@@ -102,8 +102,8 @@ export const blogsApi = baseApi.injectEndpoints({
           const formData = new FormData();
           formData.append("drsa-file", file);
 
-          const response = await fetch(
-            `${API_BASE_URL}/api/v1/admin/blogs/upload-image`,
+          const response = await adminApiFetch(
+            "/api/v1/admin/blogs/upload-image",
             {
               method: "POST",
               body: formData,
