@@ -154,7 +154,7 @@ model AppointmentSchedule {
   siteRef  SiteRef        @default(DOCTOR_SHA_ALAM)
   status   ScheduleStatus @default(ACTIVE)
   title    String?
-  date     DateTime
+  date     String
   isClosed Boolean        @default(false)
 
   slots        AppointmentSlot[]

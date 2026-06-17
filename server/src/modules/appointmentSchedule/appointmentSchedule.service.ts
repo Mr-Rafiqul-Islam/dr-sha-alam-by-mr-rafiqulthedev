@@ -3,10 +3,9 @@ import { prisma } from "../../config/db.js";
 import { PREFERRED_TIME_SLOTS, type PreferredTimeCode } from "../appointment/appointment.mapper.js";
 import {
   countBookedSeats,
-  normalizeScheduleDate,
   SEAT_CONSUMING_STATUSES,
 } from "../appointment/appointment.slot-availability.js";
-import { AppointmentValidationError, getDayRange } from "../appointment/appointment.utils.js";
+import { AppointmentValidationError, getDayRange, parseAppointmentDate } from "../appointment/appointment.utils.js";
 import {
   toAdminSchedule,
   toFallbackAvailableSlots,
@@ -22,7 +21,7 @@ const DEFAULT_START_TIMES: Record<PreferredTimeCode, string> = {
 
 type CreateScheduleInput = {
   siteRef: SiteRef;
-  date: Date;
+  date: string;
   title?: string | null;
   status?: ScheduleStatus;
   isClosed?: boolean;
@@ -30,12 +29,20 @@ type CreateScheduleInput = {
 };
 
 type UpdateScheduleInput = {
-  date?: Date;
+  date?: string;
   title?: string | null;
   status?: ScheduleStatus;
   isClosed?: boolean;
   slots?: SlotInput[];
 };
+
+function scheduleDateToAppointmentDate(date: string): Date {
+  const appointmentDate = parseAppointmentDate(date);
+  if (!appointmentDate) {
+    throw new AppointmentValidationError("Invalid schedule date");
+  }
+  return appointmentDate;
+}
 
 function slotCreateData(slots: SlotInput[]) {
   return slots.map((slot) => ({
@@ -50,13 +57,14 @@ function slotCreateData(slots: SlotInput[]) {
 }
 
 async function assertSeatLimitNotBelowBooked(params: {
-  scheduleDate: Date;
+  scheduleDate: string;
   siteRef: SiteRef;
   slots: SlotInput[];
 }) {
+  const appointmentDate = scheduleDateToAppointmentDate(params.scheduleDate);
   for (const slot of params.slots) {
     const bookedSeats = await countBookedSeats({
-      appointmentDate: params.scheduleDate,
+      appointmentDate,
       preferredTime: slot.code,
       siteRef: params.siteRef,
     });
@@ -69,11 +77,13 @@ async function assertSeatLimitNotBelowBooked(params: {
 }
 
 async function assertNoSeatConsumingAppointments(params: {
-  scheduleDate: Date;
+  scheduleDate: string;
   siteRef: SiteRef;
   slotCodes: string[];
 }) {
-  const { dayStart, dayEnd } = getDayRange(params.scheduleDate);
+  const { dayStart, dayEnd } = getDayRange(
+    scheduleDateToAppointmentDate(params.scheduleDate),
+  );
 
   const count = await prisma.appointment.count({
     where: {
@@ -92,7 +102,7 @@ async function assertNoSeatConsumingAppointments(params: {
 }
 
 export async function createDefaultScheduleForDate(params: {
-  date: Date;
+  date: string;
   siteRef?: SiteRef;
   seatLimits?: Partial<Record<PreferredTimeCode, number>>;
   defaultSeatLimit?: number;
@@ -120,20 +130,18 @@ export async function createDefaultScheduleForDate(params: {
 }
 
 export async function upsertScheduleByDate(input: CreateScheduleInput) {
-  const normalizedDate = normalizeScheduleDate(input.date);
-
   const existing = await prisma.appointmentSchedule.findUnique({
     where: {
       siteRef_date: {
         siteRef: input.siteRef,
-        date: normalizedDate,
+        date: input.date,
       },
     },
   });
 
   if (existing) {
     await assertSeatLimitNotBelowBooked({
-      scheduleDate: normalizedDate,
+      scheduleDate: input.date,
       siteRef: input.siteRef,
       slots: input.slots,
     });
@@ -158,7 +166,7 @@ export async function upsertScheduleByDate(input: CreateScheduleInput) {
   const schedule = await prisma.appointmentSchedule.create({
     data: {
       siteRef: input.siteRef,
-      date: normalizedDate,
+      date: input.date,
       title: input.title,
       status: input.status ?? ScheduleStatus.ACTIVE,
       isClosed: input.isClosed ?? false,
@@ -172,8 +180,8 @@ export async function upsertScheduleByDate(input: CreateScheduleInput) {
 
 export async function listSchedules(params: {
   siteRef: SiteRef;
-  startDate?: Date;
-  endDate?: Date;
+  startDate?: string;
+  endDate?: string;
 }) {
   const where: Prisma.AppointmentScheduleWhereInput = {
     siteRef: params.siteRef,
@@ -182,12 +190,10 @@ export async function listSchedules(params: {
   if (params.startDate || params.endDate) {
     where.date = {};
     if (params.startDate) {
-      where.date.gte = normalizeScheduleDate(params.startDate);
+      where.date.gte = params.startDate;
     }
     if (params.endDate) {
-      const end = normalizeScheduleDate(params.endDate);
-      end.setHours(23, 59, 59, 999);
-      where.date.lte = end;
+      where.date.lte = params.endDate;
     }
   }
 
@@ -224,11 +230,10 @@ export async function updateScheduleById(id: string, input: UpdateScheduleInput)
   }
 
   const scheduleDate = input.date ?? existing.date;
-  const normalizedDate = normalizeScheduleDate(scheduleDate);
 
   if (input.slots) {
     await assertSeatLimitNotBelowBooked({
-      scheduleDate: normalizedDate,
+      scheduleDate,
       siteRef: existing.siteRef,
       slots: input.slots,
     });
@@ -242,7 +247,7 @@ export async function updateScheduleById(id: string, input: UpdateScheduleInput)
     return tx.appointmentSchedule.update({
       where: { id },
       data: {
-        date: input.date ? normalizedDate : undefined,
+        date: input.date,
         title: input.title,
         status: input.status,
         isClosed: input.isClosed,
@@ -275,16 +280,14 @@ export async function deleteScheduleById(id: string) {
 }
 
 export async function getAvailableSlots(params: {
-  date: Date;
+  date: string;
   siteRef: SiteRef;
 }) {
-  const normalizedDate = normalizeScheduleDate(params.date);
-
   const schedule = await prisma.appointmentSchedule.findUnique({
     where: {
       siteRef_date: {
         siteRef: params.siteRef,
-        date: normalizedDate,
+        date: params.date,
       },
     },
     include: {
@@ -314,7 +317,7 @@ export async function getAvailableSlots(params: {
   const slots = await Promise.all(
     schedule.slots.map(async (slot) => {
       const bookedSeats = await countBookedSeats({
-        appointmentDate: params.date,
+        appointmentDate: scheduleDateToAppointmentDate(params.date),
         preferredTime: slot.code,
         siteRef: params.siteRef,
       });

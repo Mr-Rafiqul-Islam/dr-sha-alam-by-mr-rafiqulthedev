@@ -1,10 +1,9 @@
 import { ScheduleStatus, SiteRef } from "@prisma/client";
 import { AppointmentValidationError } from "../appointment/appointment.utils.js";
-import { parseAppointmentDate } from "../appointment/appointment.utils.js";
-import { normalizeScheduleDate } from "../appointment/appointment.slot-availability.js";
 
 const SITE_REFS = new Set<string>(Object.values(SiteRef));
 const SCHEDULE_STATUSES = new Set<string>(Object.values(ScheduleStatus));
+const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export type SlotInput = {
   code: string;
@@ -40,18 +39,21 @@ export function parseOptionalScheduleStatus(value: unknown): ScheduleStatus | un
   return parseScheduleStatus(value);
 }
 
-export function parseScheduleDate(value: unknown, fieldName = "date"): Date {
+export function parseScheduleDate(value: unknown, fieldName = "date"): string {
   if (value === null || value === undefined || value === "") {
     throw new AppointmentValidationError(`${fieldName} is required`);
   }
-  const date = parseAppointmentDate(value);
-  if (!date) {
+  if (typeof value !== "string") {
     throw new AppointmentValidationError(`Invalid ${fieldName}`);
   }
-  return normalizeScheduleDate(date);
+  const date = value.trim();
+  if (!DATE_ONLY_REGEX.test(date)) {
+    throw new AppointmentValidationError(`${fieldName} must be YYYY-MM-DD`);
+  }
+  return date;
 }
 
-export function parseOptionalScheduleDate(value: unknown, fieldName: string): Date | undefined {
+export function parseOptionalScheduleDate(value: unknown, fieldName: string): string | undefined {
   if (value === undefined || value === null || value === "") {
     return undefined;
   }
