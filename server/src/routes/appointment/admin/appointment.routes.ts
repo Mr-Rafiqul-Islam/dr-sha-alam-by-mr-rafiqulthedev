@@ -1,14 +1,10 @@
 import { Router } from "express";
 import * as appointmentController from "../../../controllers/appointment/appointment.controller.js";
-import {
-  requireAdmin,
-  requireAuth,
-} from "../../../shared/middleware/admin/admin.middleware.js";
+import { requireAdminAuth } from "../../../modules/adminAuth/adminAuth.middleware.js";
 
 export const appointmentAdminRouter = Router();
 
-// appointmentAdminRouter.use(requireAuth);
-// appointmentAdminRouter.use(requireAdmin);
+appointmentAdminRouter.use(requireAdminAuth);
 
 appointmentAdminRouter.get("/", appointmentController.getAllAppointments);
 appointmentAdminRouter.get("/day/:date", appointmentController.getAppointmentsByDay);

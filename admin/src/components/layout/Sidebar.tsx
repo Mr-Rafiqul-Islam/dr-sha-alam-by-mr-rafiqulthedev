@@ -1,7 +1,8 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Avatar, Button, Icon } from "../common";
+import { useAdminAuth } from "../../contexts/AdminAuthContext";
+import { getAdminInitials } from "../../lib/adminAuth";
 import {
-  adminUser,
   mainNavItems,
   type NavItem,
 } from "../../constants/navigation";
@@ -110,8 +111,16 @@ function NavGroup({
 }
 
 function SidebarUserProfile({ collapsed }: { collapsed: boolean }) {
-  const handleLogout = () => {
-    // TODO: wire up auth logout
+  const navigate = useNavigate();
+  const { user, logout } = useAdminAuth();
+
+  const displayName = user?.name?.trim() || "Admin User";
+  const displayEmail = user?.email?.trim() || "admin@example.com";
+  const initials = user ? getAdminInitials(user) : "A";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -128,16 +137,16 @@ function SidebarUserProfile({ collapsed }: { collapsed: boolean }) {
         )}
       >
         <Avatar
-          initials={adminUser.initials}
+          initials={initials}
           size="sm"
-          title={collapsed ? adminUser.name : undefined}
+          title={collapsed ? displayName : undefined}
         />
         <div className={cn("min-w-0 flex-1", collapsed && "lg:hidden")}>
           <p className="text-label-md font-medium text-on-surface truncate">
-            {adminUser.name}
+            {displayName}
           </p>
           <p className="text-label-sm text-on-surface-variant truncate">
-            {adminUser.email}
+            {displayEmail}
           </p>
         </div>
         <Button

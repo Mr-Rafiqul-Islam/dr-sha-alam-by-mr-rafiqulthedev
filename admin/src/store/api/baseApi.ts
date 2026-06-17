@@ -1,9 +1,53 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import {
+  createApi,
+  fetchBaseQuery,
+  type BaseQueryFn,
+  type FetchArgs,
+  type FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
 import { API_BASE_URL } from "../../config/env";
+import { clearAdminToken, getAdminToken } from "../../lib/adminAuth";
+
+function isAdminApiPath(path: string): boolean {
+  return path.includes("/api/v1/admin/");
+}
+
+function getRequestPath(args: string | FetchArgs): string {
+  return typeof args === "string" ? args : args.url;
+}
+
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl: API_BASE_URL,
+  credentials: "include",
+  prepareHeaders: (headers, { arg }) => {
+    const token = getAdminToken();
+    const path = getRequestPath(arg);
+
+    if (token && isAdminApiPath(path)) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    return headers;
+  },
+});
+
+const baseQueryWithAdminAuth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const result = await rawBaseQuery(args, api, extraOptions);
+
+  if (isAdminApiPath(getRequestPath(args)) && result.error?.status === 401) {
+    clearAdminToken();
+  }
+
+  return result;
+};
 
 export const baseApi = createApi({
   reducerPath: "api",
-  baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
+  baseQuery: baseQueryWithAdminAuth,
   tagTypes: ["Appointment", "AppointmentSchedule", "Blog", "ContactMessage"],
   endpoints: () => ({}),
 });

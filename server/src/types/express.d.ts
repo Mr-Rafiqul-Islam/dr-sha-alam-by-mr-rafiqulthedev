@@ -8,6 +8,8 @@ declare global {
     interface Request {
       /** Authenticated staff user for `/api/v1/admin/*` (JWT `sub` → User id). */
       admin?: AdminRequestUser;
+      /** Alias for authenticated admin user (admin auth middleware). */
+      user?: AdminRequestUser;
       tokenPayload?: JwtPayload;
     }
   }

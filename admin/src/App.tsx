@@ -1,5 +1,6 @@
 import { lazy, type ComponentType } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { RequireAdminAuth } from "./components/auth/RequireAdminAuth";
 import { AdminLayout } from "./components/layout/AdminLayout";
 
 function lazyNamed<T extends Record<string, ComponentType<object>>>(
@@ -9,6 +10,7 @@ function lazyNamed<T extends Record<string, ComponentType<object>>>(
   return lazy(() => loader().then((m) => ({ default: m[exportName] })));
 }
 
+const LoginPage = lazyNamed(() => import("./pages/LoginPage"), "LoginPage");
 const DashboardPage = lazyNamed(
   () => import("./pages/DashboardPage"),
   "DashboardPage",
@@ -49,22 +51,29 @@ const SettingsPage = lazyNamed(
 function App() {
   return (
     <Routes>
-      <Route element={<AdminLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route
-          path="dashboard/appointments/schedules"
-          element={<AppointmentSchedulesPage />}
-        />
-        <Route path="appointments/new" element={<CreateAppointmentPage />} />
-        <Route path="appointments" element={<AppointmentsPage />} />
-        <Route path="articles/new" element={<CreateArticlePage />} />
-        <Route path="articles/:id/edit" element={<CreateArticlePage />} />
-        <Route path="articles" element={<ArticlesPage />} />
-        <Route path="contact-messages/:id" element={<ContactMessageDetailPage />} />
-        <Route path="contact-messages" element={<ContactMessagesPage />} />
-        <Route path="settings" element={<SettingsPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<RequireAdminAuth />}>
+        <Route element={<AdminLayout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route
+            path="dashboard/appointments/schedules"
+            element={<AppointmentSchedulesPage />}
+          />
+          <Route path="appointments/new" element={<CreateAppointmentPage />} />
+          <Route path="appointments" element={<AppointmentsPage />} />
+          <Route path="articles/new" element={<CreateArticlePage />} />
+          <Route path="articles/:id/edit" element={<CreateArticlePage />} />
+          <Route path="articles" element={<ArticlesPage />} />
+          <Route
+            path="contact-messages/:id"
+            element={<ContactMessageDetailPage />}
+          />
+          <Route path="contact-messages" element={<ContactMessagesPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
       </Route>
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }

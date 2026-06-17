@@ -7,12 +7,14 @@ import { blogsClientRouter } from "./blogs/client/blogs.routes.js";
 import { contactAdminRouter } from "./contact/admin/contact.routes.js";
 import { contactClientRouter } from "./contact/client/contact.routes.js";
 import { paymentRouter } from "./payment/payment.routes.js";
+import { adminAuthRouter } from "../modules/adminAuth/adminAuth.routes.js";
 
 
 /**
  * Mount all routes on the app. Base paths match `/api/v1/...`.
  */
 export function mountRoutes(app: Express): void {
+  app.use("/api/v1/admin/auth", adminAuthRouter);
   app.use("/api/v1/client/appointments", appointmentClientRouter);
   app.use("/api/v1/admin/appointments", appointmentAdminRouter);
   app.use("/api/v1/admin/appointment-schedules", appointmentScheduleAdminRouter);
