@@ -322,10 +322,12 @@ export async function buildPaymentAppointmentPayloadWithSlotValidation(
   body: Record<string, unknown>,
 ): Promise<PaymentAppointmentPayload> {
   const payload = buildPaymentAppointmentPayload(body);
+  const selectedDate = parseAppointmentDate(payload.preferredDate)!;
+  const siteRef = payload.siteRef ?? SiteRef.DOCTOR_SHA_ALAM;
   const slotResult = await validateAppointmentSlotAvailability({
-    appointmentDate: parseAppointmentDate(payload.preferredDate)!,
+    appointmentDate: selectedDate,
     preferredTime: payload.preferredTime,
-    siteRef: payload.siteRef ?? SiteRef.DOCTOR_SHA_ALAM,
+    siteRef,
   });
 
   return {

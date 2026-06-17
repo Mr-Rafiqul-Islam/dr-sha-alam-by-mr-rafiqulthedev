@@ -1,8 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { UserRole } from "@prisma/client";
 import { extractTokenFromHeader, verifyAccessToken } from "../../shared/utils/token.js";
-import { getAdminById } from "./adminAuth.service.js";
+import { getAdminById, isDashboardAdminRole } from "./adminAuth.service.js";
 import { ADMIN_TOKEN_COOKIE } from "./adminAuth.cookie.js";
 
 function extractAdminToken(req: Request): string | null {
@@ -90,7 +89,7 @@ export async function requireAdminAuth(
       return;
     }
 
-    if (user.role !== UserRole.ADMIN) {
+    if (!isDashboardAdminRole(user.role)) {
       res.status(403).json({
         success: false,
         message: "Admin privileges required.",

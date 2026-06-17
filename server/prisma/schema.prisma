@@ -11,6 +11,8 @@ enum UserRole {
   ADMIN
   EDITOR
   MANAGER
+  PATIENT
+  DOCTOR
 }
 
 enum AppointmentStatus {
