@@ -51,7 +51,7 @@ export async function createOrUpsertSchedule(req: Request, res: Response) {
       return res.status(201).json({ success: true, data: schedule });
     }
 
-    const parsedSlots = parseSlotsInput(slots);
+    const parsedSlots = parseSlotsInput(slots, { allowEmpty: isClosed === true });
     const schedule = await upsertScheduleByDate({
       siteRef,
       date,
@@ -106,7 +106,10 @@ export async function updateScheduleHandler(req: Request, res: Response) {
     const title = parseOptionalString(req.body.title);
     const status = parseOptionalScheduleStatus(req.body.status);
     const isClosed = parseOptionalBoolean(req.body.isClosed);
-    const slots = req.body.slots !== undefined ? parseSlotsInput(req.body.slots) : undefined;
+    const slots =
+      req.body.slots !== undefined
+        ? parseSlotsInput(req.body.slots, { allowEmpty: isClosed === true })
+        : undefined;
 
     const schedule = await updateScheduleById(id, {
       date,

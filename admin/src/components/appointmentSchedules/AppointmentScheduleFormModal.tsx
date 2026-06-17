@@ -53,14 +53,19 @@ const slotSchema = z.object({
   isActive: z.boolean(),
 });
 
-const scheduleFormSchema = z.object({
-  date: z.string().trim().min(1, "Date is required"),
-  title: z.string().trim().optional(),
-  siteRef: z.enum(["DOCTOR_SHA_ALAM", "TRUE_CARE_HELLING_CENTER"]),
-  status: z.enum(["ACTIVE", "INACTIVE"]),
-  isClosed: z.boolean(),
-  slots: z.array(slotSchema).min(1, "At least one slot is required"),
-});
+ const scheduleFormSchema = z
+  .object({
+    date: z.string().trim().min(1, "Date is required"),
+    title: z.string().trim().optional(),
+    siteRef: z.enum(["DOCTOR_SHA_ALAM", "TRUE_CARE_HELLING_CENTER"]),
+    status: z.enum(["ACTIVE", "INACTIVE"]),
+    isClosed: z.boolean(),
+    slots: z.array(slotSchema),
+  })
+  .refine((data) => data.isClosed || data.slots.length >= 1, {
+    message: "At least one slot is required",
+    path: ["slots"],
+  });
 
 type AppointmentScheduleFormValues = z.infer<typeof scheduleFormSchema>;
 
@@ -131,6 +136,7 @@ export function AppointmentScheduleFormModal({
     register,
     reset,
     setValue,
+    watch,
   } = useForm<AppointmentScheduleFormValues>({
     resolver: zodResolver(scheduleFormSchema),
     defaultValues: createDefaultValues(schedule),
@@ -140,6 +146,17 @@ export function AppointmentScheduleFormModal({
     control,
     name: "slots",
   });
+
+  const isClosed = watch("isClosed");
+
+  const handleIsClosedChange = (checked: boolean) => {
+    setValue("isClosed", checked, { shouldValidate: true });
+    if (checked) {
+      replace([]);
+    } else if (fields.length === 0) {
+      replace([createEmptySlot()]);
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -178,7 +195,7 @@ export function AppointmentScheduleFormModal({
       onClose={onClose}
       title={isEditing ? "Edit Schedule" : "Create Schedule"}
       subtitle="Manage daily appointment slots and seat limits."
-      className="max-w-5xl"
+      className="min-w-sm lg:min-w-4xl max-w-5xl"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
@@ -232,7 +249,8 @@ export function AppointmentScheduleFormModal({
             <input
               type="checkbox"
               className="h-4 w-4 accent-primary"
-              {...register("isClosed")}
+              checked={isClosed}
+              onChange={(event) => handleIsClosedChange(event.target.checked)}
             />
             <span className="text-label-md font-medium text-on-surface">
               Closed for booking
@@ -240,6 +258,7 @@ export function AppointmentScheduleFormModal({
           </label>
         </div>
 
+        {!isClosed && (
         <div className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -297,7 +316,7 @@ export function AppointmentScheduleFormModal({
                     <FormFieldError message={errors.slots?.[index]?.code?.message} />
                   </label>
 
-                  <label className="flex flex-col gap-2 lg:col-span-2">
+                  <label className="flex flex-col gap-2">
                     <span className="text-label-md font-medium text-on-surface">
                       Label
                     </span>
@@ -305,7 +324,7 @@ export function AppointmentScheduleFormModal({
                     <FormFieldError message={errors.slots?.[index]?.label?.message} />
                   </label>
 
-                  <label className="flex flex-col gap-2">
+                  {/* <label className="flex flex-col gap-2">
                     <span className="text-label-md font-medium text-on-surface">
                       SMS Label
                     </span>
@@ -333,7 +352,7 @@ export function AppointmentScheduleFormModal({
                     <FormFieldError
                       message={errors.slots?.[index]?.endTime?.message}
                     />
-                  </label>
+                  </label> */}
 
                   <label className="flex flex-col gap-2">
                     <span className="text-label-md font-medium text-on-surface">
@@ -351,7 +370,7 @@ export function AppointmentScheduleFormModal({
                     />
                   </label>
 
-                  <label className="flex items-center gap-3 rounded-lg border border-outline-variant/40 bg-surface-container-low px-4 py-3">
+                  {/* <label className="flex items-center gap-3 rounded-lg border border-outline-variant/40 bg-surface-container-low px-4 py-3">
                     <input
                       type="checkbox"
                       className="h-4 w-4 accent-primary"
@@ -367,12 +386,13 @@ export function AppointmentScheduleFormModal({
                     <span className="text-label-md font-medium text-on-surface">
                       Active
                     </span>
-                  </label>
+                  </label> */}
                 </div>
               </div>
             ))}
           </div>
         </div>
+        )}
 
         <div className="flex justify-end gap-3 border-t border-outline-variant/30 pt-5">
           <Button variant="ghost" onClick={onClose} disabled={isLoading}>

@@ -100,8 +100,14 @@ export function parseSlotInput(value: unknown, index: number): SlotInput {
   return { code, label, smsLabel, startTime, endTime, seatLimit, isActive };
 }
 
-export function parseSlotsInput(value: unknown): SlotInput[] {
-  if (!Array.isArray(value) || value.length === 0) {
+export function parseSlotsInput(
+  value: unknown,
+  options?: { allowEmpty?: boolean },
+): SlotInput[] {
+  if (!Array.isArray(value)) {
+    throw new AppointmentValidationError("At least one slot is required");
+  }
+  if (value.length === 0 && !options?.allowEmpty) {
     throw new AppointmentValidationError("At least one slot is required");
   }
   return value.map((slot, index) => parseSlotInput(slot, index));
