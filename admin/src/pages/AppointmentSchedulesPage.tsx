@@ -27,14 +27,6 @@ import type {
   ScheduleStatus,
 } from "../types/appointmentSchedule";
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
 function getStatusClassName(status: ScheduleStatus) {
   if (status === "ACTIVE") {
     return "bg-secondary-fixed text-on-secondary-fixed-variant border-secondary-fixed-dim/30";
@@ -167,7 +159,7 @@ export function AppointmentSchedulesPage() {
         title="Delete Schedule"
         itemName={
           deletingSchedule?.title ||
-          (deletingSchedule ? formatDate(deletingSchedule.date) : undefined)
+          deletingSchedule?.date
         }
         isLoading={isDeleting}
       />
@@ -217,7 +209,7 @@ export function AppointmentSchedulesPage() {
                     <TableRow key={schedule.id}>
                       <TableCell>
                         <span className="text-body-md font-medium text-on-surface">
-                          {formatDate(schedule.date)}
+                          {schedule.date}
                         </span>
                       </TableCell>
                       <TableCell>

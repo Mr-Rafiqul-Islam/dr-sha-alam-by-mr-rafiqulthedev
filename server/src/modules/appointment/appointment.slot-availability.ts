@@ -30,10 +30,11 @@ export type SlotAvailabilityResult = {
   smsLabel?: string | null;
 };
 
-export function normalizeScheduleDate(date: Date): Date {
-  const normalized = new Date(date);
-  normalized.setHours(0, 0, 0, 0);
-  return normalized;
+export function toDateKey(value: string | Date): string {
+  if (typeof value === "string") {
+    return value.slice(0, 10);
+  }
+  return value.toISOString().slice(0, 10);
 }
 
 export function parseSlotCodeString(value: unknown, fieldName = "preferredTime"): string {
@@ -71,14 +72,14 @@ async function findScheduleForDate(params: {
   siteRef: SiteRef;
   tx?: TransactionClient;
 }) {
-  const normalizedDate = normalizeScheduleDate(params.appointmentDate);
+  const dateKey = toDateKey(params.appointmentDate);
   const client = params.tx ?? prisma;
 
   return client.appointmentSchedule.findUnique({
     where: {
       siteRef_date: {
         siteRef: params.siteRef,
-        date: normalizedDate,
+        date: dateKey,
       },
     },
     include: {
