@@ -34,6 +34,15 @@ const initialFormState: FormState = {
   preferredTime: "",
 };
 
+function getMinPreferredDate(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const year = tomorrow.getFullYear();
+  const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+  const day = String(tomorrow.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function BookingForm() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialFormState);
@@ -347,6 +356,7 @@ export default function BookingForm() {
                 </label>
                 <input
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all"
+                  min={getMinPreferredDate()}
                   required
                   type="date"
                   value={form.preferredDate}
