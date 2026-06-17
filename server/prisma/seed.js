@@ -15,10 +15,27 @@ const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 /** Local-only default if ADMIN_SEED_PASSWORD is unset — change in any shared or production environment. */
 const FALLBACK_DEV_PASSWORD = "ChangeMeLocalDev123!";
 
-const adminsToSeed = [
-  { email: "admin@example.com", name: "Admin" },
-  { email: "admin@doctorshahalam.test", name: "Default Admin" },
-  { email: "thesakibdev@gmail.com", name: "Sakib" },
+const staffUsersToSeed = [
+  {
+    email: "superadmin@example.com",
+    name: "Super Admin",
+    role: UserRole.SUPER_ADMIN,
+  },
+  {
+    email: "admin@example.com",
+    name: "Admin",
+    role: UserRole.ADMIN,
+  },
+  {
+    email: "admin@doctorshahalam.test",
+    name: "Default Admin",
+    role: UserRole.ADMIN,
+  },
+  {
+    email: "thesakibdev@gmail.com",
+    name: "Sakib",
+    role: UserRole.ADMIN,
+  },
 ];
 
 const DEFAULT_DOCTOR = {
@@ -36,24 +53,26 @@ async function main() {
   const passwordPlain = process.env.ADMIN_SEED_PASSWORD || FALLBACK_DEV_PASSWORD;
   const hash = await bcrypt.hash(passwordPlain, 10);
 
-  for (const admin of adminsToSeed) {
+  for (const staffUser of staffUsersToSeed) {
     const existing = await prisma.user.findUnique({
-      where: { email: admin.email },
+      where: { email: staffUser.email },
     });
     if (existing) {
-      console.log(`Seed skip (exists): ${admin.email}`);
+      console.log(
+        `Seed skip (exists): ${staffUser.email} [${existing.role}]`,
+      );
       continue;
     }
 
     await prisma.user.create({
       data: {
-        email: admin.email,
-        name: admin.name,
+        email: staffUser.email,
+        name: staffUser.name,
         password: hash,
-        role: UserRole.ADMIN,
+        role: staffUser.role,
       },
     });
-    console.log(`Seeded admin: ${admin.email}`);
+    console.log(`Seeded ${staffUser.role}: ${staffUser.email}`);
   }
 
   const existingDoctor = await prisma.doctor.findFirst({

@@ -33,6 +33,15 @@ export type AdminLoginResult = {
   user: AdminRequestUser;
 };
 
+const DASHBOARD_ADMIN_ROLES = new Set<UserRole>([
+  UserRole.ADMIN,
+  UserRole.SUPER_ADMIN,
+]);
+
+export function isDashboardAdminRole(role: UserRole): boolean {
+  return DASHBOARD_ADMIN_ROLES.has(role);
+}
+
 export async function loginAdmin(params: {
   email: string;
   password: string;
@@ -43,7 +52,7 @@ export async function loginAdmin(params: {
 
   if (
     !user ||
-    user.role !== UserRole.ADMIN ||
+    !isDashboardAdminRole(user.role) ||
     !user.password
   ) {
     throw new AdminAuthError("Invalid email or password");
@@ -74,7 +83,7 @@ export async function getAdminById(id: string): Promise<AdminRequestUser | null>
     select: PUBLIC_USER_SELECT,
   });
 
-  if (!user || user.role !== UserRole.ADMIN) {
+  if (!user || !isDashboardAdminRole(user.role)) {
     return null;
   }
 

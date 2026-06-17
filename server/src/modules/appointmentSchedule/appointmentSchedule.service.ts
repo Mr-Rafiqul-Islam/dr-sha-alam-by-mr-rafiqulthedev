@@ -206,6 +206,15 @@ export async function listSchedules(params: {
   return schedules.map(toAdminSchedule);
 }
 
+export async function listAllSchedules() {
+  const schedules = await prisma.appointmentSchedule.findMany({
+    include: { slots: { orderBy: { startTime: "asc" } } },
+    orderBy: { date: "asc" },
+  });
+
+  return schedules.map(toAdminSchedule);
+}
+
 export async function getScheduleById(id: string) {
   const schedule = await prisma.appointmentSchedule.findUnique({
     where: { id },

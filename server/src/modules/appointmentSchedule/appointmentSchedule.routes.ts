@@ -3,12 +3,16 @@ import {
   createOrUpsertSchedule,
   deleteScheduleHandler,
   getScheduleByIdHandler,
+  listClientSchedulesHandler,
   listSchedulesHandler,
   updateScheduleHandler,
 } from "./appointmentSchedule.controller.js";
 import { requireAdminAuth } from "../adminAuth/adminAuth.middleware.js";
 
 export const appointmentScheduleAdminRouter = Router();
+export const appointmentScheduleClientRouter = Router();
+
+appointmentScheduleClientRouter.get("/", listClientSchedulesHandler);
 
 appointmentScheduleAdminRouter.use(requireAdminAuth);
 
