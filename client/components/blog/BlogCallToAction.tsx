@@ -12,7 +12,7 @@ export default function BlogCallToAction() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl transform -translate-x-1/3 translate-y-1/3"></div>
           <div className="relative z-10 max-w-2xl mx-auto space-y-8">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
+            <h2 className="lg:text-3xl text-2xl md:text-4xl font-extrabold mb-4">
               Still Looking For Answers?
             </h2>
             <p className="text-white/90 text-sm md:text-base font-medium leading-relaxed">
@@ -24,7 +24,7 @@ export default function BlogCallToAction() {
             </p>
             <Link
               href="/appointment"
-              className="inline-flex bg-accent hover:bg-accent-dark text-white text-lg font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 items-center gap-2"
+              className="inline-flex bg-accent hover:bg-accent-dark text-white lg:text-lg text-sm md:text-base font-bold py-4 lg:py-4 px-8 md:px-10 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 items-center gap-2"
             >
               Schedule Your Consultation Today{" "}
               <span className="material-symbols-outlined">calendar_month</span>

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function ContactInfo() {
   return (
-    <div className="space-y-10">
+    <div className="w-full min-w-0 space-y-10 overflow-hidden">
       <div className="bg-primary dark:bg-primary-dark p-8 md:p-10 rounded-3xl text-white shadow-xl relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
         <h2 className="text-2xl font-bold mb-8 relative z-10">
@@ -67,8 +67,8 @@ export default function ContactInfo() {
             </div>
             <div>
               <p className="font-bold text-lg mb-1 text-accent">Email Us</p>
-              <p className="text-gray-100">info@doctorshahalam.com</p>
-              <p className="text-gray-100">appointment@doctorshahalam.com</p>
+              <p className="text-gray-100 sm:text-base text-sm">info@doctorshahalam.com</p>
+              <p className="text-gray-100 sm:text-base text-sm">appointment@doctorshahalam.com</p>
             </div>
           </div>
         </div>

@@ -35,25 +35,25 @@ export default function HomeHeroSection() {
             </div>
             <div className="pt-8 border-t border-gray-100 dark:border-gray-800 grid grid-cols-4 gap-2">
               <div className="text-center">
-                <h3 className="text-xl font-bold text-text-main dark:text-white">
+                <h3 className="text-base lg:text-xl font-bold text-text-main dark:text-white">
                   <AnimatedCounter value={yearsExperience} suffix="+" />
                 </h3>
                 <p className="text-xs text-text-sub">Years of Spine Care Experience</p>
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-bold text-text-main dark:text-white">
+                <h3 className="text-base lg:text-xl font-bold text-text-main dark:text-white">
                   <AnimatedCounter value={1000} suffix="+" />
                 </h3>
                 <p className="text-xs text-text-sub">Spine Surgeries Performed</p>
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-bold text-text-main dark:text-white">
+                <h3 className="text-base lg:text-xl font-bold text-text-main dark:text-white">
                   <AnimatedCounter value={10000} suffix="+" />
                 </h3>
                 <p className="text-xs text-text-sub">Epidural Steroid Injections</p>
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-bold text-text-main dark:text-white">
+                <h3 className="text-base lg:text-xl font-bold text-text-main dark:text-white">
                   Millions+
                 </h3>
                 <p className="text-xs text-text-sub">Patients Reached Through Health Education

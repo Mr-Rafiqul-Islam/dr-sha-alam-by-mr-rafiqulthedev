@@ -19,7 +19,7 @@ export default function FeaturedTransformations() {
             treatment, and expert guidance.
           </p>
         </ScrollReveal>
-        <div className="gap-x-6 lg:gap-y-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1">
+        <div className="gap-6 lg:gap-y-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1">
           <ScrollReveal
             direction="up"
             delay={0.1}
@@ -29,18 +29,18 @@ export default function FeaturedTransformations() {
               <Image
                 alt="Elderly woman doing yoga stretches"
                 className="object-cover"
-                src="/fetaured-stories-1.jpeg"
+                src="/fetaured-stories-female.jpeg"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
               />
               <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-primary font-bold text-sm shadow-sm">
-                Age 65
+                Housewife
               </div>
             </div>
             <div className="lg:w-3/5 p-8 lg:p-12 flex flex-col justify-center">
-              <div className="flex items-center gap-4 mb-6">
-                <h4 className="text-2xl font-bold text-text-main dark:text-white">
-                  Mrs. Nasima&apos;s PLID Recovery Journey
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 mb-6">
+                <h4 className="lg:text-2xl text-xl font-bold text-text-main dark:text-white">
+                  Mahmuda Khatun&apos;s PLID Recovery Journey
                 </h4>
                 <div className="flex text-yellow-400">
                   <span className="material-symbols-outlined text-sm fill-current">
@@ -60,7 +60,7 @@ export default function FeaturedTransformations() {
                   </span>
                 </div>
               </div>
-              <p className="text-text-sub text-lg mb-8 italic">
+              <p className="text-text-sub lg:text-lg text-base mb-8 italic">
                 &quot;When I first saw my MRI report, I thought surgery was my
                 only option. The pain shooting down my leg made even walking
                 difficult. Through a structured recovery plan, therapeutic yoga,
@@ -73,7 +73,7 @@ export default function FeaturedTransformations() {
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                     Problem
                   </p>
-                  <p className="font-semibold text-primary dark:text-white">
+                  <p className="md:text-sm lg:text-base font-semibold text-primary dark:text-white">
                     Severe PLID With Sciatica
                   </p>
                 </div>
@@ -81,7 +81,7 @@ export default function FeaturedTransformations() {
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                     Treatment
                   </p>
-                  <p className="font-semibold text-primary dark:text-white">
+                  <p className="font-semibold md:text-sm lg:text-base text-primary dark:text-white">
                     Conservative PLID Treatment <br />
                     Therapeutic Yoga & Rehabilitation
                   </p>
@@ -90,7 +90,7 @@ export default function FeaturedTransformations() {
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                     Result
                   </p>
-                  <p className="font-semibold text-accent">
+                  <p className="md:text-sm lg:text-base font-semibold text-accent">
                     Walking Comfortably Without Surgery
                   </p>
                 </div>
@@ -106,18 +106,18 @@ export default function FeaturedTransformations() {
               <Image
                 alt="Young man playing sports"
                 className="object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1CMgguKxAby2FKgSxEstybmrrl4t2G1gKVCjop4zkBYnXZrIj_KZQbaTxjtLcMx6QQsqO8RJiGgrZccotm_KWA73E-vP7TDzLEhYRXSsPSAUyUxacRar2VdYxVlXgPZRxzh8iMmvaTi9Zt2cRvv1qKtKMCTVoEQb9l1aSQKtPF6KBPrczSFDRHBW8IfAfysjTmGXmWwB8cVbiIqgSpXAwla8ECuGrhigOBjq4UUzofqoURzyFOBUcFP-EEieq9_whuopYkGe-DaU"
+                src="/fetaured-stories-male.jpeg"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
               />
               <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-primary font-bold text-sm shadow-sm">
-                Age 28
+                Defence Officer
               </div>
             </div>
             <div className="lg:w-3/5 p-8 lg:p-12 flex flex-col justify-center text-left lg:text-right">
               <div className="flex flex-col lg:flex-row-reverse items-start lg:items-center gap-4 mb-6">
-                <h4 className="text-2xl font-bold text-text-main dark:text-white">
-                  Karim&apos;s Sciatica Recovery Story
+                <h4 className="lg:text-2xl text-xl font-bold text-text-main dark:text-white">
+                  Zakir Hossen&apos;s Sciatica Recovery Story
                 </h4>
                 <div className="flex text-yellow-400">
                   <span className="material-symbols-outlined text-sm fill-current">
@@ -137,7 +137,7 @@ export default function FeaturedTransformations() {
                   </span>
                 </div>
               </div>
-              <p className="text-text-sub text-lg mb-8 italic">
+              <p className="text-text-sub lg:text-lg text-base mb-8 italic">
                 &quot;The numbness and tingling in my leg were affecting both my
                 work and personal life. I feared permanent nerve damage and
                 worried that surgery was inevitable. After understanding my
@@ -153,7 +153,7 @@ export default function FeaturedTransformations() {
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                     Problem
                   </p>
-                  <p className="font-semibold text-primary dark:text-white">
+                  <p className="md:text-sm lg:text-base font-semibold text-primary dark:text-white">
                     PLID With Severe Sciatic Nerve Pain
                   </p>
                 </div>
@@ -161,7 +161,7 @@ export default function FeaturedTransformations() {
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                     Treatment
                   </p>
-                  <p className="font-semibold text-primary dark:text-white">
+                  <p className="md:text-sm lg:text-base font-semibold text-primary dark:text-white">
                     Personalized Recovery Program <br />
                     Exercise Therapy & Lifestyle Modification
                   </p>
@@ -170,7 +170,7 @@ export default function FeaturedTransformations() {
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                     Result
                   </p>
-                  <p className="font-semibold text-accent">
+                  <p className="md:text-sm lg:text-base font-semibold text-accent">
                   Pain-Free Return To Daily Activities
                   </p>
                 </div>

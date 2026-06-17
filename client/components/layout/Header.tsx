@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
@@ -25,21 +26,16 @@ export default function Header() {
   return (
     <header className="sticky-header w-full transition-all duration-300 border-b border-gray-100 dark:border-gray-800 relative z-50 bg-white/95 dark:bg-surface-dark/95 backdrop-blur-md">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
-        <div className="flex items-center justify-between h-24">
-          <Link href="/" className="flex items-center gap-4 flex-shrink-0 ">
-            <div className="flex items-center gap-4 flex-shrink-0">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md">
-                D
-              </div>
-              <div className="flex flex-col">
-                <h1 className="text-xl xl:text-2xl font-bold tracking-tight text-text-main dark:text-white leading-none">
-                  Dr. Shah Alam
-                </h1>
-                <p className="text-xs xl:text-sm text-gray-500 font-medium mt-0.5">
-                  Orthopedic Specialist
-                </p>
-              </div>
-            </div>
+        <div className="flex items-center justify-between h-20">
+          <Link href="/" className="flex-shrink-0">
+            <Image
+              src="/logo.png"
+              alt="Dr. Shah Alam"
+              width={180}
+              height={48}
+              className="h-12 w-auto object-contain"
+              priority
+            />
           </Link>
 
           {/* Desktop Nav */}
