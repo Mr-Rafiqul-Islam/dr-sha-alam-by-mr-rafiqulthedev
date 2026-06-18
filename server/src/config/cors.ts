@@ -14,6 +14,7 @@ const allowedOrigins = [
   "https://www.doctorshahalam.com",
   "https://sandbox.sslcommerz.com",
   "https://securepay.sslcommerz.com",
+  "https://interpolative-multicoil-lowell.ngrok-free.dev",
   process.env.FRONTEND_URL,
   process.env.BACKEND_URL,
   ...parseExtraOrigins(process.env.CORS_ALLOWED_ORIGINS),
