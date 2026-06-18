@@ -1,12 +1,88 @@
-import Image from "next/image";
-import Link from "next/link";
-import ScrollReveal from "@/components/ScrollReveal";
+"use client";
 
-export default function BookingSuccessPage() {
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import ScrollReveal from "@/components/ScrollReveal";
+import { getApiBaseUrl } from "@/lib/api";
+import Image from "next/image";
+
+type AppointmentSummary = {
+  name: string;
+  homeAddress: string;
+  appointmentDate: string;
+  preferredTime: string;
+  serialNumber: number;
+};
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function ThankYouContent() {
+  const searchParams = useSearchParams();
+  const appointmentId = searchParams.get("appointmentId");
+  const [appointment, setAppointment] = useState<AppointmentSummary | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  useEffect(() => {
+    if (!appointmentId) {
+      setLoadFailed(true);
+      return;
+    }
+
+    const id = appointmentId;
+    let cancelled = false;
+
+    async function loadAppointment() {
+      const apiBaseUrl = getApiBaseUrl();
+      if (!apiBaseUrl) {
+        setLoadFailed(true);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${apiBaseUrl}/api/v1/client/appointments/${encodeURIComponent(id)}`,
+        );
+        const data = (await response.json()) as {
+          success?: boolean;
+          appointment?: AppointmentSummary;
+        };
+
+        if (!response.ok || !data.appointment) {
+          throw new Error("Appointment not found");
+        }
+
+        if (!cancelled) {
+          setAppointment(data.appointment);
+        }
+      } catch {
+        if (!cancelled) {
+          setLoadFailed(true);
+        }
+      }
+    }
+
+    void loadAppointment();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [appointmentId]);
+
   return (
     <div className="flex-grow flex flex-col items-center justify-center py-16 lg:py-24 bg-white dark:bg-surface-dark">
       <div className="max-w-3xl w-full px-4 sm:px-6">
-        <ScrollReveal direction="up" className="text-center mb-12">
+      <ScrollReveal direction="up" className="text-center mb-12">
           <div className="w-24 h-24 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="material-symbols-outlined text-6xl text-accent">
               check_circle
@@ -31,45 +107,50 @@ export default function BookingSuccessPage() {
           className="bg-background-light dark:bg-background-dark border border-gray-100 dark:border-gray-800 rounded-3xl p-8 mb-12 shadow-sm"
         >
           <h3 className="text-sm font-bold uppercase tracking-wider text-text-sub mb-6 border-b border-gray-200 dark:border-gray-700 pb-2">
-            Booking Summary
+            Appointment Summary
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-            <div>
-              <p className="text-xs text-text-sub mb-1">Patient Name</p>
-              <p className="text-lg font-bold text-text-main dark:text-white">
-                Mr. John Doe
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-text-sub mb-1">Clinic Address</p>
-              <p className="text-base font-medium text-text-main dark:text-white">
-                49, Mohakhali, Beside Square Centre, Wireless Gate, Mohakhali,
-                Dhaka 1212
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-text-sub mb-1">Preferred Date</p>
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-sm">
-                  calendar_month
-                </span>
+
+          {appointment ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+              <div>
+                <p className="text-xs text-text-sub mb-1">Patient Name</p>
                 <p className="text-lg font-bold text-text-main dark:text-white">
-                  Oct 28, 2026
+                  {appointment.name}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-text-sub mb-1">Serial Number</p>
+                <p className="text-lg font-bold text-text-main dark:text-white">
+                  #{appointment.serialNumber}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-text-sub mb-1">Appointment Date</p>
+                <p className="text-lg font-bold text-text-main dark:text-white">
+                  {formatDate(appointment.appointmentDate)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-text-sub mb-1">Preferred Time</p>
+                <p className="text-lg font-bold text-text-main dark:text-white">
+                  {appointment.preferredTime}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-xs text-text-sub mb-1">Home Address</p>
+                <p className="text-base font-medium text-text-main dark:text-white">
+                  {appointment.homeAddress}
                 </p>
               </div>
             </div>
-            <div>
-              <p className="text-xs text-text-sub mb-1">Preferred Time</p>
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-sm">
-                  schedule
-                </span>
-                <p className="text-lg font-bold text-text-main dark:text-white">
-                  10:00 AM - 12:00 PM
-                </p>
-              </div>
-            </div>
-          </div>
+          ) : loadFailed ? (
+            <p className="text-sm text-text-sub">
+              Your payment was successful. Appointment details will be sent to
+              your phone shortly.
+            </p>
+          ) : (
+            <p className="text-sm text-text-sub">Loading appointment details...</p>
+          )}
         </ScrollReveal>
 
         <ScrollReveal direction="up" delay={0.2} className="mb-12">
@@ -182,7 +263,7 @@ export default function BookingSuccessPage() {
           <Image
             alt="Dr. Shah Alam"
             className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOTjSAc1-lI6k7AWc9vIFTe1T3qZTUMpLURsHX5VugOOkg0mk7bhLy3jL078SBvDZ7AjPA-yAfXfo2ZuDvQk1elqdntezlYPbZNCaagEAoeiTm6OIGzSBjn7runX6jW9bo51kg7kNnf8adIw5D3wXSXevUB2M8XGTE22l-C5_FGsE_vJGMgkuHkFQP9QF1a02KMIdRHlNaAHoldCZkUlnsNhjAmGIY2q-xH9kpdQsNzlIi9ATCjHUhJPWvf3wARUi04_zChL0EQQ4"
+            src="/sir-2.jpg"
             width={64}
             height={64}
             sizes="64px"
@@ -224,5 +305,19 @@ export default function BookingSuccessPage() {
         </ScrollReveal>
       </div>
     </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex-grow flex items-center justify-center py-24 text-text-sub">
+          Loading...
+        </div>
+      }
+    >
+      <ThankYouContent />
+    </Suspense>
   );
 }
