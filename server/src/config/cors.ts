@@ -8,8 +8,8 @@ function parseExtraOrigins(value: string | undefined): string[] {
 }
 
 const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5173",
+  "https://admin.doctorshahalam.com",
+  "https://doctorshahalam.com",
   "https://doctorshahalam.com",
   "https://www.doctorshahalam.com",
   "https://sandbox.sslcommerz.com",
