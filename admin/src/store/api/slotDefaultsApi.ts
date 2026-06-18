@@ -10,8 +10,8 @@ export const slotDefaultsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSlotDefaults: builder.query<SlotDefaultsConfig, SiteRef | void>({
       query: (siteRef) => {
-        const ref = siteRef ?? "DOCTOR_SHA_ALAM";
-        return `/api/v1/admin/appointment-schedules/defaults?siteRef=${encodeURIComponent(ref)}`;
+        const resolvedSiteRef = siteRef ?? "DOCTOR_SHA_ALAM";
+        return `/api/v1/admin/appointment-schedules/defaults?siteRef=${encodeURIComponent(resolvedSiteRef)}`;
       },
       transformResponse: (response: SlotDefaultsResponse) => response.data,
       providesTags: (_result, _error, siteRef) => [
