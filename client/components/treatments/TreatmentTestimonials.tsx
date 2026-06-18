@@ -11,11 +11,11 @@ export default function TreatmentTestimonials() {
       quote: 'The PLID treatment plan was a miracle. I can walk without pain for the first time in 2 years. Highly recommended!'
     },
     {
-      name: 'Sarah Ahmed',
+      name: 'Fatema Begum',
       quote: 'I was skeptical about yoga for sciatica, but Dr. Alam\'s approach is scientific and effective. Very grateful.'
     },
     {
-      name: 'James Wilson',
+      name: 'Md. Hasan',
       quote: 'Professional, kind, and extremely knowledgeable. The best orthopedic specialist I have visited in Dhaka.'
     },
     {
@@ -23,7 +23,7 @@ export default function TreatmentTestimonials() {
       quote: 'I was skeptical about yoga for sciatica, but Dr. Alam\'s approach is scientific and effective. Very grateful.'
     },
     {
-      name: 'James Wilson',
+      name: 'Md. Hasan',
       quote: 'Professional, kind, and extremely knowledgeable. The best orthopedic specialist I have visited in Dhaka.'
     }
   ];
