@@ -8,21 +8,31 @@ const videoTestimonials = [
   {
     title: 'অপারেশন ছাড়াই PLID মুক্ত জীবন! কিভাবে সম্ভব হলো?',
     filename:
-      'অপারেশন ছাড়াই PLID মুক্ত জীবন! কিভাবে সম্ভব হলো_ _ Dr Shah Alam _ PLID PLID FREE LIFE.mp4',
+      'https://player.mux.com/Uo302PHyYCsBQelpYM4Y5BSO02cOTavxvX3GSMt5W01neU',
   },
   {
     title: 'এপিডুরাল ইনজেকশন দেওয়ার ৩ বছর পরও রোগী সুস্থ',
     filename:
-      'এপিডুরাল ইনজেকশন দেওয়ার ৩ বছর পরও রোগী সুস্থ— আর সেই রোগীই এনেছেন নতুন আরেকজন রোগী। _ Dr Shah Alam.mp4',
+      'https://player.mux.com/wNMznxcuQRo6mLOfsNYymaybA00kvfQ3tylFr6n9veGk',
   },
   {
     title: 'আমি শুধু যোগ ব্যায়াম করেছি— আজ আলহামদুলিল্লাহ পরিপূর্ণ সুস্থ',
-    filename: 'আমি শুধু যোগ ব্যায়াম করেছি— আজ আলহামদুলিল্লাহ পরিপূর্ণ সুস্থ। _ Dr Shah Alam.mp4',
+    filename: 'https://player.mux.com/SsmoY62q1E5O6K0100CiIIZ5mq8HGRhH017vlEHIueZFjs',
   },
   {
     title: 'অপারেশনের আগে জ্বালা, অবশ, ফুটড্রপ—৪ মাস ১৩ দিনে কীভাবে বদলে গেল অবস্থা',
     filename:
-      'অপারেশনের আগে জ্বালা, অবশ, ফুটড্রপ—৪ মাস ১৩ দিনে কীভাবে বদলে গেল অবস্থা_ _ Dr Shah Alam.mp4',
+      'https://player.mux.com/fOzEfT1iJMPzFXxwdCZQJi6a8v2e91y4xvsiA3NtY00g',
+  },
+  {
+    title: '১.৫ মাসেই কোমর ব্যথা উধাও! জানুন পিএলআইডি রোগীর অবিশ্বাস্য সুস্থতার গল্প',
+    filename:
+      'https://player.mux.com/H9JPAul39O4KRVxBI8egh8FTRaQajVygfcE5cCCnCU8',
+  },
+  {
+    title: '৫ জন ডাক্তার বলেছিল অপারেশন লাগবে, আল্লাহর রহমতে সুস্থ হলেন ইনজেকশনেই',
+    filename:
+      'https://player.mux.com/edt01aDWf6301Ngft95TgxY025irvvGL2j52bn7xO701U7w',
   },
 ];
 
@@ -125,7 +135,7 @@ export default function VideoTestimonials() {
             >
               <VideoCard
                 title={video.title}
-                videoUrl={`/reviews/${encodeURIComponent(video.filename)}`}
+                videoUrl={video.filename}
               />
             </div>
           ))}
