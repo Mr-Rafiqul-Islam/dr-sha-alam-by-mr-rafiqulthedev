@@ -40,6 +40,8 @@ const initialFormState: FormState = {
   preferredTime: "",
 };
 
+const SHOW_FREE_BOOKING_OPTION = false;
+
 function getMinPreferredDate(): string {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -52,7 +54,7 @@ function getMinPreferredDate(): string {
 export default function BookingForm() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialFormState);
-  const [bookingMode, setBookingMode] = useState<BookingMode>("free");
+  const [bookingMode, setBookingMode] = useState<BookingMode>("paid");
   const [isSubmittingFree, setIsSubmittingFree] = useState(false);
   const [isSubmittingPaid, setIsSubmittingPaid] = useState(false);
   const [freeError, setFreeError] = useState<string | null>(null);
@@ -352,65 +354,68 @@ export default function BookingForm() {
             Request Your Consultation
           </h2>
           <p className="text-text-sub text-sm text-center mb-8">
-            Complete the form below and choose how you would like to book your
-            appointment.
+            {SHOW_FREE_BOOKING_OPTION
+              ? "Complete the form below and choose how you would like to book your appointment."
+              : "Complete the form below to book your appointment."}
           </p>
           <form className="space-y-8" onSubmit={handleSubmit}>
-            <div className="space-y-3">
-              <p className="text-sm font-bold text-text-main dark:text-gray-300">
-                Booking Option
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label
-                  className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-all ${
-                    bookingMode === "free"
-                      ? "border-accent bg-accent/5"
-                      : "border-gray-200 dark:border-gray-700"
-                  }`}
-                >
-                  <input
-                    checked={bookingMode === "free"}
-                    className="mt-1"
-                    name="bookingMode"
-                    type="radio"
-                    value="free"
-                    onChange={() => handleModeChange("free")}
-                  />
-                  <span>
-                    <span className="block text-sm font-bold text-text-main dark:text-white">
-                      Free appointment
+            {SHOW_FREE_BOOKING_OPTION ? (
+              <div className="space-y-3">
+                <p className="text-sm font-bold text-text-main dark:text-gray-300">
+                  Booking Option
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label
+                    className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-all ${
+                      bookingMode === "free"
+                        ? "border-accent bg-accent/5"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <input
+                      checked={bookingMode === "free"}
+                      className="mt-1"
+                      name="bookingMode"
+                      type="radio"
+                      value="free"
+                      onChange={() => handleModeChange("free")}
+                    />
+                    <span>
+                      <span className="block text-sm font-bold text-text-main dark:text-white">
+                        Free appointment
+                      </span>
+                      <span className="block text-xs text-text-sub mt-1">
+                        Submit a request and our team will confirm your slot.
+                      </span>
                     </span>
-                    <span className="block text-xs text-text-sub mt-1">
-                      Submit a request and our team will confirm your slot.
+                  </label>
+                  <label
+                    className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-all ${
+                      bookingMode === "paid"
+                        ? "border-accent bg-accent/5"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <input
+                      checked={bookingMode === "paid"}
+                      className="mt-1"
+                      name="bookingMode"
+                      type="radio"
+                      value="paid"
+                      onChange={() => handleModeChange("paid")}
+                    />
+                    <span>
+                      <span className="block text-sm font-bold text-text-main dark:text-white">
+                        Pay consultation fee and book appointment
+                      </span>
+                      <span className="block text-xs text-text-sub mt-1">
+                        Pay securely via SSLCommerz to confirm instantly.
+                      </span>
                     </span>
-                  </span>
-                </label>
-                <label
-                  className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-all ${
-                    bookingMode === "paid"
-                      ? "border-accent bg-accent/5"
-                      : "border-gray-200 dark:border-gray-700"
-                  }`}
-                >
-                  <input
-                    checked={bookingMode === "paid"}
-                    className="mt-1"
-                    name="bookingMode"
-                    type="radio"
-                    value="paid"
-                    onChange={() => handleModeChange("paid")}
-                  />
-                  <span>
-                    <span className="block text-sm font-bold text-text-main dark:text-white">
-                      Pay consultation fee and book appointment
-                    </span>
-                    <span className="block text-xs text-text-sub mt-1">
-                      Pay securely via SSLCommerz to confirm instantly.
-                    </span>
-                  </span>
-                </label>
+                  </label>
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
