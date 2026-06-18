@@ -17,7 +17,7 @@ const FALLBACK_DEV_PASSWORD = "ChangeMeLocalDev123!";
 
 const staffUsersToSeed = [
   {
-    email: "superadmin@example.com",
+    email: "shah.alam.plid@gmail.com",
     name: "Super Admin",
     role: UserRole.SUPER_ADMIN,
   },
@@ -35,6 +35,41 @@ const staffUsersToSeed = [
     email: "thesakibdev@gmail.com",
     name: "Sakib",
     role: UserRole.ADMIN,
+  },
+  {
+    email: "foysaloff856@gmail.com",
+    name: "Foysal",
+    role: UserRole.EDITOR,
+  },
+  {
+    email: "workmuhammadirakib@gmail.com",
+    name: "Muhammad Irfan",
+    role: UserRole.EDITOR,
+  },
+  {
+    email: "workmuhammadirakib@gmail.com",
+    name: "Muhammad Irfan",
+    role: UserRole.EDITOR,
+  },
+  {
+    email: "saymaoff9570@gmail.com",
+    name: "Sayma",
+    role: UserRole.EDITOR,
+  },
+  {
+    email: "supremedignity97@gmail.com",
+    name: "Abdullah Abir",
+    role: UserRole.EDITOR,
+  },
+  {
+    email: "Mediabuyermahir@gmail.com",
+    name: "Mahir Sahariar",
+    role: UserRole.EDITOR,
+  },
+  {
+    email: "officialmdhasibmahmud@gmail.com",
+    name: "Hasib Mahmud",
+    role: UserRole.EDITOR,
   },
 ];
 

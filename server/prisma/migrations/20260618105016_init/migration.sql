@@ -1,0 +1,5 @@
+-- AlterEnum
+ALTER TYPE "UserRole" ADD VALUE 'SUPPORT';
+
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'ADMIN';
