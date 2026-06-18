@@ -12,6 +12,10 @@ import {
   upsertScheduleByDate,
 } from "./appointmentSchedule.service.js";
 import {
+  getSlotDefaults,
+  upsertSlotDefaults,
+} from "./slotDefaults.service.js";
+import {
   parseOptionalBoolean,
   parseOptionalScheduleDate,
   parseOptionalScheduleStatus,
@@ -154,6 +158,44 @@ export async function deleteScheduleHandler(req: Request, res: Response) {
     });
   } catch (error) {
     return handleScheduleError(res, error, "Failed to delete schedule");
+  }
+}
+
+export async function getSlotDefaultsHandler(req: Request, res: Response) {
+  try {
+    const siteRef = parseSiteRef(req.query.siteRef);
+    const defaults = await getSlotDefaults(siteRef);
+    return res.status(200).json({ success: true, data: defaults });
+  } catch (error) {
+    return handleScheduleError(res, error, "Failed to get slot defaults");
+  }
+}
+
+export async function updateSlotDefaultsHandler(req: Request, res: Response) {
+  try {
+    const siteRef = parseSiteRef(req.body.siteRef ?? req.query.siteRef);
+    const defaultSeatLimit = Number(req.body.defaultSeatLimit);
+    const slots = parseSlotsInput(req.body.slots);
+
+    if (!Number.isInteger(defaultSeatLimit) || defaultSeatLimit < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "defaultSeatLimit must be a non-negative integer",
+      });
+    }
+
+    const updated = await upsertSlotDefaults(siteRef, {
+      defaultSeatLimit,
+      slots,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Slot defaults updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    return handleScheduleError(res, error, "Failed to update slot defaults");
   }
 }
 

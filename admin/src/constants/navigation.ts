@@ -18,6 +18,11 @@ export const mainNavItems: NavItem[] = [
         label: "Schedule Management",
         icon: "event_available",
       },
+      {
+        path: "/dashboard/appointments/slot-defaults",
+        label: "Slot Defaults",
+        icon: "tune",
+      },
     ],
   },
   { path: "/articles", label: "Articles", icon: "article" },

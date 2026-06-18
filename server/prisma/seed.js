@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, UserRole } from "@prisma/client";
+import { PrismaClient, SiteRef, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import pg from "pg";
 
@@ -37,6 +37,62 @@ const staffUsersToSeed = [
     role: UserRole.ADMIN,
   },
 ];
+
+const BOOTSTRAP_DEFAULT_SEAT_LIMIT = 50;
+
+const BOOTSTRAP_SLOT_DEFAULTS = [
+  {
+    code: "P-9",
+    label: "PLID (Present at - 9:00 AM)",
+    smsLabel: "সকাল ৯ টা",
+    startTime: "09:00",
+    endTime: "10:00",
+    seatLimit: 20,
+    isActive: true,
+  },
+  {
+    code: "OP-4",
+    label: "Old PLID (Present at - 4:00 PM)",
+    smsLabel: "বিকাল ৪ টা",
+    startTime: "16:00",
+    endTime: "17:00",
+    seatLimit: 15,
+    isActive: true,
+  },
+  {
+    code: "G-5",
+    label: "General Patient (Present at - 5:00 PM)",
+    smsLabel: "বিকাল ৫ টা",
+    startTime: "17:00",
+    endTime: "18:00",
+    seatLimit: 10,
+    isActive: true,
+  },
+];
+
+async function seedSlotDefaults(siteRef) {
+  const existing = await prisma.appointmentSlotDefaultConfig.findUnique({
+    where: { siteRef },
+  });
+  if (existing) {
+    console.log(`Seed skip (exists): slot defaults ${siteRef}`);
+    return;
+  }
+
+  await prisma.appointmentSlotDefaultConfig.create({
+    data: {
+      siteRef,
+      defaultSeatLimit: BOOTSTRAP_DEFAULT_SEAT_LIMIT,
+      slots: {
+        create: BOOTSTRAP_SLOT_DEFAULTS.map((slot, sortOrder) => ({
+          ...slot,
+          sortOrder,
+        })),
+      },
+    },
+  });
+  console.log(`Seeded slot defaults: ${siteRef}`);
+}
 
 const DEFAULT_DOCTOR = {
   name: "Dr. Md Shah Alam",
@@ -86,6 +142,10 @@ async function main() {
     const doctor = await prisma.doctor.create({ data: DEFAULT_DOCTOR });
     console.log(`Seeded doctor: ${doctor.name} (${doctor.id})`);
     console.log(`Set DEFAULT_DOCTOR_ID=${doctor.id} in .env`);
+  }
+
+  for (const siteRef of [SiteRef.DOCTOR_SHA_ALAM, SiteRef.TRUE_CARE_HELLING_CENTER]) {
+    await seedSlotDefaults(siteRef);
   }
 }
 

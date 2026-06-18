@@ -1,8 +1,4 @@
 import type { AppointmentSchedule, AppointmentSlot } from "@prisma/client";
-import {
-  PREFERRED_TIME_SLOTS,
-  type PreferredTimeCode,
-} from "../appointment/appointment.mapper.js";
 
 type ScheduleWithSlots = AppointmentSchedule & { slots: AppointmentSlot[] };
 
@@ -45,20 +41,6 @@ export type PublicAvailableSlot = {
   availableSeats: number | null;
   isAvailable: boolean;
 };
-
-export function toFallbackAvailableSlots(): PublicAvailableSlot[] {
-  return (Object.entries(PREFERRED_TIME_SLOTS) as [PreferredTimeCode, (typeof PREFERRED_TIME_SLOTS)[PreferredTimeCode]][]).map(
-    ([code, slot]) => ({
-      code,
-      label: slot.label,
-      smsLabel: slot.smsLabel,
-      seatLimit: null,
-      bookedSeats: 0,
-      availableSeats: null,
-      isAvailable: true,
-    }),
-  );
-}
 
 export function toPublicAvailableSlot(
   slot: AppointmentSlot,

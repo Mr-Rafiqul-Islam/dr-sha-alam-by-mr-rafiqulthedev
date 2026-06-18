@@ -1,44 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useFieldArray, useForm, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { Button, Icon, Input, Modal } from "../common";
+import { useGetSlotDefaultsQuery } from "../../store/api/slotDefaultsApi";
 import type {
   AppointmentSchedule,
   AppointmentSchedulePayload,
   ScheduleStatus,
   SiteRef,
 } from "../../types/appointmentSchedule";
-
-const defaultSlots = [
-  {
-    code: "P-9",
-    label: "PLID (Present at - 9:00 AM)",
-    smsLabel: "সকাল ৯ টা",
-    startTime: "09:00",
-    endTime: "10:00",
-    seatLimit: 20,
-    isActive: true,
-  },
-  {
-    code: "OP-4",
-    label: "Old PLID (Present at - 4:00 PM)",
-    smsLabel: "বিকাল ৪ টা",
-    startTime: "16:00",
-    endTime: "17:00",
-    seatLimit: 15,
-    isActive: true,
-  },
-  {
-    code: "G-5",
-    label: "General Patient (Present at - 5:00 PM)",
-    smsLabel: "বিকাল ৫ টা",
-    startTime: "17:00",
-    endTime: "18:00",
-    seatLimit: 10,
-    isActive: true,
-  },
-];
+import type { SlotDefault } from "../../types/slotDefaults";
 
 const slotSchema = z.object({
   code: z.string().trim().min(1, "Code is required"),
@@ -94,8 +66,23 @@ function createEmptySlot() {
   };
 }
 
+function mapTemplateSlots(slots: SlotDefault[]) {
+  return slots
+    .filter((slot) => slot.isActive)
+    .map((slot) => ({
+      code: slot.code,
+      label: slot.label,
+      smsLabel: slot.smsLabel ?? "",
+      startTime: slot.startTime,
+      endTime: slot.endTime ?? "",
+      seatLimit: slot.seatLimit,
+      isActive: slot.isActive,
+    }));
+}
+
 function createDefaultValues(
-  schedule?: AppointmentSchedule | null,
+  schedule: AppointmentSchedule | null | undefined,
+  templateSlots: SlotDefault[],
 ): AppointmentScheduleFormValues {
   return {
     date: toDateInputValue(schedule?.date),
@@ -112,7 +99,10 @@ function createDefaultValues(
         endTime: slot.endTime ?? "",
         seatLimit: slot.seatLimit,
         isActive: slot.isActive,
-      })) ?? defaultSlots,
+      })) ??
+      (templateSlots.length > 0
+        ? mapTemplateSlots(templateSlots)
+        : [createEmptySlot()]),
   };
 }
 
@@ -139,8 +129,15 @@ export function AppointmentScheduleFormModal({
     watch,
   } = useForm<AppointmentScheduleFormValues>({
     resolver: zodResolver(scheduleFormSchema),
-    defaultValues: createDefaultValues(schedule),
+    defaultValues: createDefaultValues(schedule, []),
   });
+
+  const siteRef = watch("siteRef");
+  const { data: slotDefaults } = useGetSlotDefaultsQuery(siteRef);
+  const templateSlots = useMemo(
+    () => slotDefaults?.slots ?? [],
+    [slotDefaults?.slots],
+  );
 
   const { append, fields, remove, replace } = useFieldArray({
     control,
@@ -160,9 +157,9 @@ export function AppointmentScheduleFormModal({
 
   useEffect(() => {
     if (open) {
-      reset(createDefaultValues(schedule));
+      reset(createDefaultValues(schedule, templateSlots));
     }
-  }, [open, reset, schedule]);
+  }, [open, reset, schedule, templateSlots]);
 
   const handleFormSubmit: SubmitHandler<AppointmentScheduleFormValues> = async (
     values,
@@ -186,7 +183,8 @@ export function AppointmentScheduleFormModal({
   };
 
   const loadDefaultSlots = () => {
-    replace(defaultSlots);
+    if (templateSlots.length === 0) return;
+    replace(mapTemplateSlots(templateSlots));
   };
 
   return (

@@ -6,7 +6,7 @@ import {
   type PrismaClient,
 } from "@prisma/client";
 import { prisma } from "../../config/db.js";
-import { parsePreferredTimeCode } from "./appointment.mapper.js";
+import { isKnownSlotCode, getKnownSlotCodes } from "../appointmentSchedule/slotDefaults.service.js";
 import { AppointmentValidationError, getDayRange } from "./appointment.utils.js";
 
 export const SEAT_CONSUMING_STATUSES: AppointmentStatus[] = [
@@ -109,10 +109,11 @@ export async function validateAppointmentSlotAvailability(params: {
   });
 
   if (!schedule) {
-    const fallbackCode = parsePreferredTimeCode(slotCode);
-    if (!fallbackCode) {
+    const known = await isKnownSlotCode(slotCode, siteRef);
+    if (!known) {
+      const codes = await getKnownSlotCodes(siteRef);
       throw new AppointmentValidationError(
-        "preferredTime must be one of: P-9, OP-4, G-5",
+        `preferredTime must be one of: ${codes.join(", ")}`,
       );
     }
 

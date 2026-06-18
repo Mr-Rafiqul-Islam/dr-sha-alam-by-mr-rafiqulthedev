@@ -1,85 +1,12 @@
 import { z } from "zod";
 
 import { CommonForm } from "../forms";
+import { useGetSlotDefaultsQuery } from "../../store/api/slotDefaultsApi";
 import type { AppointmentFormData } from "../../types/appointment";
 import type { FormFieldConfig } from "../../types/form";
 import { isFutureDateYmd } from "../../utils/appointment";
 
 export type { AppointmentFormData } from "../../types/appointment";
-
-
-const TIME_SLOT_OPTIONS = [
-  { value: "", label: "Select Time Slot", disabled: true },
-  { value: "P-9", label: "PLID (Present at - 9:00 AM)" },
-  { value: "OP-4", label: "Old PLID (Present at - 4:00 PM)" },
-  { value: "G-5", label: "General Patient (Present at - 5:00 PM)" },
-] as const;
-
-const appointmentSchema = z.object({
-  patientName: z.string().min(1, "Full name is required"),
-  phone: z.string().min(1, "Phone number is required"),
-  email: z.union([
-    z.literal(""),
-    z.string().email("Enter a valid email address"),
-  ]),
-  homeAddress: z.string().min(1, "Home address is required"),
-  symptoms: z.string().optional(),
-  preferredDate: z
-    .string()
-    .min(1, "Preferred date is required")
-    .refine(isFutureDateYmd, "Only future dates are allowed"),
-  preferredTime: z
-    .string()
-    .min(1, "Preferred time is required")
-    .refine(
-      (value) => ["P-9", "OP-4", "G-5"].includes(value),
-      "Select a valid time slot",
-    ),
-});
-
-const appointmentFields: FormFieldConfig[] = [
-  {
-    name: "patientName",
-    label: "Full Name *",
-    type: "text",
-    placeholder: "Enter patient's name",
-  },
-  {
-    name: "phone",
-    label: "Phone Number *",
-    type: "tel",
-    placeholder: "017XXXXXXXX",
-  },
-  {
-    name: "email",
-    label: "Email Address",
-    type: "email",
-    placeholder: "email@example.com",
-  },
-  {
-    name: "homeAddress",
-    label: "Home Address *",
-    type: "text",
-    placeholder: "Dhaka, Bangladesh",
-  },
-  {
-    name: "symptoms",
-    label: "Describe Your Problem",
-    type: "textarea",
-    placeholder: "Briefly describe the symptoms or condition...",
-  },
-  {
-    name: "preferredDate",
-    label: "Preferred Date *",
-    type: "date",
-  },
-  {
-    name: "preferredTime",
-    label: "Preferred Time *",
-    type: "select",
-    options: [...TIME_SLOT_OPTIONS],
-  },
-];
 
 const defaultValues: AppointmentFormData = {
   patientName: "",
@@ -102,6 +29,96 @@ export function AppointmentForm({
   isSubmitting,
   submitLabel = "Book Appointment",
 }: AppointmentFormProps) {
+  const { data: slotDefaults, isLoading } = useGetSlotDefaultsQuery("DOCTOR_SHA_ALAM");
+
+  const slotCodes =
+    slotDefaults?.slots.filter((slot) => slot.isActive).map((slot) => slot.code) ??
+    [];
+
+  const appointmentSchema = z.object({
+    patientName: z.string().min(1, "Full name is required"),
+    phone: z.string().min(1, "Phone number is required"),
+    email: z.union([
+      z.literal(""),
+      z.string().email("Enter a valid email address"),
+    ]),
+    homeAddress: z.string().min(1, "Home address is required"),
+    symptoms: z.string().optional(),
+    preferredDate: z
+      .string()
+      .min(1, "Preferred date is required")
+      .refine(isFutureDateYmd, "Only future dates are allowed"),
+    preferredTime: z
+      .string()
+      .min(1, "Preferred time is required")
+      .refine(
+        (value) => slotCodes.length === 0 || slotCodes.includes(value),
+        "Select a valid time slot",
+      ),
+  });
+
+  const timeSlotOptions = [
+    { value: "", label: "Select Time Slot", disabled: true },
+    ...(slotDefaults?.slots
+      .filter((slot) => slot.isActive)
+      .map((slot) => ({
+        value: slot.code,
+        label: slot.label,
+      })) ?? []),
+  ];
+
+  const appointmentFields: FormFieldConfig[] = [
+    {
+      name: "patientName",
+      label: "Full Name *",
+      type: "text",
+      placeholder: "Enter patient's name",
+    },
+    {
+      name: "phone",
+      label: "Phone Number *",
+      type: "tel",
+      placeholder: "017XXXXXXXX",
+    },
+    {
+      name: "email",
+      label: "Email Address",
+      type: "email",
+      placeholder: "email@example.com",
+    },
+    {
+      name: "homeAddress",
+      label: "Home Address *",
+      type: "text",
+      placeholder: "Dhaka, Bangladesh",
+    },
+    {
+      name: "symptoms",
+      label: "Describe Your Problem",
+      type: "textarea",
+      placeholder: "Briefly describe the symptoms or condition...",
+    },
+    {
+      name: "preferredDate",
+      label: "Preferred Date *",
+      type: "date",
+    },
+    {
+      name: "preferredTime",
+      label: "Preferred Time *",
+      type: "select",
+      options: timeSlotOptions,
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <p className="text-body-md text-on-surface-variant">
+        Loading appointment slots...
+      </p>
+    );
+  }
+
   return (
     <CommonForm
       schema={appointmentSchema}

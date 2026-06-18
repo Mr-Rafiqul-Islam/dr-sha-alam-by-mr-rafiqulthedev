@@ -192,6 +192,38 @@ model AppointmentSlot {
   @@index([scheduleId, isActive])
 }
 
+model AppointmentSlotDefaultConfig {
+  id               String   @id @default(uuid())
+  siteRef          SiteRef  @unique
+  defaultSeatLimit Int      @default(50)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  slots AppointmentSlotDefault[]
+}
+
+model AppointmentSlotDefault {
+  id       String @id @default(uuid())
+  configId String
+
+  code      String
+  label     String
+  smsLabel  String?
+  startTime String
+  endTime   String?
+  seatLimit Int
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  config AppointmentSlotDefaultConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([configId, code])
+  @@index([configId, isActive])
+}
+
 model Payment {
   id       String        @id @default(uuid())
   tranId   String        @unique
