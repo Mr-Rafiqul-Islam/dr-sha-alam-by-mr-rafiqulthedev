@@ -6,9 +6,14 @@ import type { PublicBlog } from '@/types/blog';
 
 interface LatestArticlesProps {
   blogs: PublicBlog[];
+  hasFilters?: boolean;
 }
 
-export default function LatestArticles({ blogs }: LatestArticlesProps) {
+export default function LatestArticles({ blogs, hasFilters = false }: LatestArticlesProps) {
+  const emptyMessage = hasFilters
+    ? "No articles match your search."
+    : "No articles available yet.";
+
   return (
     <section className="py-16 bg-background-light dark:bg-background-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,7 +21,7 @@ export default function LatestArticles({ blogs }: LatestArticlesProps) {
           <h3 className="text-2xl font-bold text-text-main dark:text-white mb-10 border-l-4 border-accent pl-4">Latest Articles</h3>
         </ScrollReveal>
         {blogs.length === 0 ? (
-          <p className="text-text-sub text-center py-8">No articles available yet.</p>
+          <p className="text-text-sub text-center py-8">{emptyMessage}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {blogs.map((blog, index) => (

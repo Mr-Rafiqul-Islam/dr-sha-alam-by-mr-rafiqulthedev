@@ -34,7 +34,7 @@ export default function VisitChamber() {
           </div>
           <div className="md:w-2/5 w-full flex flex-col gap-4">
             <div className="aspect-video rounded-xl overflow-hidden shadow-md bg-gray-200">
-              <Image alt="Clinic Location Map" width={500} height={500} className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/gps-cs-s/APNQkAHCBSsBaS4eMQ_p_RsiAcskgPV6yRNa40PZonYxd0LI_vZvC8we7w1hhX1nelBronI6dviFmmSAZp788YIWrSUkfHevD_zFTD5CQdngQwfoHUSaH52ExnDWB7UXrwztS77BDpojV64BN_Rd=w408-h311-k-no"/>
+              <Image alt="Clinic Location Map" width={500} height={500} className="w-full h-full object-cover" src="/chamber-view.jpeg"/>
             </div>
             <Link href="/appointment" className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-primary/30 flex items-center justify-center gap-2">
               Book Appointment Now

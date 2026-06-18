@@ -1,6 +1,5 @@
 import { Prisma, ScheduleStatus, SiteRef } from "@prisma/client";
 import { prisma } from "../../config/db.js";
-import { PREFERRED_TIME_SLOTS, type PreferredTimeCode } from "../appointment/appointment.mapper.js";
 import {
   countBookedSeats,
   SEAT_CONSUMING_STATUSES,
@@ -8,16 +7,10 @@ import {
 import { AppointmentValidationError, getDayRange, parseAppointmentDate } from "../appointment/appointment.utils.js";
 import {
   toAdminSchedule,
-  toFallbackAvailableSlots,
   toPublicAvailableSlot,
 } from "./appointmentSchedule.mapper.js";
+import { getFallbackAvailableSlots, getSlotDefaults } from "./slotDefaults.service.js";
 import type { SlotInput } from "./appointmentSchedule.validation.js";
-
-const DEFAULT_START_TIMES: Record<PreferredTimeCode, string> = {
-  "P-9": "09:00",
-  "OP-4": "16:00",
-  "G-5": "17:00",
-};
 
 type CreateScheduleInput = {
   siteRef: SiteRef;
@@ -104,23 +97,24 @@ async function assertNoSeatConsumingAppointments(params: {
 export async function createDefaultScheduleForDate(params: {
   date: string;
   siteRef?: SiteRef;
-  seatLimits?: Partial<Record<PreferredTimeCode, number>>;
+  seatLimits?: Partial<Record<string, number>>;
   defaultSeatLimit?: number;
 }) {
   const siteRef = params.siteRef ?? SiteRef.DOCTOR_SHA_ALAM;
-  const defaultSeatLimit = params.defaultSeatLimit ?? 50;
+  const defaults = await getSlotDefaults(siteRef);
+  const defaultSeatLimit = params.defaultSeatLimit ?? defaults.defaultSeatLimit;
 
-  const slots: SlotInput[] = (
-    Object.entries(PREFERRED_TIME_SLOTS) as [PreferredTimeCode, (typeof PREFERRED_TIME_SLOTS)[PreferredTimeCode]][]
-  ).map(([code, slot]) => ({
-    code,
-    label: slot.label,
-    smsLabel: slot.smsLabel,
-    startTime: DEFAULT_START_TIMES[code],
-    endTime: null,
-    seatLimit: params.seatLimits?.[code] ?? defaultSeatLimit,
-    isActive: true,
-  }));
+  const slots: SlotInput[] = defaults.slots
+    .filter((slot) => slot.isActive)
+    .map((slot) => ({
+      code: slot.code,
+      label: slot.label,
+      smsLabel: slot.smsLabel,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      seatLimit: params.seatLimits?.[slot.code] ?? slot.seatLimit ?? defaultSeatLimit,
+      isActive: slot.isActive,
+    }));
 
   return upsertScheduleByDate({
     siteRef,
@@ -311,7 +305,7 @@ export async function getAvailableSlots(params: {
     return {
       isClosed: false,
       fallback: true,
-      slots: toFallbackAvailableSlots(),
+      slots: await getFallbackAvailableSlots(params.siteRef),
     };
   }
 

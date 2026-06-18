@@ -1,14 +1,20 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import PreferredDatePicker from "@/components/booking/PreferredDatePicker";
 import { getApiBaseUrl, getDefaultDoctorId } from "@/lib/api";
+import {
+  fetchAppointmentSchedules,
+  fetchSlotDefaults,
+  getClosedDates,
+} from "@/lib/appointmentSchedules";
+import type { SlotDefaultOption } from "@/types/slotDefaults";
 
-const TIME_SLOTS = [
-  { value: "P-9", label: "PLID (Present at - 9:00 AM)" },
-  { value: "OP-4", label: "Old PLID (Present at - 4:00 PM)" },
-  { value: "G-5", label: "General Patient (Present at - 5:00 PM)" },
-] as const;
+type TimeSlotOption = {
+  value: string;
+  label: string;
+};
 
 type BookingMode = "free" | "paid";
 
@@ -34,6 +40,15 @@ const initialFormState: FormState = {
   preferredTime: "",
 };
 
+function getMinPreferredDate(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const year = tomorrow.getFullYear();
+  const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+  const day = String(tomorrow.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function BookingForm() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialFormState);
@@ -42,9 +57,142 @@ export default function BookingForm() {
   const [isSubmittingPaid, setIsSubmittingPaid] = useState(false);
   const [freeError, setFreeError] = useState<string | null>(null);
   const [paidError, setPaidError] = useState<string | null>(null);
+  const [closedDates, setClosedDates] = useState<Set<string>>(new Set());
+  const [schedulesLoading, setSchedulesLoading] = useState(true);
+  const [schedulesError, setSchedulesError] = useState<string | null>(null);
+  const [timeSlots, setTimeSlots] = useState<TimeSlotOption[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(true);
+  const [slotsError, setSlotsError] = useState<string | null>(null);
 
   const isSubmitting = isSubmittingFree || isSubmittingPaid;
   const activeError = bookingMode === "free" ? freeError : paidError;
+  const minPreferredDate = getMinPreferredDate();
+
+  const loadSchedules = useCallback(async (showLoading = true) => {
+    if (showLoading) {
+      setSchedulesLoading(true);
+    }
+
+    try {
+      const schedules = await fetchAppointmentSchedules();
+      const dates = getClosedDates(schedules);
+      setClosedDates(dates);
+      setSchedulesError(null);
+
+      setForm((current) => {
+        if (current.preferredDate && dates.has(current.preferredDate)) {
+          return { ...current, preferredDate: "" };
+        }
+
+        return current;
+      });
+    } catch (error) {
+      setSchedulesError(
+        error instanceof Error
+          ? error.message
+          : "Could not load chamber availability",
+      );
+    } finally {
+      if (showLoading) {
+        setSchedulesLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchAppointmentSchedules()
+      .then((schedules) => {
+        if (cancelled) {
+          return;
+        }
+
+        const dates = getClosedDates(schedules);
+        setClosedDates(dates);
+        setSchedulesError(null);
+
+        setForm((current) => {
+          if (current.preferredDate && dates.has(current.preferredDate)) {
+            return { ...current, preferredDate: "" };
+          }
+
+          return current;
+        });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        setSchedulesError(
+          error instanceof Error
+            ? error.message
+            : "Could not load chamber availability",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setSchedulesLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchSlotDefaults()
+      .then((defaults) => {
+        if (cancelled) {
+          return;
+        }
+
+        const options = defaults.slots
+          .filter((slot: SlotDefaultOption) => slot.isActive)
+          .map((slot) => ({
+            value: slot.code,
+            label: slot.label,
+          }));
+
+        setTimeSlots(options);
+        setSlotsError(null);
+
+        setForm((current) => {
+          if (
+            current.preferredTime &&
+            !options.some((option) => option.value === current.preferredTime)
+          ) {
+            return { ...current, preferredTime: "" };
+          }
+
+          return current;
+        });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        setSlotsError(
+          error instanceof Error
+            ? error.message
+            : "Could not load time slots",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setSlotsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const updateField = (field: keyof FormState, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -141,6 +289,19 @@ export default function BookingForm() {
     setFreeError(null);
     setPaidError(null);
 
+    if (form.preferredDate && closedDates.has(form.preferredDate)) {
+      const message =
+        "The chamber is closed on the selected date. Please choose another date.";
+
+      if (bookingMode === "free") {
+        setFreeError(message);
+      } else {
+        setPaidError(message);
+      }
+
+      return;
+    }
+
     if (bookingMode === "free") {
       setIsSubmittingFree(true);
       try {
@@ -185,7 +346,7 @@ export default function BookingForm() {
       id="booking-form"
     >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white dark:bg-surface-dark rounded-3xl shadow-soft p-8 md:p-12 relative overflow-hidden">
+        <div className="bg-white dark:bg-surface-dark rounded-3xl shadow-soft p-8 md:p-12 relative">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-accent to-primary"></div>
           <h2 className="text-2xl md:text-3xl font-extrabold text-primary dark:text-white mb-4 text-center">
             Request Your Consultation
@@ -345,14 +506,15 @@ export default function BookingForm() {
                 <label className="block text-sm font-bold text-text-main dark:text-gray-300">
                   Preferred Date <span className="text-red-500">*</span>
                 </label>
-                <input
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all"
+                <PreferredDatePicker
+                  closedDates={closedDates}
+                  isLoading={schedulesLoading}
+                  minDate={minPreferredDate}
                   required
-                  type="date"
+                  schedulesError={schedulesError}
                   value={form.preferredDate}
-                  onChange={(event) =>
-                    updateField("preferredDate", event.target.value)
-                  }
+                  onChange={(value) => updateField("preferredDate", value)}
+                  onOpen={() => void loadSchedules(false)}
                 />
               </div>
               <div className="space-y-2">
@@ -363,13 +525,18 @@ export default function BookingForm() {
                   <select
                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all appearance-none"
                     required
+                    disabled={slotsLoading || timeSlots.length === 0}
                     value={form.preferredTime}
                     onChange={(event) =>
                       updateField("preferredTime", event.target.value)
                     }
                   >
-                    <option value="">Select Time Slot</option>
-                    {TIME_SLOTS.map((slot) => (
+                    <option value="">
+                      {slotsLoading
+                        ? "Loading time slots..."
+                        : "Select Time Slot"}
+                    </option>
+                    {timeSlots.map((slot) => (
                       <option key={slot.value} value={slot.value}>
                         {slot.label}
                       </option>
@@ -385,6 +552,12 @@ export default function BookingForm() {
             {activeError ? (
               <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {activeError}
+              </p>
+            ) : null}
+
+            {slotsError ? (
+              <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {slotsError}
               </p>
             ) : null}
 

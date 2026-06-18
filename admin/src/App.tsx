@@ -27,6 +27,10 @@ const AppointmentSchedulesPage = lazyNamed(
   () => import("./pages/AppointmentSchedulesPage"),
   "AppointmentSchedulesPage",
 );
+const SlotDefaultsPage = lazyNamed(
+  () => import("./pages/SlotDefaultsPage"),
+  "SlotDefaultsPage",
+);
 const ArticlesPage = lazyNamed(
   () => import("./pages/ArticlesPage"),
   "ArticlesPage",
@@ -59,6 +63,10 @@ function App() {
           <Route
             path="dashboard/appointments/schedules"
             element={<AppointmentSchedulesPage />}
+          />
+          <Route
+            path="dashboard/appointments/slot-defaults"
+            element={<SlotDefaultsPage />}
           />
           <Route path="appointments/new" element={<CreateAppointmentPage />} />
           <Route path="appointments" element={<AppointmentsPage />} />

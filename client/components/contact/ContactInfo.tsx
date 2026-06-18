@@ -78,7 +78,7 @@ export default function ContactInfo() {
           <Image
             alt="Map Location Placeholder"
             className="object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_XhY7dbV--FNwz0DYaTdRVQBV5ha5qA3L3XmuwNFJX1yy41E10_9m10F2DQ0ABe1GjW0GeBCf629me4oyOPdwKV9vh5gRLKBkqx6OXbTWN2CmAqxR6BG7PbsPgAZ5Ot6zj6CUtcCTFxC15Xrrh3ZyIG3cTPwh06eOF6CKbuwtGd_SWTGoxjnzMowTIHoFqS3sXLeiZzdFSIZHEaSE5wAoNYUILy-fa0s7D-WIx4F33zdJvRwpDP6yUZiV2yH4hxMvuSPtnzfboRk"
+            src="/chamber-view.jpeg"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
           />

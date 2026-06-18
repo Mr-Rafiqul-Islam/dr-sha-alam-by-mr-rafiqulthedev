@@ -153,7 +153,7 @@ export async function paymentSuccess(req: Request, res: Response) {
 
     if (payment.status === "SUCCESS" && payment.appointmentId) {
       return res.redirect(
-        `${getFrontendUrl()}/thank-you?appointmentId=${encodeURIComponent(payment.appointmentId)}`,
+        `${getFrontendUrl()}/booking-success?appointmentId=${encodeURIComponent(payment.appointmentId)}`,
       );
     }
 
@@ -168,7 +168,7 @@ export async function paymentSuccess(req: Request, res: Response) {
     }
 
     return res.redirect(
-      `${getFrontendUrl()}/thank-you?appointmentId=${encodeURIComponent(result.appointmentId)}`,
+      `${getFrontendUrl()}/booking-success?appointmentId=${encodeURIComponent(result.appointmentId)}`,
     );
   } catch (error) {
     if (error instanceof AppointmentValidationError) {

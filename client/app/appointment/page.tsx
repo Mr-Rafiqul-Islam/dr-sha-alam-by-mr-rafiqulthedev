@@ -197,9 +197,7 @@ export default function BookAppointment() {
                     <br />
                     01701-313001
                     <br />
-                    01701-313002 
-                    <br />
-                      appointment@doctorshahalam.com
+                    01701-313002
                     </p>
                   </div>
                 </div>
@@ -209,7 +207,7 @@ export default function BookAppointment() {
               <Image
                 alt="Map location"
                 className="object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_XhY7dbV--FNwz0DYaTdRVQBV5ha5qA3L3XmuwNFJX1yy41E10_9m10F2DQ0ABe1GjW0GeBCf629me4oyOPdwKV9vh5gRLKBkqx6OXbTWN2CmAqxR6BG7PbsPgAZ5Ot6zj6CUtcCTFxC15Xrrh3ZyIG3cTPwh06eOF6CKbuwtGd_SWTGoxjnzMowTIHoFqS3sXLeiZzdFSIZHEaSE5wAoNYUILy-fa0s7D-WIx4F33zdJvRwpDP6yUZiV2yH4hxMvuSPtnzfboRk"
+                src="/chamber-view-1.jpeg"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />

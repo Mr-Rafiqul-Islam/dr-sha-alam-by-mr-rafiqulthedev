@@ -34,3 +34,29 @@ header.sticky-header {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   backdrop-filter: blur(8px);
 }
+
+.booking-date-picker.rdp-root {
+  --rdp-accent-color: #00cbc0;
+  --rdp-accent-background-color: rgba(0, 203, 192, 0.12);
+  --rdp-day_button-border-radius: 0.75rem;
+}
+
+.dark .booking-date-picker.rdp-root {
+  --rdp-accent-background-color: rgba(0, 203, 192, 0.2);
+  color: #f3f4f6;
+}
+
+.booking-date-picker .rdp-chamber-closed .rdp-day_button {
+  color: #dc2626;
+  opacity: 1;
+}
+
+.dark .booking-date-picker .rdp-chamber-closed .rdp-day_button {
+  color: #f87171;
+}
+
+.booking-date-picker .rdp-disabled .rdp-day_button,
+.booking-date-picker .rdp-day_button:disabled,
+.booking-date-picker .rdp-day_button[aria-disabled="true"] {
+  cursor: not-allowed;
+}
