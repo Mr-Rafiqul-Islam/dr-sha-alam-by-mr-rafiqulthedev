@@ -45,3 +45,12 @@ header.sticky-header {
   --rdp-accent-background-color: rgba(0, 203, 192, 0.2);
   color: #f3f4f6;
 }
+
+.booking-date-picker .rdp-chamber-closed .rdp-day_button {
+  color: #dc2626;
+  opacity: 1;
+}
+
+.dark .booking-date-picker .rdp-chamber-closed .rdp-day_button {
+  color: #f87171;
+}

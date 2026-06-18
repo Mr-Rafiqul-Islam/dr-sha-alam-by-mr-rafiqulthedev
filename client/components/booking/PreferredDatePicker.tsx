@@ -45,10 +45,15 @@ export default function PreferredDatePicker({
   const minDateObject = useMemo(() => parseScheduleDate(minDate), [minDate]);
   const selectedDate = value ? parseScheduleDate(value) : undefined;
 
-  const disabledMatchers = useMemo(() => {
-    const closedDateObjects = Array.from(closedDates).map(parseScheduleDate);
-    return [{ before: minDateObject }, ...closedDateObjects];
-  }, [closedDates, minDateObject]);
+  const closedDateObjects = useMemo(
+    () => Array.from(closedDates).map(parseScheduleDate),
+    [closedDates],
+  );
+
+  const disabledMatchers = useMemo(
+    () => [{ before: minDateObject }, ...closedDateObjects],
+    [closedDateObjects, minDateObject],
+  );
 
   useEffect(() => {
     if (!open) {
@@ -141,6 +146,8 @@ export default function PreferredDatePicker({
             defaultMonth={selectedDate ?? minDateObject}
             disabled={disabledMatchers}
             mode="single"
+            modifiers={{ chamberClosed: closedDateObjects }}
+            modifiersClassNames={{ chamberClosed: "rdp-chamber-closed" }}
             selected={selectedDate}
             onSelect={handleSelect}
           />
