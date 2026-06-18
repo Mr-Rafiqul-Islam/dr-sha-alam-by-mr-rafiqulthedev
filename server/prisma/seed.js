@@ -17,24 +17,59 @@ const FALLBACK_DEV_PASSWORD = "ChangeMeLocalDev123!";
 
 const staffUsersToSeed = [
   {
-    email: "superadmin@example.com",
+    email: "shah.alam.plid@gmail.com",
     name: "Super Admin",
     role: UserRole.SUPER_ADMIN,
   },
   {
-    email: "admin@example.com",
+    email: "abuhurayr10@gmail.com",
     name: "Admin",
-    role: UserRole.ADMIN,
-  },
-  {
-    email: "admin@doctorshahalam.test",
-    name: "Default Admin",
-    role: UserRole.ADMIN,
+    role: UserRole.SUPER_ADMIN,
   },
   {
     email: "thesakibdev@gmail.com",
     name: "Sakib",
-    role: UserRole.ADMIN,
+    role: UserRole.SUPER_ADMIN,
+  },
+  {
+    email: "foysaloff856@gmail.com",
+    name: "Foysal",
+    role: UserRole.SUPPORT,
+  },
+  {
+    email: "workmuhammadirakib@gmail.com",
+    name: "Muhammad Irfan",
+    role: UserRole.SUPPORT,
+  },
+  {
+    email: "workmuhammadirakib@gmail.com",
+    name: "Muhammad Irfan",
+    role: UserRole.SUPPORT,
+  },
+  {
+    email: "saymaoff9570@gmail.com",
+    name: "Sayma",
+    role: UserRole.SUPPORT,
+  },
+  {
+    email: "mssadiakhatun1130@gmail.com",
+    name: "Sadia Khatun",
+    role: UserRole.SUPPORT,
+  },
+  {
+    email: "supremedignity97@gmail.com",
+    name: "Abdullah Abir",
+    role: UserRole.EDITOR,
+  },
+  {
+    email: "Mediabuyermahir@gmail.com",
+    name: "Mahir Sahariar",
+    role: UserRole.EDITOR,
+  },
+  {
+    email: "officialmdhasibmahmud@gmail.com",
+    name: "Hasib Mahmud",
+    role: UserRole.EDITOR,
   },
 ];
 

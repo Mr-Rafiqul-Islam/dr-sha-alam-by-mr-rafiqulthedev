@@ -13,6 +13,7 @@ enum UserRole {
   MANAGER
   PATIENT
   DOCTOR
+  SUPPORT
 }
 
 enum AppointmentStatus {
