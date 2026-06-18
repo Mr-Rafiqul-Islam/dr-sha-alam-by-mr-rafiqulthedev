@@ -8,6 +8,7 @@ import {
 } from "../../constants/navigation";
 import { useSidebar } from "../../contexts/SidebarContext";
 import { cn } from "../../lib/cn";
+import logo from "../../assets/logo.png";
 
 function NavItemLink({
   path,
@@ -206,12 +207,7 @@ export function Sidebar() {
             Dr.
           </div>
           <div className={cn(isCollapsed && "lg:hidden")}>
-            <h1 className="text-headline-md font-bold text-primary tracking-tight">
-              Dr. Shah Alam
-            </h1>
-            <p className="text-label-md text-on-surface-variant mt-1">
-              Orthopedic Specialist
-            </p>
+           <img src={logo} alt="Dr. Shah Alam"/>
           </div>
         </div>
 
