@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { useRef, useState, useEffect } from 'react';
+import { getInitials } from '@/lib/utils';
 
 const stories = [
   {
@@ -9,28 +9,24 @@ const stories = [
     quote: "After understanding my condition and following the recovery roadmap, my pain improved significantly and I returned to normal activities.",
     name: "Mizanur Rahman",
     condition: "Recovered from PLID",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDUmaPVbPNx_wkwUKO6yQCE23MeytyZNNs0PHyKEKubJYwopu7Z25myusFo2ct2xB1HBhqsT5lAyMax83RCg844HmfostNthsW2_c0dxfw2lh6W-orM46HktkU6fU3g3VGaS5PebsxCZ8tkhYwjVbqoqYAOHLbSZp16iUUmvVQl8G06Wk1bZQS7mSDahydriS7ERCLLwJJcuFJ_BAqxEGhigdmjme9vhyKVuwFdMTLYjl9Pxz3_lTp-BtabfSqn3S-N2Ts2xBLgoxY",
   },
   {
     id: 2,
     quote: "I was struggling with severe sciatica. Proper evaluation helped me avoid unnecessary surgery and recover faster.",
     name: "Jannatul Ferdous",
     condition: "Recovered from Sciatica",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBmcOC0zZjsNKoYJx-YRKI8lewO5-QT4vfQW6dQnvq91n-WgKI0aczFhkhfVA-V3EL5CcTPJnJ_-dOLQVOFFB9pZB9EtIprizpBPOCt975DlEHS-IvJ2RRwSJofygXcEmJRlaGte5EVu3GGygnI1Lqkd095w2yEv0zsSnPuN6sa461QEssVAVSNABmxAuUgwo32O_d5xzOwAhEvAaJJIAelfcTcmaHb_894l0rDLet2r12GvTkZgYA9blXimmH5wyvqKBjLP12-JOg",
   },
   {
     id: 3,
     quote: "Dr. Shah Alam explained my condition clearly. For the first time, I knew exactly what treatment I needed.",
     name: "Saiful Rahman",
     condition: "Shoulder Mobility Restored",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBHJW2_Ueex3EXL5Qm1ynM3CDW_ngk9ABTRhBqlYy00Hm5ild8A74BOrumslVmZ7DA93O8Bh-MWFZ3CrSPIW3ZdmYNYUxeQszmLe-f2YCLH63r06O9-9vmxVTwxz9iKmtEpJzc3m4OEQhfSkoYF_nJ6nk-PsYpDzarNbuhTbJotueF8x23NsQWPHTLeONZrUgUmHe7iuU2FGxDZQ9VKqUcfB5dfUJWEtMMpfK526StBGfZLpSAkYOKtGOVcdoNCrnOMDWuIGbquntk",
   },
   {
     id: 4,
     quote: "After years of chronic neck pain, the holistic approach finally gave me relief. The posture correction techniques are something I use every day.",
     name: "Aisha Rahman",
     condition: "Relieved from Neck Pain",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCbOQjK5YuQNIv5cj5L_IY8BAA1mSR_oLVoeuAW-Gi1kTeGR3jMnZTCgx9_g1kRGy6OQP-6agJ73NYoQNEBNfbggmv_x1m1VS7slWVGRYmTV1FcrDj3QR8Zr88sICFCcUvDbURgLMfG4e-N3F3gkuZd4tTaW3FePZRES5iRm8RRZVVxfag4C_ybp7njxxTOHXUGHcv3rIXVOAVXCqncORaczdUAAKFtUbZFJnUh4YiwUufQ9ECkHBtPua2C2FzxwxxTLtyYjBavqAQ",
   }
 ];
 
@@ -217,7 +213,12 @@ export default function PatientStories() {
                 </div>
                 <p className="text-text-main mb-8 text-lg leading-relaxed relative z-10">&quot;{story.quote}&quot;</p>
                 <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
-                  <Image alt={`Portrait of ${story.name}`} className="w-12 h-12 rounded-full object-cover ring-2 ring-offset-2 ring-primary/20" src={story.image} width={48} height={48} sizes="48px" />
+                  <div
+                    className="w-12 h-12 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center ring-2 ring-offset-2 ring-primary/20 shrink-0"
+                    aria-hidden="true"
+                  >
+                    {getInitials(story.name)}
+                  </div>
                   <div>
                     <h5 className="font-bold text-text-main">{story.name}</h5>
                     <p className="text-xs text-text-sub font-medium">{story.condition}</p>
