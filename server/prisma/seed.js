@@ -22,39 +22,39 @@ const staffUsersToSeed = [
     role: UserRole.SUPER_ADMIN,
   },
   {
-    email: "admin@example.com",
+    email: "abuhurayr10@gmail.com",
     name: "Admin",
-    role: UserRole.ADMIN,
-  },
-  {
-    email: "admin@doctorshahalam.test",
-    name: "Default Admin",
-    role: UserRole.ADMIN,
+    role: UserRole.SUPER_ADMIN,
   },
   {
     email: "thesakibdev@gmail.com",
     name: "Sakib",
-    role: UserRole.ADMIN,
+    role: UserRole.SUPER_ADMIN,
   },
   {
     email: "foysaloff856@gmail.com",
     name: "Foysal",
-    role: UserRole.EDITOR,
+    role: UserRole.SUPPORT,
   },
   {
     email: "workmuhammadirakib@gmail.com",
     name: "Muhammad Irfan",
-    role: UserRole.EDITOR,
+    role: UserRole.SUPPORT,
   },
   {
     email: "workmuhammadirakib@gmail.com",
     name: "Muhammad Irfan",
-    role: UserRole.EDITOR,
+    role: UserRole.SUPPORT,
   },
   {
     email: "saymaoff9570@gmail.com",
     name: "Sayma",
-    role: UserRole.EDITOR,
+    role: UserRole.SUPPORT,
+  },
+  {
+    email: "mssadiakhatun1130@gmail.com",
+    name: "Sadia Khatun",
+    role: UserRole.SUPPORT,
   },
   {
     email: "supremedignity97@gmail.com",
