@@ -1,34 +1,29 @@
 'use client';
 
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import ScrollReveal from '@/components/ScrollReveal';
+import { getInitials } from '@/lib/utils';
 
 export default function TreatmentTestimonials() {
   const testimonials = [
     {
       name: 'Rahman Khan',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDUmaPVbPNx_wkwUKO6yQCE23MeytyZNNs0PHyKEKubJYwopu7Z25myusFo2ct2xB1HBhqsT5lAyMax83RCg844HmfostNthsW2_c0dxfw2lh6W-orM46HktkU6fU3g3VGaS5PebsxCZ8tkhYwjVbqoqYAOHLbSZp16iUUmvVQl8G06Wk1bZQS7mSDahydriS7ERCLLwJJcuFJ_BAqxEGhigdmjme9vhyKVuwFdMTLYjl9Pxz3_lTp-BtabfSqn3S-N2Ts2xBLgoxY',
       quote: 'The PLID treatment plan was a miracle. I can walk without pain for the first time in 2 years. Highly recommended!'
     },
     {
       name: 'Sarah Ahmed',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBmcOC0zZjsNKoYJx-YRKI8lewO5-QT4vfQW6dQnvq91n-WgKI0aczFhkhfVA-V3EL5CcTPJnJ_-dOLQVOFFB9pZB9EtIprizpBPOCt975DlEHS-IvJ2RRwSJofygXcEmJRlaGte5EVu3GGygnI1Lqkd095w2yEv0zsSnPuN6sa461QEssVAVSNABmxAuUgwo32O_d5xzOwAhEvAaJJIAelfcTcmaHb_894l0rDLet2r12GvTkZgYA9blXimmH5wyvqKBjLP12-JOg',
       quote: 'I was skeptical about yoga for sciatica, but Dr. Alam\'s approach is scientific and effective. Very grateful.'
     },
     {
       name: 'James Wilson',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBHJW2_Ueex3EXL5Qm1ynM3CDW_ngk9ABTRhBqlYy00Hm5ild8A74BOrumslVmZ7DA93O8Bh-MWFZ3CrSPIW3ZdmYNYUxeQszmLe-f2YCLH63r06O9-9vmxVTwxz9iKmtEpJzc3m4OEQhfSkoYF_nJ6nk-PsYpDzarNbuhTbJotueF8x23NsQWPHTLeONZrUgUmHe7iuU2FGxDZQ9VKqUcfB5dfUJWEtMMpfK526StBGfZLpSAkYOKtGOVcdoNCrnOMDWuIGbquntk',
       quote: 'Professional, kind, and extremely knowledgeable. The best orthopedic specialist I have visited in Dhaka.'
     },
     {
       name: 'Sarah Ahmed',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBmcOC0zZjsNKoYJx-YRKI8lewO5-QT4vfQW6dQnvq91n-WgKI0aczFhkhfVA-V3EL5CcTPJnJ_-dOLQVOFFB9pZB9EtIprizpBPOCt975DlEHS-IvJ2RRwSJofygXcEmJRlaGte5EVu3GGygnI1Lqkd095w2yEv0zsSnPuN6sa461QEssVAVSNABmxAuUgwo32O_d5xzOwAhEvAaJJIAelfcTcmaHb_894l0rDLet2r12GvTkZgYA9blXimmH5wyvqKBjLP12-JOg',
       quote: 'I was skeptical about yoga for sciatica, but Dr. Alam\'s approach is scientific and effective. Very grateful.'
     },
     {
       name: 'James Wilson',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBHJW2_Ueex3EXL5Qm1ynM3CDW_ngk9ABTRhBqlYy00Hm5ild8A74BOrumslVmZ7DA93O8Bh-MWFZ3CrSPIW3ZdmYNYUxeQszmLe-f2YCLH63r06O9-9vmxVTwxz9iKmtEpJzc3m4OEQhfSkoYF_nJ6nk-PsYpDzarNbuhTbJotueF8x23NsQWPHTLeONZrUgUmHe7iuU2FGxDZQ9VKqUcfB5dfUJWEtMMpfK526StBGfZLpSAkYOKtGOVcdoNCrnOMDWuIGbquntk',
       quote: 'Professional, kind, and extremely knowledgeable. The best orthopedic specialist I have visited in Dhaka.'
     }
   ];
@@ -90,7 +85,12 @@ export default function TreatmentTestimonials() {
               <div key={index} className="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-4">
                 <div className="bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-sm hover:shadow-lg transition-all h-full flex flex-col">
                   <div className="flex items-center gap-4 mb-6">
-                    <Image alt={testimonial.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20" src={testimonial.image} width={48} height={48} sizes="48px" />
+                    <div
+                      className="w-12 h-12 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center ring-2 ring-primary/20 shrink-0"
+                      aria-hidden="true"
+                    >
+                      {getInitials(testimonial.name)}
+                    </div>
                     <div>
                       <h5 className="font-bold text-text-main dark:text-white">{testimonial.name}</h5>
                       <div className="flex text-yellow-400 text-xs mt-1">

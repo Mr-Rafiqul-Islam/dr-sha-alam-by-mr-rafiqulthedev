@@ -2,16 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import ScrollReveal from '@/components/ScrollReveal';
-
-function getInitials(name: string) {
-  return name
-    .replace(/\./g, '')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('');
-}
+import { getInitials } from '@/lib/utils';
 
 const stories = [
   {
