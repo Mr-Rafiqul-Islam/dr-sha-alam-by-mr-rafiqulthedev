@@ -54,3 +54,9 @@ header.sticky-header {
 .dark .booking-date-picker .rdp-chamber-closed .rdp-day_button {
   color: #f87171;
 }
+
+.booking-date-picker .rdp-disabled .rdp-day_button,
+.booking-date-picker .rdp-day_button:disabled,
+.booking-date-picker .rdp-day_button[aria-disabled="true"] {
+  cursor: not-allowed;
+}
