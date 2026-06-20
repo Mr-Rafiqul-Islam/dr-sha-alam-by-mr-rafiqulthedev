@@ -26,6 +26,10 @@ export type SubmitFreeAppointmentPayload = {
   problem?: string;
 };
 
+export type SubmitFreeAppointmentResult = {
+  appointmentId: string;
+};
+
 export type PublicAppointmentSummary = {
   name: string;
   homeAddress: string;

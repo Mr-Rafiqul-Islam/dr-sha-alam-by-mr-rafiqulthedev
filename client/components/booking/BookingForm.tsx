@@ -206,7 +206,7 @@ export default function BookingForm() {
   };
 
   const submitFreeBooking = async () => {
-    await submitFreeAppointment({
+    const result = await submitFreeAppointment({
       fullName: form.fullName,
       phoneNumber: form.phoneNumber,
       email: form.email || undefined,
@@ -216,7 +216,9 @@ export default function BookingForm() {
       preferredTime: form.preferredTime,
     });
 
-    router.push("/booking-success");
+    router.push(
+      `/booking-success?appointmentId=${encodeURIComponent(result.appointmentId)}`,
+    );
   };
 
   const submitPaidBooking = async () => {

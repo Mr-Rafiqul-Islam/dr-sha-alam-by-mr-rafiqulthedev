@@ -1,16 +1,20 @@
 "use server";
 
 import { getApiBaseUrl } from "@/lib/api";
-import type { SubmitFreeAppointmentPayload } from "@/types/booking";
+import type {
+  SubmitFreeAppointmentPayload,
+  SubmitFreeAppointmentResult,
+} from "@/types/booking";
 
 type SubmitFreeAppointmentResponse = {
   success: boolean;
   message?: string;
+  appointment?: { id: string };
 };
 
 export async function submitFreeAppointment(
   payload: SubmitFreeAppointmentPayload,
-): Promise<void> {
+): Promise<SubmitFreeAppointmentResult> {
   const apiBaseUrl = getApiBaseUrl();
   if (!apiBaseUrl) {
     throw new Error("API URL is not configured");
@@ -42,7 +46,9 @@ export async function submitFreeAppointment(
 
   const json = (await response.json()) as SubmitFreeAppointmentResponse;
 
-  if (!response.ok || !json.success) {
+  if (!response.ok || !json.success || !json.appointment?.id) {
     throw new Error(json.message ?? "Failed to submit appointment request");
   }
+
+  return { appointmentId: json.appointment.id };
 }
