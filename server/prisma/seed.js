@@ -17,13 +17,13 @@ const FALLBACK_DEV_PASSWORD = "ChangeMeLocalDev123!";
 
 const staffUsersToSeed = [
   {
-    email: "shah.alam.plid@gmail.com",
-    name: "Super Admin",
+    email:"shah.alam26@gmail.com",
+    name: "Doctor Sha Alam",
     role: UserRole.SUPER_ADMIN,
   },
   {
-    email: "abuhurayr10@gmail.com",
-    name: "Admin",
+    email: "joinabuhurayra@gmail.com",
+    name: "Abu Hurayra",
     role: UserRole.SUPER_ADMIN,
   },
   {
@@ -34,11 +34,6 @@ const staffUsersToSeed = [
   {
     email: "foysaloff856@gmail.com",
     name: "Foysal",
-    role: UserRole.SUPPORT,
-  },
-  {
-    email: "workmuhammadirakib@gmail.com",
-    name: "Muhammad Irfan",
     role: UserRole.SUPPORT,
   },
   {
@@ -82,7 +77,7 @@ const BOOTSTRAP_SLOT_DEFAULTS = [
     smsLabel: "সকাল ৯ টা",
     startTime: "09:00",
     endTime: "10:00",
-    seatLimit: 20,
+    seatLimit: 80,
     isActive: true,
   },
   {
@@ -91,7 +86,7 @@ const BOOTSTRAP_SLOT_DEFAULTS = [
     smsLabel: "বিকাল ৪ টা",
     startTime: "16:00",
     endTime: "17:00",
-    seatLimit: 15,
+    seatLimit: 85,
     isActive: true,
   },
   {
@@ -100,7 +95,7 @@ const BOOTSTRAP_SLOT_DEFAULTS = [
     smsLabel: "বিকাল ৫ টা",
     startTime: "17:00",
     endTime: "18:00",
-    seatLimit: 10,
+    seatLimit: 80,
     isActive: true,
   },
 ];
