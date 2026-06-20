@@ -295,7 +295,7 @@ export default function BookingForm() {
 
   return (
     <section
-      className="py-20 bg-background-light dark:bg-background-dark"
+      className="lg:py-20 py-12 bg-background-light dark:bg-background-dark"
       id="booking-form"
     >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -519,7 +519,7 @@ export default function BookingForm() {
 
             <div className="pt-4">
               <button
-                className="w-full bg-[#00CBC0] hover:bg-[#00a89f] disabled:opacity-70 disabled:cursor-not-allowed text-white text-lg font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:shadow-accent/20 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                className="w-full bg-[#00CBC0] hover:bg-[#00a89f] disabled:opacity-70 disabled:cursor-not-allowed text-white text-sm lg:text-lg font-bold py-4 px-4 rounded-xl shadow-lg hover:shadow-xl hover:shadow-accent/20 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2"
                 disabled={isSubmitting}
                 type="submit"
               >
