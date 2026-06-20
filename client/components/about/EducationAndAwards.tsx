@@ -2,7 +2,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 
 export default function EducationAndAwards() {
   return (
-    <section className="py-24 bg-background-light dark:bg-background-dark">
+    <section className="lg:py-24 py-12 bg-background-light dark:bg-background-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
           <ScrollReveal direction="right">
