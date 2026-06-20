@@ -12,7 +12,7 @@ export default function FAQCategories({
   onCategoryChange,
 }: FAQCategoriesProps) {
   return (
-    <section className="py-12 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-gray-800 sticky top-24 z-30">
+    <section className="py-12 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-gray-800 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
           {faqCategories.map((category) => {
