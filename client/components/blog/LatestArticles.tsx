@@ -15,10 +15,10 @@ export default function LatestArticles({ blogs, hasFilters = false }: LatestArti
     : "No articles available yet.";
 
   return (
-    <section className="py-16 bg-background-light dark:bg-background-dark">
+    <section className="lg:py-16 py-12 bg-background-light dark:bg-background-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up">
-          <h3 className="text-2xl font-bold text-text-main dark:text-white mb-10 border-l-4 border-accent pl-4">Latest Articles</h3>
+          <h3 className="text-2xl font-bold text-text-main dark:text-white lg:mb-10 mb-8 border-l-4 border-accent pl-4">Latest Articles</h3>
         </ScrollReveal>
         {blogs.length === 0 ? (
           <p className="text-text-sub text-center py-8">{emptyMessage}</p>
@@ -48,7 +48,7 @@ export default function LatestArticles({ blogs, hasFilters = false }: LatestArti
             ))}
           </div>
         )}
-        <ScrollReveal direction="up" className="mt-12 text-center">
+        <ScrollReveal direction="up" className="lg:mt-12 mt-8 text-center">
           <button className="bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-sm hover:shadow-md">
             Load More Articles
           </button>
