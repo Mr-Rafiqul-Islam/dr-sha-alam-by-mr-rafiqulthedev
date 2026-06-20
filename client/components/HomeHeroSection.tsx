@@ -8,7 +8,7 @@ export default function HomeHeroSection() {
   const yearsExperience = currentYear - 2014;
 
   return (
-    <section className="relative overflow-hidden pt-12 pb-20 lg:pt-24 lg:pb-32 bg-gradient-to-br from-background-light to-white dark:from-background-dark dark:to-surface-dark">
+    <section className="relative overflow-hidden py-12 lg:pt-24 lg:pb-32 bg-gradient-to-br from-background-light to-white dark:from-background-dark dark:to-surface-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
           <ScrollReveal direction="right" className="space-y-8 text-center lg:text-left order-2 lg:order-1">

@@ -57,7 +57,7 @@ const itemVariants: Variants = {
 
 export default function ExpertiseSection() {
   return (
-    <section className="py-24 bg-white dark:bg-surface-dark relative" id="treatments">
+    <section className="lg:py-24 py-12 bg-white dark:bg-surface-dark relative" id="treatments">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
@@ -65,7 +65,7 @@ export default function ExpertiseSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="text-center max-w-3xl mx-auto mb-16"
+          className="text-center max-w-3xl mx-auto lg:mb-16 mb-8"
         >
           <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">Our Expertise</h2>
           <h3 className="text-3xl md:text-4xl font-extrabold text-primary dark:text-white mb-4">Holistic Care for Your Recovery</h3>

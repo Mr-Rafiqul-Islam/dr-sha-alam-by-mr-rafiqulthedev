@@ -27,10 +27,10 @@ export default function Footer() {
     },
   ];
   return (
-    <footer className="bg-footer-bg text-gray-300 pt-20 pb-12 border-t border-gray-800">
+    <footer className="bg-footer-bg text-gray-300 lg:pt-20 pt-12 pb-12 border-t border-gray-800">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-24 mb-16">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-24 lg:mb-16 mb-8">
+          <div className="space-y-6 lg:col-span-1">
             <Link href="/" className="inline-block">
               <Image
                 src="/logo-in-dark.png"
@@ -42,7 +42,8 @@ export default function Footer() {
             </Link>
             <div className="space-y-3 pt-2">
               <p className="text-gray-400 text-sm leading-relaxed">
-              49, Mohakhali, Beside Square Centre, Wireless Gate, Mohakhali, Dhaka 1212, Bangladesh
+                49, Mohakhali, Beside Square Centre, Wireless Gate, Mohakhali,
+                Dhaka 1212, Bangladesh
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Chamber Time: Sat—Thu, 9AM—7PM
@@ -72,137 +73,139 @@ export default function Footer() {
               ))}
             </div>
           </div>
-          <div>
-            <h3 className="text-lg font-bold mb-6 text-white">Quick Links</h3>
-            <ul className="space-y-4">
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/treatments"
-                >
-                  Treatments
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/success-stories"
-                >
-                  Success Stories
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/blog"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="https://yogawithdoctor.com/courses"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Courses
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/about"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/contact"
-                >
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/appointment"
-                >
-                  Book Appointment
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold mb-6 text-white">Resources</h3>
-            <ul className="space-y-4">
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/faq"
-                >
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/patient-guidelines"
-                >
-                  Patient Guidelines
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/before-visit-instructions"
-                >
-                  Before Visit Instructions
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/after-treatment-instructions"
-                >
-                  After Treatment Instructions
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/privacy-policy"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/terms-conditions"
-                >
-                  Terms & Conditions
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-400 hover:text-accent transition-colors text-sm"
-                  href="/medical-disclaimer"
-                >
-                  Medical Disclaimer
-                </Link>
-              </li>
-            </ul>
+          <div className="grid grid-cols-2 gap-12 lg:gap-24 lg:col-span-2">
+            <div>
+              <h3 className="text-lg font-bold mb-6 text-white">Quick Links</h3>
+              <ul className="space-y-4">
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/"
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/treatments"
+                  >
+                    Treatments
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/success-stories"
+                  >
+                    Success Stories
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/blog"
+                  >
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="https://yogawithdoctor.com/courses"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Courses
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/about"
+                  >
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/contact"
+                  >
+                    Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/appointment"
+                  >
+                    Book Appointment
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold mb-6 text-white">Resources</h3>
+              <ul className="space-y-4">
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/faq"
+                  >
+                    FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/patient-guidelines"
+                  >
+                    Patient Guidelines
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/before-visit-instructions"
+                  >
+                    Before Visit Instructions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/after-treatment-instructions"
+                  >
+                    After Treatment Instructions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/privacy-policy"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/terms-conditions"
+                  >
+                    Terms & Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="text-gray-400 hover:text-accent transition-colors text-sm"
+                    href="/medical-disclaimer"
+                  >
+                    Medical Disclaimer
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
         <div className="border-t border-gray-800 pt-8 flex justify-center">

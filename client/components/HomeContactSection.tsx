@@ -78,7 +78,7 @@ export default function HomeContactSection() {
 
   return (
     <ScrollReveal direction="up">
-      <section className="py-24 bg-white dark:bg-surface-dark" id="contact">
+      <section className="lg:py-24 py-12 bg-white dark:bg-surface-dark" id="contact">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-primary rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col lg:flex-row">
             <div className="lg:w-1/2 p-10 lg:p-16 bg-white dark:bg-surface-dark">

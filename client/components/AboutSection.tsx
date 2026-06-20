@@ -15,7 +15,7 @@ export default function AboutSection() {
   return (
     <ScrollReveal direction="up">
       <section
-        className="lg:py-24 py-16 bg-white dark:bg-surface-dark overflow-hidden"
+        className="lg:py-24 py-12 bg-white dark:bg-surface-dark overflow-hidden"
         id="about"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
