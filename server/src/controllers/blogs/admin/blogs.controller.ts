@@ -1,13 +1,25 @@
 /**
- * Admin blogs API (Prisma `Blog`). Routes use `requireAuth` + `requireContentManager`.
+ * Admin blogs API (Prisma `Blog`). Routes use `requireAdminAuth` + `requireAdminPermission("articles")`.
  *
  * Base: `/api/v1/admin/blogs` (see `routes/index.ts`).
  */
 import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
+import {
+  ActivityAction,
+  ActivityEntityType,
+} from "../../../modules/activity/activity.service.js";
+import { recordActivity } from "../../../modules/activity/activity.middleware.js";
 import { routeParamString } from "../../../utils/express-params.js";
 import { parseCommaSeparatedField } from "../../../modules/blogs/parse-comma-separated.js";
+import {
+  canDeleteImmediately,
+  createDeleteRequest,
+  DeleteRequestEntityType,
+  resolvePendingDeleteRequestsForEntity,
+} from "../../../modules/deleteRequest/deleteRequest.service.js";
+import { DeleteRequestError } from "../../../modules/deleteRequest/deleteRequest.types.js";
 
 export async function listBlogsForAdmin(req: Request, res: Response) {
   try {
@@ -258,6 +270,13 @@ export async function createBlog(req: Request, res: Response) {
 
     const created = await prisma.blog.create({ data: createData });
 
+    recordActivity(res, {
+      action: ActivityAction.BLOG_CREATED,
+      entityType: ActivityEntityType.Blog,
+      entityId: created.id,
+      metadata: { title: created.title },
+    });
+
     res.status(201).json({ success: true, data: created });
   } catch (err) {
     console.error(err);
@@ -417,6 +436,13 @@ export async function updateBlog(req: Request, res: Response) {
       data,
     });
 
+    recordActivity(res, {
+      action: ActivityAction.BLOG_UPDATED,
+      entityType: ActivityEntityType.Blog,
+      entityId: updated.id,
+      metadata: { title: updated.title },
+    });
+
     res.json({ success: true, data: updated });
   } catch (err) {
     console.error(err);
@@ -451,7 +477,56 @@ export async function deleteBlog(req: Request, res: Response) {
       });
     }
 
+    const existing = await prisma.blog.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+      });
+    }
+
+    const admin = req.admin;
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
+
+    if (!canDeleteImmediately(admin.role)) {
+      try {
+        await createDeleteRequest(DeleteRequestEntityType.BLOG, id, admin.id);
+      } catch (err) {
+        if (err instanceof DeleteRequestError) {
+          return res.status(err.statusCode).json({
+            success: false,
+            message: err.message,
+          });
+        }
+        throw err;
+      }
+
+      return res.status(200).json({
+        success: true,
+        pending: true,
+        message: "Delete request submitted and is pending confirmation.",
+      });
+    }
+
     await prisma.blog.delete({ where: { id } });
+    await resolvePendingDeleteRequestsForEntity(
+      DeleteRequestEntityType.BLOG,
+      id,
+      admin.id,
+    );
+
+    recordActivity(res, {
+      action: ActivityAction.BLOG_DELETED,
+      entityType: ActivityEntityType.Blog,
+      entityId: id,
+      metadata: { title: existing.title },
+    });
+
     res.json({ success: true, message: "Blog deleted" });
   } catch (err) {
     console.error(err);

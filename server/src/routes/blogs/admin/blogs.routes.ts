@@ -1,7 +1,8 @@
 import { Router } from "express";
 import * as blogFeatured from "../../../controllers/blogs/admin/blog-featured.controller.js";
 import * as blogsAdmin from "../../../controllers/blogs/admin/blogs.controller.js";
-import { requireAdminAuth } from "../../../modules/adminAuth/adminAuth.middleware.js";
+import { adminActivityTracing } from "../../../modules/activity/activity.middleware.js";
+import { requireAdminAuth, requireAdminPermission } from "../../../modules/adminAuth/adminAuth.middleware.js";
 import { upload } from "../../../shared/middleware/multer.js";
 import {
   handleBlogImageDelete,
@@ -11,6 +12,8 @@ import {
 export const blogsAdminRouter = Router();
 
 blogsAdminRouter.use(requireAdminAuth);
+blogsAdminRouter.use(requireAdminPermission("articles"));
+blogsAdminRouter.use(adminActivityTracing());
 
 blogsAdminRouter.get("/", blogsAdmin.listBlogsForAdmin);
 blogsAdminRouter.post(

@@ -3,6 +3,11 @@ import type { Request, Response } from "express";
 import { prisma } from "../../config/db.js";
 import { sendAppointmentSms } from "../../modules/appointment/appointment.sms.js";
 import {
+  ActivityAction,
+  ActivityEntityType,
+} from "../../modules/activity/activity.service.js";
+import { recordActivity } from "../../modules/activity/activity.middleware.js";
+import {
   toPublicAppointment,
   toPublicAppointments,
 } from "../../modules/appointment/appointment.mapper.js";
@@ -11,6 +16,13 @@ import {
   runSerializableTransaction,
   validateAppointmentSlotAvailability,
 } from "../../modules/appointment/appointment.slot-availability.js";
+import {
+  canDeleteImmediately,
+  createDeleteRequest,
+  DeleteRequestEntityType,
+  resolvePendingDeleteRequestsForEntity,
+} from "../../modules/deleteRequest/deleteRequest.service.js";
+import { DeleteRequestError } from "../../modules/deleteRequest/deleteRequest.types.js";
 import {
   AppointmentValidationError,
   getDayRange,
@@ -116,6 +128,13 @@ export async function createAppointment(req: Request, res: Response) {
       console.error("Failed to send appointment SMS:", smsError);
     });
 
+    recordActivity(res, {
+      action: ActivityAction.APPOINTMENT_CREATED,
+      entityType: ActivityEntityType.Appointment,
+      entityId: newAppointment.id,
+      metadata: { patientName: newAppointment.name },
+    });
+
     return res.status(201).json({
       success: true,
       message: "Appointment created successfully",
@@ -135,9 +154,28 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
   try {
     const status = parseAppointmentStatus(req.body.status);
 
+    const existing = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
       data: { status },
+    });
+
+    recordActivity(res, {
+      action: ActivityAction.APPOINTMENT_STATUS_CHANGED,
+      entityType: ActivityEntityType.Appointment,
+      entityId: appointment.id,
+      metadata: {
+        from: existing.status,
+        to: appointment.status,
+        patientName: appointment.name,
+      },
     });
 
     return res.status(200).json({
@@ -157,7 +195,60 @@ export async function deleteAppointment(req: Request, res: Response) {
   }
 
   try {
+    const existing = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+
+    const admin = req.admin;
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
+
+    if (!canDeleteImmediately(admin.role)) {
+      try {
+        await createDeleteRequest(
+          DeleteRequestEntityType.APPOINTMENT,
+          appointmentId,
+          admin.id,
+        );
+      } catch (err) {
+        if (err instanceof DeleteRequestError) {
+          return res.status(err.statusCode).json({
+            success: false,
+            message: err.message,
+          });
+        }
+        throw err;
+      }
+
+      return res.status(200).json({
+        success: true,
+        pending: true,
+        message: "Delete request submitted and is pending confirmation.",
+      });
+    }
+
     await prisma.appointment.delete({ where: { id: appointmentId } });
+    await resolvePendingDeleteRequestsForEntity(
+      DeleteRequestEntityType.APPOINTMENT,
+      appointmentId,
+      admin.id,
+    );
+
+    recordActivity(res, {
+      action: ActivityAction.APPOINTMENT_DELETED,
+      entityType: ActivityEntityType.Appointment,
+      entityId: appointmentId,
+      metadata: { patientName: existing.name },
+    });
+
     return res.status(200).json({
       success: true,
       message: "Appointment deleted successfully",

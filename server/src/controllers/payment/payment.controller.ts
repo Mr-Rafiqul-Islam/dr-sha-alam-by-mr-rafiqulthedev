@@ -6,9 +6,12 @@ import {
 } from "../../modules/appointment/appointment.utils.js";
 import {
   buildPaymentAppointmentPayloadWithSlotValidation,
+  createPendingPaymentWithAppointment,
   fulfillSuccessfulPayment,
   getBackendUrl,
   getFrontendUrl,
+  handlePaymentCancelSync,
+  handlePaymentFailSync,
   resolveConsultationFee,
   resolveDoctorId,
   validateSslOrThrow,
@@ -33,6 +36,23 @@ function routeBodyString(value: unknown): string | undefined {
 
 function redirectPaymentFailed(res: Response, error: string) {
   return res.redirect(`${getFrontendUrl()}/payment-failed?error=${encodeURIComponent(error)}`);
+}
+
+function logPaymentProviderStatus(
+  handler: string,
+  tranId: string | undefined,
+  payload: unknown,
+) {
+  const provider =
+    payload && typeof payload === "object" ? (payload as Record<string, unknown>) : {};
+  console.log(`[Payment ${handler}] Provider status:`, {
+    tranId,
+    status: provider.status,
+    val_id: provider.val_id,
+    amount: provider.amount,
+    currency: provider.currency,
+    tran_id: provider.tran_id,
+  });
 }
 
 export async function startPayment(req: Request, res: Response) {
@@ -82,17 +102,12 @@ export async function startPayment(req: Request, res: Response) {
       ship_country: "Bangladesh",
     };
 
-    await prisma.payment.create({
-      data: {
-        tranId,
-        userId,
-        doctorId,
-        amount,
-        status: "PENDING",
-        gateway: "SSLCommerz",
-        gatewayResponse: appointmentPayload,
-        transactionId: tranId,
-      },
+    await createPendingPaymentWithAppointment({
+      payload: appointmentPayload,
+      tranId,
+      userId,
+      doctorId,
+      amount,
     });
 
     const storeId = process.env.SSLCOMMERZ_STORE_ID;
@@ -158,6 +173,7 @@ export async function paymentSuccess(req: Request, res: Response) {
     }
 
     const validator = await validateSslOrThrow(valId);
+    logPaymentProviderStatus("success", tranId, validator);
     const result = await fulfillSuccessfulPayment(payment, {
       valId: valId ?? routeBodyString(validator.val_id),
       providerRaw: validator,
@@ -202,15 +218,10 @@ export async function paymentFail(req: Request, res: Response) {
       return redirectPaymentFailed(res, "invalid_transaction");
     }
 
+    logPaymentProviderStatus("fail", tranId, req.body);
+
     if (payment.status !== "SUCCESS") {
-      await prisma.payment.update({
-        where: { tranId },
-        data: {
-          status: "FAILED",
-          failedAt: new Date(),
-          providerRaw: req.body ?? undefined,
-        },
-      });
+      await handlePaymentFailSync(payment, req.body);
     }
 
     return res.redirect(`${getFrontendUrl()}/payment-failed`);
@@ -233,15 +244,10 @@ export async function paymentCancel(req: Request, res: Response) {
       return redirectPaymentFailed(res, "invalid_transaction");
     }
 
+    logPaymentProviderStatus("cancel", tranId, req.body);
+
     if (payment.status !== "SUCCESS") {
-      await prisma.payment.update({
-        where: { tranId },
-        data: {
-          status: "CANCELLED",
-          cancelledAt: new Date(),
-          providerRaw: req.body ?? undefined,
-        },
-      });
+      await handlePaymentCancelSync(payment, req.body);
     }
 
     return res.redirect(`${getFrontendUrl()}/payment-cancelled`);
@@ -267,6 +273,7 @@ export async function paymentIPN(req: Request, res: Response) {
     }
 
     const validator = await validateSslOrThrow(valId);
+    logPaymentProviderStatus("ipn", tranId, validator);
     await fulfillSuccessfulPayment(payment, {
       valId: valId ?? routeBodyString(validator.val_id),
       providerRaw: req.body,

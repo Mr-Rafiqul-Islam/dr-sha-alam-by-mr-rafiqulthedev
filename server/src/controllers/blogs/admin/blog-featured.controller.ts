@@ -6,6 +6,11 @@
 import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
+import {
+  ActivityAction,
+  ActivityEntityType,
+} from "../../../modules/activity/activity.service.js";
+import { recordActivity } from "../../../modules/activity/activity.middleware.js";
 import { routeParamString } from "../../../utils/express-params.js";
 
 function parseBooleanField(
@@ -71,6 +76,16 @@ export async function setBlogFeatured(req: Request, res: Response) {
             where: { id },
             data: { isFeatured: false },
           });
+
+    recordActivity(res, {
+      action: ActivityAction.BLOG_FEATURED_CHANGED,
+      entityType: ActivityEntityType.Blog,
+      entityId: updated.id,
+      metadata: {
+        title: updated.title,
+        featured: updated.isFeatured,
+      },
+    });
 
     res.json({ success: true, data: updated });
   } catch (err) {

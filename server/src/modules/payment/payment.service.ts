@@ -1,4 +1,9 @@
-import { AppointmentStatus, Prisma, SiteRef } from "@prisma/client";
+import {
+  AppointmentPaymentStatus,
+  AppointmentStatus,
+  Prisma,
+  SiteRef,
+} from "@prisma/client";
 import type { Payment } from "@prisma/client";
 import { prisma } from "../../config/db.js";
 import {
@@ -31,6 +36,47 @@ type FulfillPaymentResult = {
   alreadyProcessed: boolean;
   slotFull?: boolean;
 };
+
+type SmsPayload = {
+  name: string;
+  phone: string;
+  serialNumber: number;
+  slotCode: string;
+  smsLabel?: string | null;
+};
+
+export function extractProviderStatus(payload: unknown): string | undefined {
+  if (payload && typeof payload === "object" && "status" in payload) {
+    const status = (payload as Record<string, unknown>).status;
+    return typeof status === "string" ? status : undefined;
+  }
+
+  return undefined;
+}
+
+export function mapProviderStatusToAppointmentPaymentStatus(
+  providerStatus: string | undefined,
+): AppointmentPaymentStatus | null {
+  if (!providerStatus) {
+    return null;
+  }
+
+  const normalized = providerStatus.trim().toUpperCase();
+
+  if (normalized === "VALID" || normalized === "VALIDATED") {
+    return AppointmentPaymentStatus.SUCCESS;
+  }
+
+  if (normalized === "CANCELLED" || normalized === "CANCEL") {
+    return AppointmentPaymentStatus.CANCEL;
+  }
+
+  if (normalized === "PENDING" || normalized === "UNATTEMPTED") {
+    return AppointmentPaymentStatus.PENDING;
+  }
+
+  return null;
+}
 
 function parsePaymentPayload(value: unknown): PaymentAppointmentPayload {
   if (!isPaymentAppointmentPayload(value)) {
@@ -65,6 +111,110 @@ function parsePaymentPayload(value: unknown): PaymentAppointmentPayload {
     scheduleId: value.scheduleId,
     slotId: value.slotId,
   };
+}
+
+async function createReservedAppointment(
+  tx: Parameters<Parameters<typeof runSerializableTransaction>[0]>[0],
+  payload: PaymentAppointmentPayload,
+  tranId: string,
+): Promise<{ appointmentId: string; smsLabel?: string | null }> {
+  const selectedDate = parseAppointmentDate(payload.preferredDate);
+  if (!selectedDate) {
+    throw new AppointmentValidationError("Invalid preferredDate");
+  }
+
+  const siteRef = payload.siteRef ?? SiteRef.DOCTOR_SHA_ALAM;
+  const slotCode = payload.preferredTime;
+  const { dayStart, dayEnd } = getDayRange(selectedDate);
+
+  const slotAvailability = await validateAppointmentSlotAvailability({
+    appointmentDate: selectedDate,
+    preferredTime: slotCode,
+    siteRef,
+    tx,
+  });
+
+  const existingAppointment = await tx.appointment.findFirst({
+    where: {
+      phone: payload.phoneNumber,
+      name: payload.fullName,
+      status: ACTIVE_APPOINTMENT_STATUSES,
+      appointmentDate: { gte: dayStart, lte: dayEnd },
+    },
+    select: { id: true },
+  });
+
+  if (existingAppointment) {
+    throw new AppointmentValidationError(
+      "Appointment already exists for this patient on the selected date",
+    );
+  }
+
+  const { _max } = await tx.appointment.aggregate({
+    where: {
+      preferredTime: slotCode,
+      status: ACTIVE_APPOINTMENT_STATUSES,
+      appointmentDate: { gte: dayStart, lte: dayEnd },
+    },
+    _max: { serialNumber: true },
+  });
+
+  const serialNumber = (_max.serialNumber ?? 0) + 1;
+
+  const appointment = await tx.appointment.create({
+    data: {
+      name: payload.fullName,
+      phone: payload.phoneNumber,
+      email: payload.email,
+      homeAddress: payload.homeAddress,
+      problem: payload.problem,
+      preferredTime: slotCode,
+      appointmentDate: selectedDate,
+      serialNumber,
+      gender: payload.gender,
+      siteRef,
+      scheduleId: slotAvailability.scheduleId ?? payload.scheduleId,
+      slotId: slotAvailability.slotId ?? payload.slotId,
+      transactionId: tranId,
+    },
+  });
+
+  return {
+    appointmentId: appointment.id,
+    smsLabel: slotAvailability.smsLabel,
+  };
+}
+
+export async function createPendingPaymentWithAppointment(params: {
+  payload: PaymentAppointmentPayload;
+  tranId: string;
+  userId: string | null;
+  doctorId: string;
+  amount: number;
+}): Promise<{ appointmentId: string }> {
+  return runSerializableTransaction(async (tx) => {
+    const { appointmentId } = await createReservedAppointment(
+      tx,
+      params.payload,
+      params.tranId,
+    );
+
+    await tx.payment.create({
+      data: {
+        tranId: params.tranId,
+        userId: params.userId,
+        doctorId: params.doctorId,
+        amount: params.amount,
+        status: "PENDING",
+        gateway: "SSLCommerz",
+        gatewayResponse: params.payload,
+        transactionId: params.tranId,
+        appointmentId,
+      },
+    });
+
+    return { appointmentId };
+  });
 }
 
 export function getFrontendUrl(): string {
@@ -147,6 +297,265 @@ export async function validatePaymentSlotAvailability(
   });
 }
 
+export async function handlePaymentFailSync(
+  payment: Payment,
+  providerPayload: unknown,
+): Promise<void> {
+  if (payment.status === "SUCCESS") {
+    return;
+  }
+
+  const providerStatus = extractProviderStatus(providerPayload);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.payment.update({
+      where: { tranId: payment.tranId },
+      data: {
+        status: "FAILED",
+        failedAt: new Date(),
+        providerStatus: providerStatus ?? undefined,
+        providerRaw: providerPayload
+          ? (providerPayload as Prisma.InputJsonValue)
+          : undefined,
+      },
+    });
+
+    if (payment.appointmentId) {
+      await tx.appointment.update({
+        where: { id: payment.appointmentId },
+        data: {
+          status: AppointmentStatus.CANCEL,
+        },
+      });
+    }
+  });
+}
+
+export async function handlePaymentCancelSync(
+  payment: Payment,
+  providerPayload: unknown,
+): Promise<void> {
+  if (payment.status === "SUCCESS") {
+    return;
+  }
+
+  const providerStatus = extractProviderStatus(providerPayload);
+  const paymentStatus =
+    mapProviderStatusToAppointmentPaymentStatus(providerStatus) ??
+    AppointmentPaymentStatus.CANCEL;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.payment.update({
+      where: { tranId: payment.tranId },
+      data: {
+        status: "CANCELLED",
+        cancelledAt: new Date(),
+        providerStatus: providerStatus ?? undefined,
+        providerRaw: providerPayload
+          ? (providerPayload as Prisma.InputJsonValue)
+          : undefined,
+      },
+    });
+
+    if (payment.appointmentId) {
+      await tx.appointment.update({
+        where: { id: payment.appointmentId },
+        data: {
+          paymentStatus,
+        },
+      });
+    }
+  });
+}
+
+async function fulfillExistingReservedAppointment(
+  tx: Parameters<Parameters<typeof runSerializableTransaction>[0]>[0],
+  currentPayment: Payment,
+  paymentStatus: AppointmentPaymentStatus,
+  providerStatus: string | undefined,
+  options: { valId?: string; providerRaw?: unknown },
+): Promise<{
+  appointmentId: string;
+  alreadyProcessed: boolean;
+  smsPayload: SmsPayload | null;
+  slotFull: boolean;
+}> {
+  const existing = await tx.appointment.findUnique({
+    where: { id: currentPayment.appointmentId! },
+    include: {
+      slot: {
+        select: { smsLabel: true },
+      },
+    },
+  });
+
+  if (!existing) {
+    throw new AppointmentValidationError("Reserved appointment not found", 404);
+  }
+
+  if (existing.status === AppointmentStatus.CANCEL) {
+    throw new AppointmentValidationError("slot_full");
+  }
+
+  await tx.appointment.update({
+    where: { id: existing.id },
+    data: { paymentStatus },
+  });
+
+  await tx.payment.update({
+    where: { tranId: currentPayment.tranId },
+    data: {
+      status: "SUCCESS",
+      valId: options.valId ?? currentPayment.valId,
+      providerValId: options.valId ?? currentPayment.providerValId,
+      providerStatus: providerStatus ?? undefined,
+      providerRaw: options.providerRaw
+        ? (options.providerRaw as Prisma.InputJsonValue)
+        : currentPayment.providerRaw ?? undefined,
+      paymentResolvedAt: new Date(),
+    },
+  });
+
+  return {
+    appointmentId: existing.id,
+    alreadyProcessed: false,
+    smsPayload: {
+      name: existing.name,
+      phone: existing.phone,
+      serialNumber: existing.serialNumber,
+      slotCode: existing.preferredTime,
+      smsLabel: existing.slot?.smsLabel,
+    },
+    slotFull: false,
+  };
+}
+
+async function fulfillLegacyPaymentAppointment(
+  tx: Parameters<Parameters<typeof runSerializableTransaction>[0]>[0],
+  currentPayment: Payment,
+  payload: PaymentAppointmentPayload,
+  selectedDate: Date,
+  paymentStatus: AppointmentPaymentStatus,
+  providerStatus: string | undefined,
+  options: { valId?: string; providerRaw?: unknown },
+): Promise<{
+  appointmentId: string;
+  alreadyProcessed: boolean;
+  smsPayload: SmsPayload | null;
+  slotFull: boolean;
+}> {
+  const siteRef = payload.siteRef ?? SiteRef.DOCTOR_SHA_ALAM;
+  const slotCode = payload.preferredTime;
+  const { dayStart, dayEnd } = getDayRange(selectedDate);
+
+  let slotAvailability;
+  try {
+    slotAvailability = await validateAppointmentSlotAvailability({
+      appointmentDate: selectedDate,
+      preferredTime: slotCode,
+      siteRef,
+      tx,
+    });
+  } catch (error) {
+    if (
+      error instanceof AppointmentValidationError &&
+      error.message.includes("No seats available")
+    ) {
+      await tx.payment.update({
+        where: { tranId: currentPayment.tranId },
+        data: {
+          status: "SUCCESS",
+          valId: options.valId ?? currentPayment.valId,
+          providerValId: options.valId ?? currentPayment.providerValId,
+          providerStatus: providerStatus ?? undefined,
+          providerStatusReason: "SLOT_FULL",
+          providerRaw: options.providerRaw
+            ? (options.providerRaw as Prisma.InputJsonValue)
+            : currentPayment.providerRaw ?? undefined,
+          paymentResolvedAt: new Date(),
+        },
+      });
+
+      throw new AppointmentValidationError("slot_full");
+    }
+    throw error;
+  }
+
+  const existingAppointment = await tx.appointment.findFirst({
+    where: {
+      phone: payload.phoneNumber,
+      name: payload.fullName,
+      status: ACTIVE_APPOINTMENT_STATUSES,
+      appointmentDate: { gte: dayStart, lte: dayEnd },
+    },
+    select: { id: true },
+  });
+
+  if (existingAppointment) {
+    throw new AppointmentValidationError(
+      "Appointment already exists for this patient on the selected date",
+    );
+  }
+
+  const { _max } = await tx.appointment.aggregate({
+    where: {
+      preferredTime: slotCode,
+      status: ACTIVE_APPOINTMENT_STATUSES,
+      appointmentDate: { gte: dayStart, lte: dayEnd },
+    },
+    _max: { serialNumber: true },
+  });
+
+  const serialNumber = (_max.serialNumber ?? 0) + 1;
+
+  const appointment = await tx.appointment.create({
+    data: {
+      name: payload.fullName,
+      phone: payload.phoneNumber,
+      email: payload.email,
+      homeAddress: payload.homeAddress,
+      problem: payload.problem,
+      preferredTime: slotCode,
+      appointmentDate: selectedDate,
+      serialNumber,
+      gender: payload.gender,
+      siteRef,
+      scheduleId: slotAvailability.scheduleId,
+      slotId: slotAvailability.slotId,
+      transactionId: currentPayment.tranId,
+      paymentStatus,
+    },
+  });
+
+  await tx.payment.update({
+    where: { tranId: currentPayment.tranId },
+    data: {
+      status: "SUCCESS",
+      valId: options.valId ?? currentPayment.valId,
+      providerValId: options.valId ?? currentPayment.providerValId,
+      providerStatus: providerStatus ?? undefined,
+      providerRaw: options.providerRaw
+        ? (options.providerRaw as Prisma.InputJsonValue)
+        : currentPayment.providerRaw ?? undefined,
+      appointmentId: appointment.id,
+      paymentResolvedAt: new Date(),
+    },
+  });
+
+  return {
+    appointmentId: appointment.id,
+    alreadyProcessed: false,
+    smsPayload: {
+      name: payload.fullName,
+      phone: payload.phoneNumber,
+      serialNumber,
+      slotCode,
+      smsLabel: slotAvailability.smsLabel,
+    },
+    slotFull: false,
+  };
+}
+
 export async function fulfillSuccessfulPayment(
   payment: Payment,
   options: { valId?: string; providerRaw?: unknown },
@@ -158,15 +567,16 @@ export async function fulfillSuccessfulPayment(
     };
   }
 
+  const providerStatus = extractProviderStatus(options.providerRaw);
+  const paymentStatus =
+    mapProviderStatusToAppointmentPaymentStatus(providerStatus) ??
+    AppointmentPaymentStatus.SUCCESS;
+
   const payload = parsePaymentPayload(payment.gatewayResponse);
   const selectedDate = parseAppointmentDate(payload.preferredDate);
   if (!selectedDate) {
     throw new AppointmentValidationError("Invalid preferredDate");
   }
-
-  const siteRef = payload.siteRef ?? SiteRef.DOCTOR_SHA_ALAM;
-  const slotCode = payload.preferredTime;
-  const { dayStart, dayEnd } = getDayRange(selectedDate);
 
   const result = await runSerializableTransaction(async (tx) => {
     const currentPayment = await tx.payment.findUnique({
@@ -186,109 +596,25 @@ export async function fulfillSuccessfulPayment(
       };
     }
 
-    let slotAvailability;
-    try {
-      slotAvailability = await validateAppointmentSlotAvailability({
-        appointmentDate: selectedDate,
-        preferredTime: slotCode,
-        siteRef,
+    if (currentPayment.appointmentId) {
+      return fulfillExistingReservedAppointment(
         tx,
-      });
-    } catch (error) {
-      if (
-        error instanceof AppointmentValidationError &&
-        error.message.includes("No seats available")
-      ) {
-        await tx.payment.update({
-          where: { tranId: payment.tranId },
-          data: {
-            status: "SUCCESS",
-            valId: options.valId ?? currentPayment.valId,
-            providerValId: options.valId ?? currentPayment.providerValId,
-            providerStatusReason: "SLOT_FULL",
-            providerRaw: options.providerRaw
-              ? (options.providerRaw as Prisma.InputJsonValue)
-              : currentPayment.providerRaw ?? undefined,
-            paymentResolvedAt: new Date(),
-          },
-        });
-
-        throw new AppointmentValidationError("slot_full");
-      }
-      throw error;
-    }
-
-    const existingAppointment = await tx.appointment.findFirst({
-      where: {
-        phone: payload.phoneNumber,
-        name: payload.fullName,
-        status: ACTIVE_APPOINTMENT_STATUSES,
-        appointmentDate: { gte: dayStart, lte: dayEnd },
-      },
-      select: { id: true },
-    });
-
-    if (existingAppointment) {
-      throw new AppointmentValidationError(
-        "Appointment already exists for this patient on the selected date",
+        currentPayment,
+        paymentStatus,
+        providerStatus,
+        options,
       );
     }
 
-    const { _max } = await tx.appointment.aggregate({
-      where: {
-        preferredTime: slotCode,
-        status: ACTIVE_APPOINTMENT_STATUSES,
-        appointmentDate: { gte: dayStart, lte: dayEnd },
-      },
-      _max: { serialNumber: true },
-    });
-
-    const serialNumber = (_max.serialNumber ?? 0) + 1;
-
-    const appointment = await tx.appointment.create({
-      data: {
-        name: payload.fullName,
-        phone: payload.phoneNumber,
-        email: payload.email,
-        homeAddress: payload.homeAddress,
-        problem: payload.problem,
-        preferredTime: slotCode,
-        appointmentDate: selectedDate,
-        serialNumber,
-        gender: payload.gender,
-        siteRef,
-        scheduleId: slotAvailability.scheduleId,
-        slotId: slotAvailability.slotId,
-        transactionId: payment.tranId,
-      },
-    });
-
-    await tx.payment.update({
-      where: { tranId: payment.tranId },
-      data: {
-        status: "SUCCESS",
-        valId: options.valId ?? currentPayment.valId,
-        providerValId: options.valId ?? currentPayment.providerValId,
-        providerRaw: options.providerRaw
-          ? (options.providerRaw as Prisma.InputJsonValue)
-          : currentPayment.providerRaw ?? undefined,
-        appointmentId: appointment.id,
-        paymentResolvedAt: new Date(),
-      },
-    });
-
-    return {
-      appointmentId: appointment.id,
-      alreadyProcessed: false,
-      smsPayload: {
-        name: payload.fullName,
-        phone: payload.phoneNumber,
-        serialNumber,
-        slotCode,
-        smsLabel: slotAvailability.smsLabel,
-      },
-      slotFull: false,
-    };
+    return fulfillLegacyPaymentAppointment(
+      tx,
+      currentPayment,
+      payload,
+      selectedDate,
+      paymentStatus,
+      providerStatus,
+      options,
+    );
   });
 
   if (result.smsPayload && !result.alreadyProcessed) {

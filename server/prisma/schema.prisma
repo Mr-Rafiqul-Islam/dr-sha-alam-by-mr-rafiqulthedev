@@ -24,6 +24,12 @@ enum AppointmentStatus {
   CONFIRMED
 }
 
+enum AppointmentPaymentStatus {
+  PENDING
+  SUCCESS
+  CANCEL
+}
+
 enum SiteRef {
   DOCTOR_SHA_ALAM
   TRUE_CARE_HELLING_CENTER
@@ -81,6 +87,44 @@ enum ScheduleStatus {
   INACTIVE
 }
 
+enum DeleteRequestEntityType {
+  BLOG
+  APPOINTMENT
+  CONTACT_MESSAGE
+}
+
+enum DeleteRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ActivityAction {
+  APPOINTMENT_CREATED
+  APPOINTMENT_STATUS_CHANGED
+  APPOINTMENT_DELETED
+  CONTACT_MESSAGE_STATUS_CHANGED
+  CONTACT_MESSAGE_DELETED
+  BLOG_CREATED
+  BLOG_UPDATED
+  BLOG_DELETED
+  BLOG_FEATURED_CHANGED
+  BLOG_IMAGE_UPLOADED
+  BLOG_IMAGE_DELETED
+  SCHEDULE_CREATED
+  SCHEDULE_UPDATED
+  SCHEDULE_DELETED
+  SLOT_DEFAULTS_UPDATED
+}
+
+enum ActivityEntityType {
+  Appointment
+  ContactMessage
+  Blog
+  AppointmentSchedule
+  AppointmentSlotDefaultConfig
+}
+
 model User {
   id         String   @id @default(uuid())
   name       String?
@@ -95,11 +139,48 @@ model User {
   updatedAt  DateTime @updatedAt
 
   // Relations
-  payments       Payment[]
-  patientReviews PatientReview[]
-  doctorId       String?
+  payments                Payment[]
+  patientReviews          PatientReview[]
+  activityLogs            ActivityLog[]
+  deleteRequestsRequested DeleteRequest[] @relation("DeleteRequestsRequested")
+  deleteRequestsReviewed  DeleteRequest[] @relation("DeleteRequestsReviewed")
+  doctorId                String?
 
   @@index([role])
+}
+
+model DeleteRequest {
+  id            String                  @id @default(uuid())
+  entityType    DeleteRequestEntityType
+  entityId      String
+  status        DeleteRequestStatus     @default(PENDING)
+  requestedById String
+  requestedBy   User                    @relation("DeleteRequestsRequested", fields: [requestedById], references: [id])
+  reviewedById  String?
+  reviewedBy    User?                   @relation("DeleteRequestsReviewed", fields: [reviewedById], references: [id])
+  requestedAt   DateTime                @default(now())
+  reviewedAt    DateTime?
+
+  @@index([status, entityType])
+  @@index([entityType, entityId])
+}
+
+model ActivityLog {
+  id         String             @id @default(uuid())
+  actorId    String
+  actorRole  UserRole
+  action     ActivityAction
+  entityType ActivityEntityType
+  entityId   String?
+  summary    String
+  metadata   Json?
+  createdAt  DateTime           @default(now())
+
+  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([actorId, createdAt])
+  @@index([createdAt])
+  @@index([entityType, entityId])
 }
 
 model Doctor {
@@ -135,6 +216,7 @@ model Appointment {
   serialNumber    Int
   gender          String?
   status          AppointmentStatus @default(PENDING)
+  paymentStatus   AppointmentPaymentStatus?
   siteRef         SiteRef           @default(DOCTOR_SHA_ALAM)
   transactionId   String?           @unique
   scheduleId      String?

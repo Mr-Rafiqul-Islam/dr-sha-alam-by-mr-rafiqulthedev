@@ -1,5 +1,11 @@
 import type { Request, Response } from "express";
+import { prisma } from "../../config/db.js";
 import { handleAppointmentError } from "../appointment/appointment.utils.js";
+import {
+  ActivityAction,
+  ActivityEntityType,
+} from "../activity/activity.service.js";
+import { recordActivity } from "../activity/activity.middleware.js";
 import { routeParamString } from "../../utils/express-params.js";
 import {
   createDefaultScheduleForDate,
@@ -38,7 +44,6 @@ export async function createOrUpsertSchedule(req: Request, res: Response) {
     const isClosed = parseOptionalBoolean(req.body.isClosed);
     const useDefaults = Boolean(req.body.useDefaults);
 
-    let slots = req.body.slots;
     if (useDefaults) {
       const seatLimits = req.body.seatLimits as Record<string, number> | undefined;
       const defaultSeatLimit =
@@ -53,10 +58,29 @@ export async function createOrUpsertSchedule(req: Request, res: Response) {
         defaultSeatLimit: Number.isInteger(defaultSeatLimit) ? defaultSeatLimit : undefined,
       });
 
+      recordActivity(res, {
+        action: ActivityAction.SCHEDULE_CREATED,
+        entityType: ActivityEntityType.AppointmentSchedule,
+        entityId: schedule.id,
+        metadata: { date: schedule.date },
+      });
+
       return res.status(201).json({ success: true, data: schedule });
     }
 
+    const slots = req.body.slots;
     const parsedSlots = parseSlotsInput(slots, { allowEmpty: isClosed === true });
+
+    const existingSchedule = await prisma.appointmentSchedule.findUnique({
+      where: {
+        siteRef_date: {
+          siteRef,
+          date,
+        },
+      },
+      select: { id: true },
+    });
+
     const schedule = await upsertScheduleByDate({
       siteRef,
       date,
@@ -64,6 +88,15 @@ export async function createOrUpsertSchedule(req: Request, res: Response) {
       status,
       isClosed,
       slots: parsedSlots,
+    });
+
+    recordActivity(res, {
+      action: existingSchedule
+        ? ActivityAction.SCHEDULE_UPDATED
+        : ActivityAction.SCHEDULE_CREATED,
+      entityType: ActivityEntityType.AppointmentSchedule,
+      entityId: schedule.id,
+      metadata: { date: schedule.date },
     });
 
     return res.status(201).json({ success: true, data: schedule });
@@ -134,6 +167,13 @@ export async function updateScheduleHandler(req: Request, res: Response) {
       slots,
     });
 
+    recordActivity(res, {
+      action: ActivityAction.SCHEDULE_UPDATED,
+      entityType: ActivityEntityType.AppointmentSchedule,
+      entityId: schedule.id,
+      metadata: { date: schedule.date },
+    });
+
     return res.status(200).json({
       success: true,
       message: "Schedule updated successfully",
@@ -151,7 +191,24 @@ export async function deleteScheduleHandler(req: Request, res: Response) {
   }
 
   try {
+    const existing = await prisma.appointmentSchedule.findUnique({
+      where: { id },
+      select: { id: true, date: true },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Schedule not found" });
+    }
+
     await deleteScheduleById(id);
+
+    recordActivity(res, {
+      action: ActivityAction.SCHEDULE_DELETED,
+      entityType: ActivityEntityType.AppointmentSchedule,
+      entityId: id,
+      metadata: { date: existing.date },
+    });
+
     return res.status(200).json({
       success: true,
       message: "Schedule deleted successfully",
@@ -187,6 +244,13 @@ export async function updateSlotDefaultsHandler(req: Request, res: Response) {
     const updated = await upsertSlotDefaults(siteRef, {
       defaultSeatLimit,
       slots,
+    });
+
+    recordActivity(res, {
+      action: ActivityAction.SLOT_DEFAULTS_UPDATED,
+      entityType: ActivityEntityType.AppointmentSlotDefaultConfig,
+      entityId: null,
+      metadata: { siteRef },
     });
 
     return res.status(200).json({

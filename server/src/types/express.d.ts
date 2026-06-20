@@ -12,6 +12,10 @@ declare global {
       user?: AdminRequestUser;
       tokenPayload?: JwtPayload;
     }
+
+    interface Locals {
+      activityLog?: import("../modules/activity/activity.middleware.js").ActivityRecordInput | null;
+    }
   }
 }
 
