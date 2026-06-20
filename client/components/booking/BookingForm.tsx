@@ -3,12 +3,11 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PreferredDatePicker from "@/components/booking/PreferredDatePicker";
-import { getApiBaseUrl, getDefaultDoctorId } from "@/lib/api";
-import {
-  fetchAppointmentSchedules,
-  fetchSlotDefaults,
-  getClosedDates,
-} from "@/lib/appointmentSchedules";
+import { getClosedDates } from "@/lib/appointmentSchedules";
+import { getAppointmentSchedules } from "@/server-actions/getAppointmentSchedules";
+import { getSlotDefaults } from "@/server-actions/getSlotDefaults";
+import { startPayment } from "@/server-actions/startPayment";
+import { submitFreeAppointment } from "@/server-actions/submitFreeAppointment";
 import type { SlotDefaultOption } from "@/types/slotDefaults";
 
 type TimeSlotOption = {
@@ -40,7 +39,7 @@ const initialFormState: FormState = {
   preferredTime: "",
 };
 
-const SHOW_FREE_BOOKING_OPTION = false;
+const SHOW_FREE_BOOKING_OPTION = true;
 
 function getMinPreferredDate(): string {
   const tomorrow = new Date();
@@ -76,7 +75,7 @@ export default function BookingForm() {
     }
 
     try {
-      const schedules = await fetchAppointmentSchedules();
+      const schedules = await getAppointmentSchedules();
       const dates = getClosedDates(schedules);
       setClosedDates(dates);
       setSchedulesError(null);
@@ -104,7 +103,7 @@ export default function BookingForm() {
   useEffect(() => {
     let cancelled = false;
 
-    fetchAppointmentSchedules()
+    getAppointmentSchedules()
       .then((schedules) => {
         if (cancelled) {
           return;
@@ -147,7 +146,7 @@ export default function BookingForm() {
   useEffect(() => {
     let cancelled = false;
 
-    fetchSlotDefaults()
+    getSlotDefaults()
       .then((defaults) => {
         if (cancelled) {
           return;
@@ -207,83 +206,33 @@ export default function BookingForm() {
   };
 
   const submitFreeBooking = async () => {
-    const apiBaseUrl = getApiBaseUrl();
-    if (!apiBaseUrl) {
-      throw new Error("API URL is not configured");
-    }
-
-    const response = await fetch(`${apiBaseUrl}/api/v1/client/appointments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fullName: form.fullName.trim(),
-        phoneNumber: form.phoneNumber.trim(),
-        email: form.email.trim() || undefined,
-        homeAddress: form.homeAddress.trim(),
-        problem: form.problem.trim() || undefined,
-        preferredDate: form.preferredDate,
-        preferredTime: form.preferredTime,
-      }),
+    await submitFreeAppointment({
+      fullName: form.fullName,
+      phoneNumber: form.phoneNumber,
+      email: form.email || undefined,
+      homeAddress: form.homeAddress,
+      problem: form.problem || undefined,
+      preferredDate: form.preferredDate,
+      preferredTime: form.preferredTime,
     });
-
-    const data = (await response.json()) as { message?: string };
-
-    if (!response.ok) {
-      throw new Error(data.message ?? "Failed to submit appointment request");
-    }
 
     router.push("/booking-success");
   };
 
   const submitPaidBooking = async () => {
-    const apiBaseUrl = getApiBaseUrl();
-    if (!apiBaseUrl) {
-      throw new Error("API URL is not configured");
-    }
-
-    const doctorId = getDefaultDoctorId();
-    const payload: Record<string, string> = {
-      name: form.fullName.trim(),
-      phone: form.phoneNumber.trim(),
-      homeAddress: form.homeAddress.trim(),
+    const result = await startPayment({
+      name: form.fullName,
+      phone: form.phoneNumber,
+      homeAddress: form.homeAddress,
       preferredTime: form.preferredTime,
       appointmentDate: form.preferredDate,
       siteRef: "DOCTOR_SHA_ALAM",
-    };
-
-    if (doctorId) {
-      payload.doctorId = doctorId;
-    }
-    if (form.email.trim()) {
-      payload.email = form.email.trim();
-    }
-    if (form.gender.trim()) {
-      payload.gender = form.gender.trim();
-    }
-    if (form.problem.trim()) {
-      payload.problem = form.problem.trim();
-    }
-
-    const response = await fetch(`${apiBaseUrl}/api/v1/payment/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      email: form.email || undefined,
+      gender: form.gender || undefined,
+      problem: form.problem || undefined,
     });
 
-    const data = (await response.json()) as {
-      message?: string;
-      url?: string;
-    };
-
-    if (!response.ok) {
-      throw new Error(data.message ?? "Failed to start payment");
-    }
-
-    if (!data.url) {
-      throw new Error("Payment gateway URL was not returned");
-    }
-
-    window.location.href = data.url;
+    window.location.href = result.url;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {

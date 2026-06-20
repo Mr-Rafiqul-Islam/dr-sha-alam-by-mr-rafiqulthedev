@@ -4,16 +4,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import ScrollReveal from "@/components/ScrollReveal";
-import { getApiBaseUrl } from "@/lib/api";
+import { getAppointmentById } from "@/server-actions/getAppointmentById";
+import type { PublicAppointmentSummary } from "@/types/booking";
 import Image from "next/image";
 
-type AppointmentSummary = {
-  name: string;
-  homeAddress: string;
-  appointmentDate: string;
-  preferredTime: string;
-  serialNumber: number;
-};
+type AppointmentSummary = PublicAppointmentSummary;
 
 function formatDate(value: string): string {
   const date = new Date(value);
@@ -43,27 +38,11 @@ function ThankYouContent() {
     let cancelled = false;
 
     async function loadAppointment() {
-      const apiBaseUrl = getApiBaseUrl();
-      if (!apiBaseUrl) {
-        setLoadFailed(true);
-        return;
-      }
-
       try {
-        const response = await fetch(
-          `${apiBaseUrl}/api/v1/client/appointments/${encodeURIComponent(id)}`,
-        );
-        const data = (await response.json()) as {
-          success?: boolean;
-          appointment?: AppointmentSummary;
-        };
-
-        if (!response.ok || !data.appointment) {
-          throw new Error("Appointment not found");
-        }
+        const data = await getAppointmentById(id);
 
         if (!cancelled) {
-          setAppointment(data.appointment);
+          setAppointment(data);
         }
       } catch {
         if (!cancelled) {

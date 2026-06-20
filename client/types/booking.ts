@@ -1,0 +1,35 @@
+export type StartPaymentPayload = {
+  name: string;
+  phone: string;
+  homeAddress: string;
+  preferredTime: string;
+  appointmentDate: string;
+  siteRef: string;
+  email?: string;
+  gender?: string;
+  problem?: string;
+};
+
+export type StartPaymentResult = {
+  url: string;
+  tranId: string;
+  amount: number;
+};
+
+export type SubmitFreeAppointmentPayload = {
+  fullName: string;
+  phoneNumber: string;
+  homeAddress: string;
+  preferredDate: string;
+  preferredTime: string;
+  email?: string;
+  problem?: string;
+};
+
+export type PublicAppointmentSummary = {
+  name: string;
+  homeAddress: string;
+  appointmentDate: string;
+  preferredTime: string;
+  serialNumber: number;
+};
