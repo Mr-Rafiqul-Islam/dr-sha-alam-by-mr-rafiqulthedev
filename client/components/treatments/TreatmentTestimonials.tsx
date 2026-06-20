@@ -50,7 +50,7 @@ export default function TreatmentTestimonials() {
   };
 
   return (
-    <section className="py-20 bg-background-light dark:bg-background-dark overflow-hidden">
+    <section className="lg:py-20 py-12 bg-background-light dark:bg-background-dark overflow-hidden">
       <style>{`
         .carousel-track {
           --slide-amount: -100%;
@@ -67,7 +67,7 @@ export default function TreatmentTestimonials() {
         }
       `}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal direction="up" className="text-center mb-16">
+        <ScrollReveal direction="up" className="text-center lg:mb-16 mb-8">
           <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">Testimonials</h2>
           <h3 className="text-3xl font-extrabold text-primary dark:text-white">What Our Patients Say</h3>
         </ScrollReveal>
@@ -106,7 +106,7 @@ export default function TreatmentTestimonials() {
         </div>
 
         {/* Pagination Dots */}
-        <div className="flex justify-center gap-3 mt-10">
+        <div className="flex justify-center gap-3 lg:mt-10 mt-8">
           {testimonials.map((_, index) => (
             <button
               key={index}

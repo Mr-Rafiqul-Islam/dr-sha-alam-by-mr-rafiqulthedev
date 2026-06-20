@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function TreatmentsHero() {
   return (
-    <section className="relative pt-12 pb-16 lg:pt-20 lg:pb-24 bg-gradient-to-br from-blue-50 to-white dark:from-surface-dark dark:to-background-dark overflow-hidden">
+    <section className="relative py-12 lg:pt-20 lg:pb-24 bg-gradient-to-br from-blue-50 to-white dark:from-surface-dark dark:to-background-dark overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <ScrollReveal direction="up" className="text-center lg:text-left space-y-6">
