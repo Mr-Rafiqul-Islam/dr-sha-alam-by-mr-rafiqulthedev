@@ -1,6 +1,7 @@
 import type {
   Appointment,
   AppointmentFormData,
+  AppointmentPaymentStatus,
   AppointmentStatus,
   CreateAppointmentPayload,
   SiteRef,
@@ -82,6 +83,38 @@ export function getStatusBadgeVariant(status: AppointmentStatus): BadgeVariant {
   };
 
   return variants[status];
+}
+
+export function getPaymentStatusLabel(
+  paymentStatus: AppointmentPaymentStatus | null | undefined,
+): string {
+  if (paymentStatus == null) {
+    return "—";
+  }
+
+  const labels: Record<AppointmentPaymentStatus, string> = {
+    PENDING: "Pending",
+    SUCCESS: "Success",
+    CANCEL: "Cancelled",
+  };
+
+  return labels[paymentStatus];
+}
+
+export function getPaymentStatusBadgeVariant(
+  paymentStatus: AppointmentPaymentStatus | null | undefined,
+): BadgeVariant {
+  if (paymentStatus == null) {
+    return "neutral";
+  }
+
+  const variants: Record<AppointmentPaymentStatus, BadgeVariant> = {
+    PENDING: "pending",
+    SUCCESS: "confirmed",
+    CANCEL: "cancel",
+  };
+
+  return variants[paymentStatus];
 }
 
 export const APPOINTMENT_STATUS_OPTIONS: Array<{

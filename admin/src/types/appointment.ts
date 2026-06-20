@@ -5,6 +5,8 @@ export type AppointmentStatus =
   | "RESCHEDULED"
   | "CONFIRMED";
 
+export type AppointmentPaymentStatus = "PENDING" | "SUCCESS" | "CANCEL";
+
 export type SiteRef = "DOCTOR_SHA_ALAM" | "TRUE_CARE_HELLING_CENTER";
 
 export type Appointment = {
@@ -19,6 +21,7 @@ export type Appointment = {
   serialNumber: number;
   gender: string | null;
   status: AppointmentStatus;
+  paymentStatus: AppointmentPaymentStatus | null;
   siteRef: SiteRef;
   transactionId: string | null;
   createdAt: string;

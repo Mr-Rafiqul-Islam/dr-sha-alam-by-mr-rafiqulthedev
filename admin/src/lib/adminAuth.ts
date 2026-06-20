@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config/env";
+import type { StaffRole } from "../constants/permissions";
 
 const ADMIN_TOKEN_STORAGE_KEY = "admin_token";
 
@@ -8,7 +9,7 @@ export type AdminUser = {
   email: string | null;
   phone: string | null;
   image: string | null;
-  role: string;
+  role: StaffRole;
   provider: string | null;
   providerId: string | null;
   doctorId: string | null;

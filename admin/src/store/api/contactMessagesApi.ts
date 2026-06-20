@@ -4,6 +4,7 @@ import type {
   ContactMessageResponse,
   UpdateContactMessageStatusPayload,
 } from "../../types/contact";
+import type { DeleteMutationResponse } from "../../types/deleteRequest";
 import { baseApi } from "./baseApi";
 
 export const contactMessagesApi = baseApi.injectEndpoints({
@@ -43,17 +44,20 @@ export const contactMessagesApi = baseApi.injectEndpoints({
       ],
     }),
     deleteContactMessage: builder.mutation<
-      { success: boolean; message: string },
+      DeleteMutationResponse,
       { id: string }
     >({
       query: ({ id }) => ({
         url: `/api/v1/admin/contact-messages/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_result, _error, { id }) => [
-        { type: "ContactMessage", id },
-        { type: "ContactMessage", id: "LIST" },
-      ],
+      invalidatesTags: (_result, _error, { id }) =>
+        _result?.pending
+          ? [{ type: "DeleteRequest", id: "LIST" }]
+          : [
+              { type: "ContactMessage", id },
+              { type: "ContactMessage", id: "LIST" },
+            ],
     }),
   }),
 });

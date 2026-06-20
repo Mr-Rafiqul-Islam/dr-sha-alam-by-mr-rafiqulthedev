@@ -5,6 +5,7 @@ import type {
   AppointmentStatus,
   CreateAppointmentPayload,
 } from "../../types/appointment";
+import type { DeleteMutationResponse } from "../../types/deleteRequest";
 import { baseApi } from "./baseApi";
 
 export const appointmentsApi = baseApi.injectEndpoints({
@@ -46,17 +47,20 @@ export const appointmentsApi = baseApi.injectEndpoints({
       ],
     }),
     deleteAppointment: builder.mutation<
-      { success: boolean; message: string },
+      DeleteMutationResponse,
       { id: string }
     >({
       query: ({ id }) => ({
         url: `/api/v1/admin/appointments/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_result, _error, { id }) => [
-        { type: "Appointment", id },
-        { type: "Appointment", id: "LIST" },
-      ],
+      invalidatesTags: (_result, _error, { id }) =>
+        _result?.pending
+          ? [{ type: "DeleteRequest", id: "LIST" }]
+          : [
+              { type: "Appointment", id },
+              { type: "Appointment", id: "LIST" },
+            ],
     }),
   }),
 });

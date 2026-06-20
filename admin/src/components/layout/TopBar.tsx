@@ -30,10 +30,10 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-4 shrink-0">
-        <Button variant="icon" aria-label="Notifications">
+        {/* <Button variant="icon" aria-label="Notifications">
           <Icon name="notifications" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full" />
-        </Button>
+        </Button> */}
         <Avatar initials="A" />
       </div>
     </header>

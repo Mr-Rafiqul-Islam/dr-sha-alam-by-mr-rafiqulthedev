@@ -3,6 +3,7 @@ import { Avatar, Button, Icon } from "../common";
 import { useAdminAuth } from "../../contexts/AdminAuthContext";
 import { getAdminInitials } from "../../lib/adminAuth";
 import {
+  filterNavByRole,
   mainNavItems,
   type NavItem,
 } from "../../constants/navigation";
@@ -166,6 +167,8 @@ function SidebarUserProfile({ collapsed }: { collapsed: boolean }) {
 
 export function Sidebar() {
   const { isCollapsed, isMobileOpen, closeMobile } = useSidebar();
+  const { user } = useAdminAuth();
+  const visibleNavItems = filterNavByRole(user?.role ?? "ADMIN", mainNavItems);
 
   const handleNavigate = () => {
     closeMobile();
@@ -212,7 +215,7 @@ export function Sidebar() {
         </div>
 
         <ul className="flex flex-col gap-2 grow">
-          {mainNavItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavGroup
               key={item.path}
               item={item}

@@ -95,8 +95,14 @@ export function ArticlesPage() {
     if (!deletingBlog) return;
 
     try {
-      await deleteBlog(deletingBlog.id).unwrap();
-      toast.success(`"${deletingBlog.title}" deleted`);
+      const result = await deleteBlog(deletingBlog.id).unwrap();
+      if (result.pending) {
+        toast.info(
+          "Delete request submitted and is pending confirmation from an admin.",
+        );
+      } else {
+        toast.success(`"${deletingBlog.title}" deleted`);
+      }
       setDeletingBlog(null);
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to delete blog"));

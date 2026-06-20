@@ -5,6 +5,8 @@ import {
   formatAppointmentDateTime,
   formatNullable,
   getInitials,
+  getPaymentStatusBadgeVariant,
+  getPaymentStatusLabel,
   getSiteRefLabel,
   getStatusBadgeVariant,
   getStatusLabel,
@@ -118,6 +120,16 @@ export function AppointmentViewModal({
             <DetailRow
               label="Transaction ID"
               value={formatNullable(appointment.transactionId)}
+            />
+            <DetailRow
+              label="Payment Status"
+              value={
+                <Badge
+                  variant={getPaymentStatusBadgeVariant(appointment.paymentStatus)}
+                >
+                  {getPaymentStatusLabel(appointment.paymentStatus)}
+                </Badge>
+              }
             />
           </DetailSection>
 

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Button, Icon, Input, PageLoadingFallback } from "../components/common";
+import { resolvePostLoginPath } from "../constants/permissions";
 import { fetchCurrentAdmin, loginAdminRequest } from "../lib/adminAuth";
 
 export function LoginPage() {
@@ -12,17 +13,19 @@ export function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
-  const redirectPath =
-    (location.state as { from?: string } | null)?.from ?? "/dashboard";
+  const requestedPath =
+    (location.state as { from?: string } | null)?.from ?? null;
 
   useEffect(() => {
     let active = true;
 
     async function checkExistingSession() {
       try {
-        await fetchCurrentAdmin();
+        const user = await fetchCurrentAdmin();
         if (active) {
-          navigate(redirectPath, { replace: true });
+          navigate(resolvePostLoginPath(user.role, requestedPath), {
+            replace: true,
+          });
         }
       } catch {
         // Not logged in — stay on login page.
@@ -38,7 +41,7 @@ export function LoginPage() {
     return () => {
       active = false;
     };
-  }, [navigate, redirectPath]);
+  }, [navigate, requestedPath]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,9 +54,10 @@ export function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await loginAdminRequest(email.trim(), password);
+      const response = await loginAdminRequest(email.trim(), password);
+      const role = response.data?.user.role ?? "ADMIN";
       toast.success("Welcome back");
-      navigate(redirectPath, { replace: true });
+      navigate(resolvePostLoginPath(role, requestedPath), { replace: true });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Login failed");
     } finally {

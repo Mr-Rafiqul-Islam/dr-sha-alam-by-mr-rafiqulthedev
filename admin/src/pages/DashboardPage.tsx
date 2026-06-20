@@ -1,5 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { ActivityFeedList } from "../components/dashboard/ActivityFeedList";
+import { StaffActivityPicker } from "../components/dashboard/StaffActivityPicker";
 import { Icon, PageHeader, StatCard } from "../components/common";
+import {
+  useGetActivityFeedQuery,
+  useGetTraceableStaffQuery,
+} from "../store/api/activityApi";
 import { useGetAppointmentsQuery } from "../store/api/appointmentsApi";
 import { useGetBlogsQuery } from "../store/api/blogsApi";
 import { useGetContactMessagesQuery } from "../store/api/contactMessagesApi";
@@ -196,6 +202,8 @@ function ActivityChart({ data }: { data: ActivityPoint[] }) {
 }
 
 export function DashboardPage() {
+  const [selectedActorId, setSelectedActorId] = useState<string | null>(null);
+
   const {
     data: appointments = [],
     isLoading: appointmentsLoading,
@@ -211,7 +219,19 @@ export function DashboardPage() {
     isLoading: messagesLoading,
     isError: messagesError,
   } = useGetContactMessagesQuery();
+  const {
+    data: traceableStaff = [],
+    isLoading: staffLoading,
+  } = useGetTraceableStaffQuery();
+  const {
+    data: activityFeed,
+    isLoading: activityFeedLoading,
+    isError: activityFeedError,
+  } = useGetActivityFeedQuery(
+    selectedActorId ? { actorId: selectedActorId, limit: 20 } : { limit: 20 },
+  );
 
+  console.log(activityFeed);
   const isLoading = appointmentsLoading || blogsLoading || messagesLoading;
   const hasError = appointmentsError || blogsError || messagesError;
 
@@ -311,6 +331,36 @@ export function DashboardPage() {
         ) : (
           <ActivityChart data={activityData} />
         )}
+      </section>
+
+      <section className="mt-stack-lg rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)] md:p-6">
+        <div className="mb-6">
+          <p className="text-label-md font-semibold uppercase tracking-[0.16em] text-primary">
+            Staff Work Trace
+          </p>
+          <h3 className="mt-1 text-headline-md font-semibold text-on-surface">
+            Support and editor activity
+          </h3>
+          <p className="mt-1 text-body-md text-on-surface-variant">
+            Review what support and editor staff create, edit, and update across
+            the admin panel.
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <StaffActivityPicker
+            staff={traceableStaff}
+            selectedActorId={selectedActorId}
+            onSelect={setSelectedActorId}
+            isLoading={staffLoading}
+          />
+        </div>
+
+        <ActivityFeedList
+          items={activityFeed?.items ?? []}
+          isLoading={activityFeedLoading}
+          isError={activityFeedError}
+        />
       </section>
     </>
   );

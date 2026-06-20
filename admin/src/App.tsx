@@ -1,5 +1,9 @@
 import { lazy, type ComponentType } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import {
+  RequireAdminPermission,
+  RoleDefaultRedirect,
+} from "./components/auth/RequireAdminPermission";
 import { RequireAdminAuth } from "./components/auth/RequireAdminAuth";
 import { AdminLayout } from "./components/layout/AdminLayout";
 
@@ -51,6 +55,10 @@ const SettingsPage = lazyNamed(
   () => import("./pages/SettingsPage"),
   "SettingsPage",
 );
+const PendingDeletesPage = lazyNamed(
+  () => import("./pages/PendingDeletesPage"),
+  "PendingDeletesPage",
+);
 
 function App() {
   return (
@@ -58,30 +66,50 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<RequireAdminAuth />}>
         <Route element={<AdminLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
+          <Route index element={<RoleDefaultRedirect />} />
+          <Route element={<RequireAdminPermission permission="dashboard" />}>
+            <Route path="dashboard" element={<DashboardPage />} />
+          </Route>
           <Route
-            path="dashboard/appointments/schedules"
-            element={<AppointmentSchedulesPage />}
-          />
+            element={<RequireAdminPermission permission="appointmentSchedules" />}
+          >
+            <Route
+              path="dashboard/appointments/schedules"
+              element={<AppointmentSchedulesPage />}
+            />
+            <Route
+              path="dashboard/appointments/slot-defaults"
+              element={<SlotDefaultsPage />}
+            />
+          </Route>
+          <Route element={<RequireAdminPermission permission="appointments" />}>
+            <Route path="appointments/new" element={<CreateAppointmentPage />} />
+            <Route path="appointments" element={<AppointmentsPage />} />
+          </Route>
+          <Route element={<RequireAdminPermission permission="articles" />}>
+            <Route path="articles/new" element={<CreateArticlePage />} />
+            <Route path="articles/:id/edit" element={<CreateArticlePage />} />
+            <Route path="articles" element={<ArticlesPage />} />
+          </Route>
           <Route
-            path="dashboard/appointments/slot-defaults"
-            element={<SlotDefaultsPage />}
-          />
-          <Route path="appointments/new" element={<CreateAppointmentPage />} />
-          <Route path="appointments" element={<AppointmentsPage />} />
-          <Route path="articles/new" element={<CreateArticlePage />} />
-          <Route path="articles/:id/edit" element={<CreateArticlePage />} />
-          <Route path="articles" element={<ArticlesPage />} />
-          <Route
-            path="contact-messages/:id"
-            element={<ContactMessageDetailPage />}
-          />
-          <Route path="contact-messages" element={<ContactMessagesPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+            element={<RequireAdminPermission permission="contactMessages" />}
+          >
+            <Route
+              path="contact-messages/:id"
+              element={<ContactMessageDetailPage />}
+            />
+            <Route path="contact-messages" element={<ContactMessagesPage />} />
+          </Route>
+          <Route element={<RequireAdminPermission permission="settings" />}>
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+          <Route element={<RequireAdminPermission permission="deleteApprovals" />}>
+            <Route path="pending-deletes" element={<PendingDeletesPage />} />
+          </Route>
         </Route>
+        <Route path="*" element={<RoleDefaultRedirect />} />
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

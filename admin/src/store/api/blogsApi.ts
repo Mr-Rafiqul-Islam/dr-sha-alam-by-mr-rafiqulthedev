@@ -9,6 +9,7 @@ import type {
   CreateBlogPayload,
   UpdateBlogPayload,
 } from "../../types/blog";
+import type { DeleteMutationResponse } from "../../types/deleteRequest";
 import { baseApi } from "./baseApi";
 
 export const blogsApi = baseApi.injectEndpoints({
@@ -66,16 +67,19 @@ export const blogsApi = baseApi.injectEndpoints({
         { type: "Blog", id: "LIST" },
       ],
     }),
-    deleteBlog: builder.mutation<{ success: boolean; message: string }, string>(
+    deleteBlog: builder.mutation<DeleteMutationResponse, string>(
       {
         query: (id) => ({
           url: `/api/v1/admin/blogs/${id}`,
           method: "DELETE",
         }),
-        invalidatesTags: (_result, _error, id) => [
-          { type: "Blog", id },
-          { type: "Blog", id: "LIST" },
-        ],
+        invalidatesTags: (_result, _error, id) =>
+          _result?.pending
+            ? [{ type: "DeleteRequest", id: "LIST" }]
+            : [
+                { type: "Blog", id },
+                { type: "Blog", id: "LIST" },
+              ],
       },
     ),
     setBlogFeatured: builder.mutation<

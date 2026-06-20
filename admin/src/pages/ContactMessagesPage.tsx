@@ -238,8 +238,14 @@ export function ContactMessagesPage() {
     if (!deletingMessage) return;
 
     try {
-      await deleteMessage({ id: deletingMessage.id }).unwrap();
-      toast.success("Contact message deleted successfully");
+      const result = await deleteMessage({ id: deletingMessage.id }).unwrap();
+      if (result.pending) {
+        toast.info(
+          "Delete request submitted and is pending confirmation from an admin.",
+        );
+      } else {
+        toast.success("Contact message deleted successfully");
+      }
       setDeletingMessage(null);
     } catch (deleteError) {
       toast.error(

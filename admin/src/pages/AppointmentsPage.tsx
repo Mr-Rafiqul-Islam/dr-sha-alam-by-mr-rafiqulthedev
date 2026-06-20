@@ -31,6 +31,8 @@ import {
   filterAppointments,
   formatAppointmentDateTime,
   getInitials,
+  getPaymentStatusBadgeVariant,
+  getPaymentStatusLabel,
   getStatusBadgeVariant,
   getStatusLabel,
 } from "../utils/appointment";
@@ -119,6 +121,9 @@ function AppointmentCard({
         </Badge>
         <Badge variant={getStatusBadgeVariant(appointment.status)}>
           {getStatusLabel(appointment.status)}
+        </Badge>
+        <Badge variant={getPaymentStatusBadgeVariant(appointment.paymentStatus)}>
+          {getPaymentStatusLabel(appointment.paymentStatus)}
         </Badge>
       </div>
 
@@ -222,8 +227,14 @@ export function AppointmentsPage() {
     if (!deletingAppointment) return;
 
     try {
-      await deleteAppointment({ id: deletingAppointment.id }).unwrap();
-      toast.success("Appointment deleted successfully");
+      const result = await deleteAppointment({ id: deletingAppointment.id }).unwrap();
+      if (result.pending) {
+        toast.info(
+          "Delete request submitted and is pending confirmation from an admin.",
+        );
+      } else {
+        toast.success("Appointment deleted successfully");
+      }
       closeDeleteModal();
     } catch {
       toast.error("Failed to delete appointment");
@@ -383,6 +394,7 @@ export function AppointmentsPage() {
                     <TableHead>Date &amp; Time</TableHead>
                     <TableHead>Problems</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Payment Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -390,7 +402,7 @@ export function AppointmentsPage() {
                   {paginatedAppointments.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={7}
                         className="py-12 text-center text-on-surface-variant"
                       >
                         No appointments found.
@@ -443,6 +455,15 @@ export function AppointmentsPage() {
                             variant={getStatusBadgeVariant(appointment.status)}
                           >
                             {getStatusLabel(appointment.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={getPaymentStatusBadgeVariant(
+                              appointment.paymentStatus,
+                            )}
+                          >
+                            {getPaymentStatusLabel(appointment.paymentStatus)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
