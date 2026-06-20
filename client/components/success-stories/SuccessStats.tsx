@@ -42,7 +42,7 @@ const stats = [
 
 export default function SuccessStats() {
   return (
-    <section className="py-16 bg-primary dark:bg-primary-dark text-white relative overflow-hidden">
+    <section className="lg:py-16 py-12 bg-primary dark:bg-primary-dark text-white relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

@@ -95,11 +95,11 @@ export default function VideoTestimonials() {
   };
 
   return (
-    <section className="py-20 bg-background-light dark:bg-background-dark overflow-hidden">
+    <section className="lg:py-20 py-12 bg-background-light dark:bg-background-dark overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal
           direction="up"
-          className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-6"
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-end lg:mb-12 mb-8 gap-6"
         >
           <h3 className="text-2xl md:text-3xl font-bold text-text-main dark:text-white">
             Hear Their Recovery Stories In Their Own Words
@@ -126,7 +126,7 @@ export default function VideoTestimonials() {
 
         <div
           ref={scrollContainerRef}
-          className="flex overflow-x-auto snap-x snap-mandatory gap-8 pb-12 pt-4 px-4 -mx-4 touch-pan-x overscroll-x-contain [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="flex overflow-x-auto snap-x snap-mandatory gap-8 lg:pb-12 pb-8 lg:pt-4 pt-2 px-4 -mx-4 touch-pan-x overscroll-x-contain [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
           {videoTestimonials.map((video) => (
             <div
@@ -141,7 +141,7 @@ export default function VideoTestimonials() {
           ))}
         </div>
 
-        <div className="flex justify-center gap-2 mt-2">
+        <div className="flex justify-center gap-2 lg:mt-2 mt-1">
           {videoTestimonials.map((video, index) => (
             <button
               key={video.filename}

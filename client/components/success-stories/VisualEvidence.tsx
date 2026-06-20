@@ -3,9 +3,9 @@ import ScrollReveal from '@/components/ScrollReveal';
 
 export default function VisualEvidence() {
   return (
-    <section className="py-20 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
+    <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal direction="up" className="text-center mb-16">
+        <ScrollReveal direction="up" className="text-center lg:mb-16 mb-8">
           <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">See What&apos;s Possible</h2>
           <h3 className="text-3xl md:text-4xl font-extrabold text-primary dark:text-white">Real Progress. Real Recovery. Real Confidence.</h3>
           <p className="text-text-sub max-w-2xl mx-auto text-sm lg:text-base mt-2">Recovery is not just about reducing pain. It&apos;s about restoring movement, improving function, and helping patients return to the activities they love.</p>

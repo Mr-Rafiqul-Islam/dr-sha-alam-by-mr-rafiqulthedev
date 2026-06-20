@@ -3,9 +3,9 @@ import ScrollReveal from "@/components/ScrollReveal";
 
 export default function FeaturedTransformations() {
   return (
-    <section className="py-20 bg-white dark:bg-surface-dark">
+    <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal direction="up" className="text-center mb-16">
+        <ScrollReveal direction="up" className="text-center lg:mb-16 mb-8">
           <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">
             Featured Transformations
           </h2>
