@@ -19,7 +19,16 @@ type BaseField = {
 };
 
 export type FormFieldConfig =
-  | (BaseField & { type: "text" | "email" | "textarea" | "number" | "tel" | "date" })
+  | (BaseField & {
+      type: "text" | "email" | "textarea" | "number" | "tel";
+    })
+  | (BaseField & {
+      type: "date";
+      useAppointmentSchedules?: boolean;
+      closedDates?: Set<string>;
+      schedulesLoading?: boolean;
+      schedulesError?: string | null;
+    })
   | (BaseField & { type: "password"; passwordToggle?: boolean })
   | (BaseField & { type: "select"; options: SelectOption[] })
   | (BaseField & { type: "checkbox"; checkboxLabel?: string });
