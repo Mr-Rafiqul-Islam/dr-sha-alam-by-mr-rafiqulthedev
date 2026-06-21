@@ -191,7 +191,7 @@ function SectionBlocks({ blocks }: { blocks: GuidelineSection['blocks'] }) {
 
 export default function BeforeVisitGuidelines() {
   return (
-    <section className="py-12 lg:py-16 bg-white dark:bg-surface-dark">
+    <section className="pb-12 md:pt-12 lg:py-16 bg-white dark:bg-surface-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {guidelineSections.map((section, index) => (

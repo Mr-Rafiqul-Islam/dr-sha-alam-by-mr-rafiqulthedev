@@ -15,7 +15,7 @@ function ChecklistItem({ children }: { children: React.ReactNode }) {
 
 export default function TermsContent() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="prose prose-lg dark:prose-invert max-w-none text-text-main dark:text-gray-300">
         <ScrollReveal direction="up" className={cardClass}>
           <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">1. Medical Information Disclaimer</h2>
@@ -203,7 +203,7 @@ export default function TermsContent() {
           </p>
         </ScrollReveal>
 
-        <ScrollReveal direction="up" className="bg-primary/5 p-8 rounded-3xl border border-primary/10 mb-10">
+        <ScrollReveal direction="up" className="bg-primary/5 p-8 rounded-3xl border border-primary/10">
           <h2 className="text-2xl font-bold text-primary dark:text-white mb-4 mt-0">13. Contact Information</h2>
           <p className="font-bold text-text-main dark:text-white mb-4">Questions About These Terms?</p>
           <p className="text-text-sub mb-4">

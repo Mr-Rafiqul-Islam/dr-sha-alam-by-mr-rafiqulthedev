@@ -18,10 +18,10 @@ export default function ConditionsWeTreat() {
   ];
 
   return (
-    <section className="py-20 bg-white dark:bg-surface-dark">
+    <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <ScrollReveal direction="up">
-          <h2 className="text-3xl font-extrabold text-primary dark:text-white mb-10">Conditions We Frequently Manage</h2>
+          <h2 className="text-3xl font-extrabold text-primary dark:text-white lg:mb-10 mb-8">Conditions We Frequently Manage</h2>
         </ScrollReveal>
         <ScrollReveal direction="up" delay={0.1} className="flex flex-wrap justify-center gap-3">
           {conditions.map((condition, index) => (

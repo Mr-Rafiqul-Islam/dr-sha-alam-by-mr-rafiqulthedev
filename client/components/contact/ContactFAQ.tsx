@@ -3,7 +3,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 
 export default function ContactFAQ() {
   return (
-    <section className="py-16 bg-background-light dark:bg-background-dark border-t border-gray-100 dark:border-gray-800">
+    <section className="lg:py-16 py-12 bg-background-light dark:bg-background-dark border-t border-gray-100 dark:border-gray-800">
       <ScrollReveal
         direction="up"
         className="max-w-4xl mx-auto px-4 text-center"

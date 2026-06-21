@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function PhilosophySection() {
   return (
     <section
-      className="py-32 relative flex items-center justify-center bg-fixed bg-cover bg-center"
+      className="py-32 relative flex items-center justify-center bg-fixed bg-cover bg-no-repeat bg-center"
       style={{
         backgroundImage:
           "url('/team.jpg')",

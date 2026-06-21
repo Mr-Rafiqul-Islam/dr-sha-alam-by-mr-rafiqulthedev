@@ -28,7 +28,7 @@ const supportActions = [
 
 export default function AfterTreatmentSupport() {
   return (
-    <section className="py-16 lg:py-20 bg-background-light dark:bg-background-dark">
+    <section className="py-12 lg:py-20 bg-background-light dark:bg-background-dark">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal
           direction="up"
@@ -70,7 +70,7 @@ export default function AfterTreatmentSupport() {
 
           <Link
             href="/appointment"
-            className="inline-flex items-center gap-2 bg-[#00CBC0] hover:bg-accent-dark text-white text-base font-bold py-3.5 px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 bg-[#00CBC0] hover:bg-accent-dark text-white text-sm md:text-base font-bold py-3.5 px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5"
           >
             Book Follow-Up Appointment
             <span className="material-symbols-outlined text-lg">calendar_month</span>

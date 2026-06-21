@@ -2,7 +2,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 
 export default function MedicalDisclaimerHeader() {
   return (
-    <div className="text-center mb-12 lg:mb-16">
+    <div className="text-center mb-12 lg:mb-16 px-4">
       <ScrollReveal direction="up">
         <h1 className="text-3xl md:text-5xl font-extrabold text-primary dark:text-white mb-6">Medical Disclaimer</h1>
         <p className="text-text-sub text-lg max-w-3xl mx-auto mb-2">

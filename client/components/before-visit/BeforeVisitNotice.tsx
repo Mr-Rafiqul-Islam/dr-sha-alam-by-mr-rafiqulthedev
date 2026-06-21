@@ -92,7 +92,7 @@ export default function BeforeVisitNotice() {
           </div>
         </ScrollReveal>
 
-        <ScrollReveal direction="up" className='max-w-3xl mx-auto text-center py-12'>          
+        <ScrollReveal direction="up" className='max-w-3xl mx-auto text-center pt-12 md:py-12'>          
           <h3 className="lg:text-4xl text-2xl font-bold text-text-main dark:text-white mb-3">
             Need To Change Your Appointment?
           </h3>
@@ -102,7 +102,7 @@ export default function BeforeVisitNotice() {
           </p>
         </ScrollReveal>
 
-        <ScrollReveal direction="up" className="max-w-4xl mx-auto text-center py-12">
+        <ScrollReveal direction="up" className="max-w-4xl mx-auto text-center py-6 lg:py-12">
           <h3 className="lg:text-4xl text-2xl font-bold text-text-main dark:text-white mb-10">
             What You Can Expect From Us
           </h3>
@@ -118,7 +118,7 @@ export default function BeforeVisitNotice() {
           </div>
         </ScrollReveal>
 
-        <ScrollReveal direction="up" className="max-w-3xl mx-auto text-center py-12">
+        <ScrollReveal direction="up" className="max-w-3xl mx-auto text-center py-6 lg:py-12">
           <h3 className="lg:text-4xl text-2xl font-bold text-text-main dark:text-white mb-3">
             We Look Forward To Meeting You
           </h3>

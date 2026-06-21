@@ -19,7 +19,7 @@ export default function BlogCategories({ categories }: BlogCategoriesProps) {
   };
 
   return (
-    <section className="bg-background-light dark:bg-background-dark pb-16 pt-8">
+    <section className="bg-background-light dark:bg-background-dark lg:pb-16 pb-8 lg:pt-8 pt-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="flex flex-wrap justify-center gap-3 md:gap-4">
           <button

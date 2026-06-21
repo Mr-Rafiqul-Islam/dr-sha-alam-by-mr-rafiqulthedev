@@ -2,7 +2,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 
 export default function BlogHero() {
   return (
-    <section className="bg-white dark:bg-surface-dark py-16 lg:py-24 text-center">
+    <section className="bg-white dark:bg-surface-dark lg:py-24 py-12 text-center">
       <ScrollReveal direction="up" className="max-w-4xl mx-auto px-4 sm:px-6">
         <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">LEARN • UNDERSTAND • RECOVER</h2>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary dark:text-white mb-6">

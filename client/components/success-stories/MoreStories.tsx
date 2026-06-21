@@ -126,9 +126,9 @@ export default function MoreStories() {
   };
 
   return (
-    <section className="py-20 bg-background-light dark:bg-background-dark overflow-hidden">
+    <section className="lg:py-20 pt-12 pb-4 bg-background-light dark:bg-background-dark overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal direction="up" className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-6">
+        <ScrollReveal direction="up" className="flex flex-col sm:flex-row justify-between items-start sm:items-end lg:mb-12 mb-6 gap-6">
           <h3 className="text-2xl md:text-3xl font-bold text-text-main dark:text-white">
             More Recovery Stories
           </h3>

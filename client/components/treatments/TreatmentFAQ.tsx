@@ -17,9 +17,9 @@ export default function TreatmentFAQ() {
   ];
 
   return (
-    <section className="py-20 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
+    <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal direction="up" className="text-center mb-12">
+        <ScrollReveal direction="up" className="text-center lg:mb-12 mb-8">
           <h3 className="text-3xl font-extrabold text-primary dark:text-white">Frequently Asked Questions</h3>
         </ScrollReveal>
         <div className="space-y-4">

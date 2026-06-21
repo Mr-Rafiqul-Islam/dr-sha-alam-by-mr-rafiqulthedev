@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function VisitChamber() {
   return (
-    <section className="py-24 bg-white dark:bg-surface-dark">
+    <section className="lg:py-24 py-12 bg-white dark:bg-surface-dark">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="bg-background-light dark:bg-background-dark rounded-3xl p-8 md:p-12 shadow-lg border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="space-y-6 md:w-3/5">

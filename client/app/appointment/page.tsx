@@ -35,7 +35,7 @@ export default function BookAppointment() {
   ];
   return (
     <>
-      <section className="relative bg-gradient-to-b from-background-light to-white dark:from-background-dark dark:to-surface-dark pt-16 pb-20">
+      <section className="relative bg-gradient-to-b from-background-light to-white dark:from-background-dark dark:to-surface-dark lg:pt-16 lg:pb-20 pt-12 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
             <div className="lg:w-1/2 space-y-6 text-center lg:text-left">
@@ -136,7 +136,7 @@ export default function BookAppointment() {
 
       <BookingForm />
 
-      <section className="py-20 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
+      <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div className="space-y-8">
@@ -226,7 +226,7 @@ export default function BookAppointment() {
         </div>
       </section>
 
-      <section className="py-16 bg-primary dark:bg-primary-dark text-white">
+      <section className="lg:py-16 py-12 bg-primary dark:bg-primary-dark text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-extrabold mb-6">
             Need Immediate Assistance?
@@ -256,7 +256,7 @@ export default function BookAppointment() {
         </div>
       </section>
 
-      <section className="py-20 bg-background-light dark:bg-background-dark">
+      <section className="lg:py-20 py-12 bg-background-light dark:bg-background-dark">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white dark:bg-surface-dark rounded-3xl p-8 md:p-12 shadow-soft border-l-8 border-accent">
             <div className="flex items-start gap-6">
@@ -287,7 +287,7 @@ export default function BookAppointment() {
         </div>
       </section>
 
-      <section className="py-20 bg-white dark:bg-surface-dark">
+      <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-2">

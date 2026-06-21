@@ -15,9 +15,9 @@ export default function HomeBlogSection({ blogs }: HomeBlogSectionProps) {
 
   return (
     <ScrollReveal direction="up">
-      <section className="py-24 bg-background-light dark:bg-background-dark" id="blog">
+      <section className="lg:py-24 py-12 bg-background-light dark:bg-background-dark" id="blog">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center lg:mb-16 mb-8">
             <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">Health Insights</h2>
             <h3 className="text-3xl md:text-4xl font-extrabold text-primary dark:text-white">Latest Articles</h3>
             <p className="text-text-sub mt-4 max-w-2xl mx-auto">Evidence-based articles from Dr. Shah Alam on spine care, joint health, therapeutic yoga, posture correction, nutrition, and natural recovery strategies to help you move better and live pain-free.</p>

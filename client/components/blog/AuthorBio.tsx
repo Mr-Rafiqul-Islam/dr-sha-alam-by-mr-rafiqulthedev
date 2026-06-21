@@ -10,9 +10,9 @@ export default function AuthorBio() {
   ];
 
   return (
-    <section className="py-20 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
+    <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <ScrollReveal direction="up" className="flex flex-col md:flex-row items-center md:items-start gap-10 mb-12">
+        <ScrollReveal direction="up" className="flex flex-col md:flex-row items-center md:items-start gap-10 lg:mb-8">
           <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0 relative">
             <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl transform translate-x-2 translate-y-2"></div>
             <Image

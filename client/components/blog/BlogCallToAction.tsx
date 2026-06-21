@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function BlogCallToAction() {
   return (
-    <section className="py-16 bg-background-light dark:bg-background-dark">
+    <section className="lg:py-16 py-12 bg-background-light dark:bg-background-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal
           direction="up"

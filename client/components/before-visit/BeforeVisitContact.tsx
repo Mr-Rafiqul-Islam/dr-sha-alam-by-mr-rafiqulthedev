@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function BeforeVisitContact() {
   return (
-    <section className="bg-white dark:bg-surface-dark pb-24">
+    <section className="bg-white dark:bg-surface-dark pb-12 md:pb-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal
           direction="up"

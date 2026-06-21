@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function FAQContact() {
   return (
-    <section className="py-20 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
+    <section className="py-12 md:py-20 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <ScrollReveal
           direction="up"
