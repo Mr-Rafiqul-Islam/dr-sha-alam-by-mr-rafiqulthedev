@@ -1,6 +1,7 @@
 "use server";
 
 import { getApiBaseUrl } from "@/lib/api";
+import { getMetaCookiesFromHeaders } from "@/lib/metaCookies";
 import type {
   SubmitFreeAppointmentPayload,
   SubmitFreeAppointmentResult,
@@ -20,6 +21,8 @@ export async function submitFreeAppointment(
     throw new Error("API URL is not configured");
   }
 
+  const metaCookies = await getMetaCookiesFromHeaders();
+
   const body: Record<string, string> = {
     fullName: payload.fullName.trim(),
     phoneNumber: payload.phoneNumber.trim(),
@@ -36,6 +39,21 @@ export async function submitFreeAppointment(
   const problem = payload.problem?.trim();
   if (problem) {
     body.problem = problem;
+  }
+
+  if (payload.fbEventId?.trim()) {
+    body.fbEventId = payload.fbEventId.trim();
+  }
+
+  const fbc = payload.fbc ?? metaCookies.fbc;
+  const fbp = payload.fbp ?? metaCookies.fbp;
+
+  if (fbc) {
+    body.fbc = fbc;
+  }
+
+  if (fbp) {
+    body.fbp = fbp;
   }
 
   const response = await fetch(`${apiBaseUrl}/api/v1/client/appointments`, {

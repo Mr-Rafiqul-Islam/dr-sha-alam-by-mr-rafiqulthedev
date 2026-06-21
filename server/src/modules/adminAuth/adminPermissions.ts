@@ -21,7 +21,13 @@ export type AdminPermission =
   | "contactMessages"
   | "articles"
   | "settings"
+  | "analyticsSettings"
   | "deleteApprovals";
+
+const ANALYTICS_SETTINGS_ROLES = new Set<UserRole>([
+  UserRole.SUPER_ADMIN,
+  UserRole.MANAGER,
+]);
 
 const SUPPORT_PERMISSIONS = new Set<AdminPermission>([
   "appointments",
@@ -38,6 +44,7 @@ const ALL_PERMISSIONS: AdminPermission[] = [
   "contactMessages",
   "articles",
   "settings",
+  "analyticsSettings",
   "deleteApprovals",
 ];
 
@@ -49,6 +56,10 @@ export function canAccessAdminPermission(
   role: UserRole,
   permission: AdminPermission,
 ): boolean {
+  if (permission === "analyticsSettings") {
+    return ANALYTICS_SETTINGS_ROLES.has(role);
+  }
+
   if (FULL_ACCESS_ROLES.has(role)) {
     return true;
   }

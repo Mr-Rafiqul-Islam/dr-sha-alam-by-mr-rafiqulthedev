@@ -8,6 +8,9 @@ export type StartPaymentPayload = {
   email?: string;
   gender?: string;
   problem?: string;
+  fbc?: string;
+  fbp?: string;
+  userAgent?: string;
 };
 
 export type StartPaymentResult = {
@@ -24,6 +27,9 @@ export type SubmitFreeAppointmentPayload = {
   preferredTime: string;
   email?: string;
   problem?: string;
+  fbEventId?: string;
+  fbc?: string;
+  fbp?: string;
 };
 
 export type SubmitFreeAppointmentResult = {

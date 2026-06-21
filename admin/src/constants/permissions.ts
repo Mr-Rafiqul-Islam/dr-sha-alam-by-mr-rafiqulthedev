@@ -12,7 +12,10 @@ export type AdminPermission =
   | "contactMessages"
   | "articles"
   | "settings"
+  | "analyticsSettings"
   | "deleteApprovals";
+
+const ANALYTICS_SETTINGS_ROLES = new Set<string>(["SUPER_ADMIN", "MANAGER"]);
 
 const STAFF_PANEL_ROLES = new Set<string>([
   "SUPER_ADMIN",
@@ -44,7 +47,7 @@ const PATH_PERMISSIONS: Array<{ prefix: string; permission: AdminPermission }> =
     { prefix: "/articles", permission: "articles" },
     { prefix: "/contact-messages", permission: "contactMessages" },
     { prefix: "/pending-deletes", permission: "deleteApprovals" },
-    { prefix: "/settings", permission: "settings" },
+    { prefix: "/settings", permission: "analyticsSettings" },
     { prefix: "/dashboard", permission: "dashboard" },
   ];
 
@@ -56,6 +59,10 @@ export function canAccessAdminPermission(
   role: string,
   permission: AdminPermission,
 ): boolean {
+  if (permission === "analyticsSettings") {
+    return ANALYTICS_SETTINGS_ROLES.has(role);
+  }
+
   if (FULL_ACCESS_ROLES.has(role)) {
     return true;
   }

@@ -191,6 +191,7 @@ export async function createPendingPaymentWithAppointment(params: {
   userId: string | null;
   doctorId: string;
   amount: number;
+  meta?: Record<string, unknown>;
 }): Promise<{ appointmentId: string }> {
   return runSerializableTransaction(async (tx) => {
     const { appointmentId } = await createReservedAppointment(
@@ -210,6 +211,7 @@ export async function createPendingPaymentWithAppointment(params: {
         gatewayResponse: params.payload,
         transactionId: params.tranId,
         appointmentId,
+        meta: params.meta as Prisma.InputJsonValue | undefined,
       },
     });
 

@@ -7,6 +7,7 @@ import {
   ActivityEntityType,
 } from "../../modules/activity/activity.service.js";
 import { recordActivity } from "../../modules/activity/activity.middleware.js";
+import { sendCapiEvent } from "../../lib/metaCapi.js";
 import {
   toPublicAppointment,
   toPublicAppointments,
@@ -36,6 +37,13 @@ import {
   parseRequiredString,
 } from "../../modules/appointment/appointment.utils.js";
 import { routeParamString } from "../../utils/express-params.js";
+
+function parseBodyString(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+  return undefined;
+}
 
 const ACTIVE_APPOINTMENT_STATUSES = {
   not: AppointmentStatus.CANCEL,
@@ -126,6 +134,31 @@ export async function createAppointment(req: Request, res: Response) {
       smsLabel,
     }).catch((smsError) => {
       console.error("Failed to send appointment SMS:", smsError);
+    });
+
+    const fbEventId = parseBodyString(req.body.fbEventId);
+    const fbc = parseBodyString(req.body.fbc);
+    const fbp = parseBodyString(req.body.fbp);
+
+    void sendCapiEvent({
+      eventName: "Schedule",
+      eventId: fbEventId ?? newAppointment.id,
+      eventTime: Math.floor(Date.now() / 1000),
+      actionSource: "website",
+      userData: {
+        email: emailText ?? undefined,
+        phone,
+        clientIpAddress:
+          (typeof req.headers["x-forwarded-for"] === "string"
+            ? req.headers["x-forwarded-for"].split(",")[0]?.trim()
+            : undefined) ?? req.ip,
+        clientUserAgent:
+          typeof req.headers["user-agent"] === "string"
+            ? req.headers["user-agent"]
+            : undefined,
+        fbc,
+        fbp,
+      },
     });
 
     recordActivity(res, {

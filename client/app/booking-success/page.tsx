@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import ScrollReveal from "@/components/ScrollReveal";
+import { trackMetaEvent } from "@/lib/metaAnalytics";
 import { getAppointmentById } from "@/server-actions/getAppointmentById";
 import type { PublicAppointmentSummary } from "@/types/booking";
 import Image from "next/image";
@@ -25,8 +26,17 @@ function formatDate(value: string): string {
 function ThankYouContent() {
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
+  const tranId = searchParams.get("tranId");
   const [appointment, setAppointment] = useState<AppointmentSummary | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
+
+  useEffect(() => {
+    if (!tranId) {
+      return;
+    }
+
+    trackMetaEvent("Purchase", { currency: "BDT" }, tranId);
+  }, [tranId]);
 
   useEffect(() => {
     if (!appointmentId) {

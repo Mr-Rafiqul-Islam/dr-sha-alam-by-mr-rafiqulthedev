@@ -14,6 +14,9 @@ export type SubmitContactMessagePayload = {
   subject: string;
   message?: string;
   email?: string;
+  fbEventId?: string;
+  fbc?: string;
+  fbp?: string;
 };
 
 export type SubmitContactMessageResult = {

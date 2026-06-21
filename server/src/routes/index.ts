@@ -13,6 +13,10 @@ import { paymentRouter } from "./payment/payment.routes.js";
 import { adminAuthRouter } from "../modules/adminAuth/adminAuth.routes.js";
 import { activityAdminRouter } from "../modules/activity/activity.routes.js";
 import { deleteRequestAdminRouter } from "./deleteRequest/admin/deleteRequest.routes.js";
+import {
+  analyticsSettingsAdminRouter,
+  analyticsSettingsClientRouter,
+} from "../modules/analyticsSettings/analyticsSettings.routes.js";
 
 
 /**
@@ -22,6 +26,8 @@ export function mountRoutes(app: Express): void {
   app.use("/api/v1/admin/auth", adminAuthRouter);
   app.use("/api/v1/admin/activity", activityAdminRouter);
   app.use("/api/v1/admin/delete-requests", deleteRequestAdminRouter);
+  app.use("/api/v1/admin/analytics-settings", analyticsSettingsAdminRouter);
+  app.use("/api/v1/client/analytics-config", analyticsSettingsClientRouter);
   app.use("/api/v1/client/appointments", appointmentClientRouter);
   app.use("/api/v1/admin/appointments", appointmentAdminRouter);
   app.use("/api/v1/admin/appointment-schedules", appointmentScheduleAdminRouter);

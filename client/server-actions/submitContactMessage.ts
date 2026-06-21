@@ -1,6 +1,7 @@
 "use server";
 
 import { getApiBaseUrl } from "@/lib/api";
+import { getMetaCookiesFromHeaders } from "@/lib/metaCookies";
 import type {
   ContactMessage,
   SubmitContactMessagePayload,
@@ -21,6 +22,8 @@ export async function submitContactMessage(
     throw new Error("API URL is not configured");
   }
 
+  const metaCookies = await getMetaCookiesFromHeaders();
+
   const body: Record<string, string> = {
     name: payload.name.trim(),
     phone: payload.phone.trim(),
@@ -35,6 +38,21 @@ export async function submitContactMessage(
   const email = payload.email?.trim();
   if (email) {
     body.email = email;
+  }
+
+  if (payload.fbEventId?.trim()) {
+    body.fbEventId = payload.fbEventId.trim();
+  }
+
+  const fbc = payload.fbc ?? metaCookies.fbc;
+  const fbp = payload.fbp ?? metaCookies.fbp;
+
+  if (fbc) {
+    body.fbc = fbc;
+  }
+
+  if (fbp) {
+    body.fbp = fbp;
   }
 
   const response = await fetch(`${apiBaseUrl}/api/v1/client/contact-messages`, {

@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PreferredDatePicker from "@/components/booking/PreferredDatePicker";
 import { getClosedDates } from "@/lib/appointmentSchedules";
+import { getMetaCookiesFromDocument, trackMetaEvent } from "@/lib/metaAnalytics";
 import { getAppointmentSchedules } from "@/server-actions/getAppointmentSchedules";
 import { getSlotDefaults } from "@/server-actions/getSlotDefaults";
 import { startPayment } from "@/server-actions/startPayment";
@@ -206,6 +207,9 @@ export default function BookingForm() {
   };
 
   const submitFreeBooking = async () => {
+    const eventId = crypto.randomUUID();
+    const metaCookies = getMetaCookiesFromDocument();
+
     const result = await submitFreeAppointment({
       fullName: form.fullName,
       phoneNumber: form.phoneNumber,
@@ -214,7 +218,11 @@ export default function BookingForm() {
       problem: form.problem || undefined,
       preferredDate: form.preferredDate,
       preferredTime: form.preferredTime,
+      fbEventId: eventId,
+      ...metaCookies,
     });
+
+    trackMetaEvent("Schedule", {}, eventId);
 
     router.push(
       `/booking-success?appointmentId=${encodeURIComponent(result.appointmentId)}`,
@@ -222,6 +230,8 @@ export default function BookingForm() {
   };
 
   const submitPaidBooking = async () => {
+    const metaCookies = getMetaCookiesFromDocument();
+
     const result = await startPayment({
       name: form.fullName,
       phone: form.phoneNumber,
@@ -232,8 +242,11 @@ export default function BookingForm() {
       email: form.email || undefined,
       gender: form.gender || undefined,
       problem: form.problem || undefined,
+      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+      ...metaCookies,
     });
 
+    trackMetaEvent("InitiateCheckout");
     window.location.href = result.url;
   };
 

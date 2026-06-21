@@ -1,6 +1,7 @@
 "use server";
 
 import { getApiBaseUrl, getDefaultDoctorId } from "@/lib/api";
+import { getMetaCookiesFromHeaders } from "@/lib/metaCookies";
 import type { StartPaymentPayload, StartPaymentResult } from "@/types/booking";
 
 type StartPaymentResponse = {
@@ -18,6 +19,8 @@ export async function startPayment(
   if (!apiBaseUrl) {
     throw new Error("API URL is not configured");
   }
+
+  const metaCookies = await getMetaCookiesFromHeaders();
 
   const body: Record<string, string> = {
     name: payload.name.trim(),
@@ -46,6 +49,21 @@ export async function startPayment(
   const problem = payload.problem?.trim();
   if (problem) {
     body.problem = problem;
+  }
+
+  const fbc = payload.fbc ?? metaCookies.fbc;
+  const fbp = payload.fbp ?? metaCookies.fbp;
+
+  if (fbc) {
+    body.fbc = fbc;
+  }
+
+  if (fbp) {
+    body.fbp = fbp;
+  }
+
+  if (payload.userAgent?.trim()) {
+    body.userAgent = payload.userAgent.trim();
   }
 
   const response = await fetch(`${apiBaseUrl}/api/v1/payment/start`, {

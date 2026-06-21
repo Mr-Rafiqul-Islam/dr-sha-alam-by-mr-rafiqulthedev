@@ -60,6 +60,12 @@ export const mainNavItems: NavItem[] = [
     icon: "pending_actions",
     permission: "deleteApprovals",
   },
+  {
+    path: "/settings",
+    label: "Settings",
+    icon: "settings",
+    permission: "analyticsSettings",
+  },
 ];
 
 export function filterNavByRole(role: string, items: NavItem[]): NavItem[] {

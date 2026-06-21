@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import ScrollReveal from '@/components/ScrollReveal';
+import { getMetaCookiesFromDocument, trackMetaEvent } from '@/lib/metaAnalytics';
 import { submitContactMessage } from '@/server-actions/submitContactMessage';
 
 const SUBJECT_OPTIONS = [
@@ -56,13 +57,19 @@ export default function HomeContactSection() {
     setIsSubmitting(true);
 
     try {
+      const eventId = crypto.randomUUID();
+      const metaCookies = getMetaCookiesFromDocument();
+
       const result = await submitContactMessage({
         name: form.name,
         phone: form.phone,
         subject: subjectLabel,
         message: form.message || undefined,
+        fbEventId: eventId,
+        ...metaCookies,
       });
 
+      trackMetaEvent("Lead", {}, eventId);
       setSuccessMessage(result.message);
       setForm(initialFormState);
     } catch (submitError) {

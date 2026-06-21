@@ -319,6 +319,7 @@ model Payment {
   gateway         String?
   valId           String?
   gatewayResponse Json?
+  meta            Json?
 
   userId        String?
   doctorId      String?
@@ -487,4 +488,16 @@ model ContactMessage {
 
   @@index([status])
   @@index([phone])
+}
+
+model AnalyticsSetting {
+  id            String  @id @default(uuid())
+  isSingleton   Boolean @unique @default(true)
+  pixelId       String?
+  accessToken   String?
+  testEventCode String?
+  enabled       Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

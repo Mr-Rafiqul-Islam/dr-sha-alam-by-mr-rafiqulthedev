@@ -100,7 +100,7 @@ function App() {
             />
             <Route path="contact-messages" element={<ContactMessagesPage />} />
           </Route>
-          <Route element={<RequireAdminPermission permission="settings" />}>
+          <Route element={<RequireAdminPermission permission="analyticsSettings" />}>
             <Route path="settings" element={<SettingsPage />} />
           </Route>
           <Route element={<RequireAdminPermission permission="deleteApprovals" />}>

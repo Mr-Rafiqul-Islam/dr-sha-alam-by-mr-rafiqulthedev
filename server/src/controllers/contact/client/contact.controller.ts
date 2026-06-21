@@ -5,12 +5,20 @@
  */
 import type { Request, Response } from "express";
 import { prisma } from "../../../config/db.js";
+import { sendCapiEvent } from "../../../lib/metaCapi.js";
 import {
   handleContactError,
   parseEmail,
   parseOptionalString,
   parseRequiredString,
 } from "../../../modules/contact/contact.utils.js";
+
+function parseBodyString(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+  return undefined;
+}
 
 export async function createContactMessage(req: Request, res: Response) {
   try {
@@ -27,6 +35,31 @@ export async function createContactMessage(req: Request, res: Response) {
         subject,
         message,
         email,
+      },
+    });
+
+    const fbEventId = parseBodyString(req.body.fbEventId);
+    const fbc = parseBodyString(req.body.fbc);
+    const fbp = parseBodyString(req.body.fbp);
+
+    void sendCapiEvent({
+      eventName: "Lead",
+      eventId: fbEventId ?? contactMessage.id,
+      eventTime: Math.floor(Date.now() / 1000),
+      actionSource: "website",
+      userData: {
+        email: email ?? undefined,
+        phone,
+        clientIpAddress:
+          (typeof req.headers["x-forwarded-for"] === "string"
+            ? req.headers["x-forwarded-for"].split(",")[0]?.trim()
+            : undefined) ?? req.ip,
+        clientUserAgent:
+          typeof req.headers["user-agent"] === "string"
+            ? req.headers["user-agent"]
+            : undefined,
+        fbc,
+        fbp,
       },
     });
 

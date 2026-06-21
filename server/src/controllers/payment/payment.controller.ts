@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import SSLCommerzPayment from "sslcommerz-lts";
 import { prisma } from "../../config/db.js";
+import { sendCapiEvent } from "../../lib/metaCapi.js";
 import {
   AppointmentValidationError,
 } from "../../modules/appointment/appointment.utils.js";
@@ -16,6 +17,64 @@ import {
   resolveDoctorId,
   validateSslOrThrow,
 } from "../../modules/payment/payment.service.js";
+
+type PaymentBrowserMeta = {
+  clientIp?: string;
+  userAgent?: string;
+  fbc?: string;
+  fbp?: string;
+};
+
+function parseBodyString(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+  return undefined;
+}
+
+function buildBookingSuccessUrl(appointmentId: string, tranId: string): string {
+  return `${getFrontendUrl()}/booking-success?appointmentId=${encodeURIComponent(appointmentId)}&tranId=${encodeURIComponent(tranId)}`;
+}
+
+async function sendPurchaseCapiEvent(params: {
+  payment: {
+    tranId: string;
+    currency: string;
+    amount: number;
+    meta: unknown;
+    appointmentId: string | null;
+  };
+}): Promise<void> {
+  if (!params.payment.appointmentId) {
+    return;
+  }
+
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: params.payment.appointmentId },
+    select: { phone: true, email: true },
+  });
+
+  const meta = params.payment.meta as PaymentBrowserMeta | null;
+
+  void sendCapiEvent({
+    eventName: "Purchase",
+    eventId: params.payment.tranId,
+    eventTime: Math.floor(Date.now() / 1000),
+    actionSource: "website",
+    userData: {
+      phone: appointment?.phone,
+      email: appointment?.email ?? undefined,
+      clientIpAddress: meta?.clientIp,
+      clientUserAgent: meta?.userAgent,
+      fbc: meta?.fbc,
+      fbp: meta?.fbp,
+    },
+    customData: {
+      currency: params.payment.currency,
+      value: params.payment.amount,
+    },
+  });
+}
 
 function routeQueryString(value: unknown): string | undefined {
   if (typeof value === "string" && value.trim()) {
@@ -102,12 +161,31 @@ export async function startPayment(req: Request, res: Response) {
       ship_country: "Bangladesh",
     };
 
+    const browserContext: PaymentBrowserMeta = {
+      clientIp:
+        (typeof req.headers["x-forwarded-for"] === "string"
+          ? req.headers["x-forwarded-for"].split(",")[0]?.trim()
+          : undefined) ?? req.ip,
+      userAgent:
+        parseBodyString(req.body.userAgent) ??
+        (typeof req.headers["user-agent"] === "string"
+          ? req.headers["user-agent"]
+          : undefined),
+      fbc:
+        parseBodyString(req.body.fbc) ??
+        (typeof req.cookies._fbc === "string" ? req.cookies._fbc : undefined),
+      fbp:
+        parseBodyString(req.body.fbp) ??
+        (typeof req.cookies._fbp === "string" ? req.cookies._fbp : undefined),
+    };
+
     await createPendingPaymentWithAppointment({
       payload: appointmentPayload,
       tranId,
       userId,
       doctorId,
       amount,
+      meta: browserContext,
     });
 
     const storeId = process.env.SSLCOMMERZ_STORE_ID;
@@ -168,7 +246,7 @@ export async function paymentSuccess(req: Request, res: Response) {
 
     if (payment.status === "SUCCESS" && payment.appointmentId) {
       return res.redirect(
-        `${getFrontendUrl()}/booking-success?appointmentId=${encodeURIComponent(payment.appointmentId)}`,
+        buildBookingSuccessUrl(payment.appointmentId, tranId),
       );
     }
 
@@ -183,9 +261,17 @@ export async function paymentSuccess(req: Request, res: Response) {
       return redirectPaymentFailed(res, "slot_full");
     }
 
-    return res.redirect(
-      `${getFrontendUrl()}/booking-success?appointmentId=${encodeURIComponent(result.appointmentId)}`,
-    );
+    if (!result.alreadyProcessed) {
+      const updatedPayment = await prisma.payment.findUnique({
+        where: { tranId },
+      });
+
+      if (updatedPayment) {
+        await sendPurchaseCapiEvent({ payment: updatedPayment });
+      }
+    }
+
+    return res.redirect(buildBookingSuccessUrl(result.appointmentId, tranId));
   } catch (error) {
     if (error instanceof AppointmentValidationError) {
       if (error.message.includes("future dates")) {
@@ -274,10 +360,20 @@ export async function paymentIPN(req: Request, res: Response) {
 
     const validator = await validateSslOrThrow(valId);
     logPaymentProviderStatus("ipn", tranId, validator);
-    await fulfillSuccessfulPayment(payment, {
+    const result = await fulfillSuccessfulPayment(payment, {
       valId: valId ?? routeBodyString(validator.val_id),
       providerRaw: req.body,
     });
+
+    if (!result.alreadyProcessed && result.appointmentId) {
+      const updatedPayment = await prisma.payment.findUnique({
+        where: { tranId },
+      });
+
+      if (updatedPayment) {
+        await sendPurchaseCapiEvent({ payment: updatedPayment });
+      }
+    }
 
     return res.status(200).send("IPN PROCESSED");
   } catch (error) {
