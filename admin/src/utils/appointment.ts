@@ -253,3 +253,53 @@ export function filterAppointments(
     return true;
   });
 }
+
+function escapeCsvValue(value: string): string {
+  if (/[",\n]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+
+  return value;
+}
+
+export function exportAppointmentsCsv(appointments: Appointment[]): void {
+  const headers = [
+    "Patient Name",
+    "Phone",
+    "Email",
+    "Date & Time",
+    "Problems",
+    "Status",
+    "Payment Status",
+    "Home Address",
+    "Serial Number",
+    "Site",
+    "Created At",
+  ];
+
+  const rows = appointments.map((appointment) => [
+    appointment.name,
+    appointment.phone,
+    appointment.email ?? "",
+    formatAppointmentDateTime(appointment),
+    appointment.problem ?? "",
+    getStatusLabel(appointment.status),
+    getPaymentStatusLabel(appointment.paymentStatus),
+    appointment.homeAddress,
+    String(appointment.serialNumber),
+    getSiteRefLabel(appointment.siteRef),
+    formatTimestamp(appointment.createdAt),
+  ]);
+
+  const csv = [headers, ...rows]
+    .map((row) => row.map((cell) => escapeCsvValue(cell)).join(","))
+    .join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `appointments-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}

@@ -11,7 +11,9 @@ import type { ZodTypeAny } from "zod";
 import { Button } from "../common/Button";
 import { Icon } from "../common/Icon";
 import { cn } from "../../lib/cn";
+import { getTomorrowYmd } from "../../utils/appointment";
 import type { FormFieldConfig } from "../../types/form";
+import { AppointmentDatePicker } from "./AppointmentDatePicker";
 
 const controlInputClass = cn(
   "w-full min-h-10 px-4 py-2.5 rounded-lg border border-outline-variant",
@@ -211,12 +213,26 @@ export function CommonFormFields({
                           {...field}
                           value={String(field.value ?? "")}
                         />
+                      ) : f.type === "date" && f.useAppointmentSchedules ? (
+                        <AppointmentDatePicker
+                          value={String(field.value ?? "")}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          minDate={getTomorrowYmd()}
+                          closedDates={f.closedDates ?? new Set()}
+                          disabled={fDisabled}
+                          isLoading={f.schedulesLoading}
+                          schedulesError={f.schedulesError}
+                          aria-invalid={!!fieldState.error}
+                          aria-describedby={describedBy}
+                        />
                       ) : f.type === "date" ? (
                         <input
                           id={fieldId}
                           type="date"
                           className={controlInputClass}
                           disabled={fDisabled}
+                          min={getTomorrowYmd()}
                           aria-invalid={!!fieldState.error}
                           aria-describedby={describedBy}
                           {...field}
