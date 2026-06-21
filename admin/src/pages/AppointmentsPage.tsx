@@ -28,6 +28,7 @@ import {
 import type { Appointment, AppointmentStatus } from "../types/appointment";
 import {
   APPOINTMENT_STATUS_OPTIONS,
+  exportAppointmentsCsv,
   filterAppointments,
   formatAppointmentDateTime,
   getInitials,
@@ -254,19 +255,37 @@ export function AppointmentsPage() {
     setCurrentPage(1);
   };
 
+  const handleExportCsv = () => {
+    if (filteredAppointments.length === 0) {
+      toast.info("No appointments to export");
+      return;
+    }
+
+    exportAppointmentsCsv(filteredAppointments);
+  };
+
   return (
     <>
       <PageHeader
         title="Recent Appointments"
         subtitle="Manage and track patient schedules."
         action={
-          <Button
-            leftIcon={<Icon name="add" size={20} />}
-            fullWidthOnMobile
-            onClick={() => navigate("/appointments/new")}
-          >
-            Add New Appointment
-          </Button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <Button
+              leftIcon={<Icon name="description" size={20} />}
+              fullWidthOnMobile
+              onClick={handleExportCsv}
+            >
+              Export CSV
+            </Button>
+            <Button
+              leftIcon={<Icon name="add" size={20} />}
+              fullWidthOnMobile
+              onClick={() => navigate("/appointments/new")}
+            >
+              Add New Appointment
+            </Button>
+          </div>
         }
       />
 
