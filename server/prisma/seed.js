@@ -12,8 +12,12 @@ if (!connectionString) {
 const pool = new pg.Pool({ connectionString });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
-/** Local-only default if ADMIN_SEED_PASSWORD is unset — change in any shared or production environment. */
-const FALLBACK_DEV_PASSWORD = "ChangeMeLocalDev123!";
+/** Local-only defaults per role — override via env vars in any shared or production environment. */
+const ROLE_SEED_PASSWORDS = {
+  [UserRole.SUPER_ADMIN]: process.env.SUPER_ADMIN_SEED_PASSWORD || "SuperAdmin@Dev123!",
+  [UserRole.EDITOR]:      process.env.EDITOR_SEED_PASSWORD      || "Editor@Dev123!",
+  [UserRole.SUPPORT]:     process.env.SUPPORT_SEED_PASSWORD     || "Support@Dev123!",
+};
 
 const staffUsersToSeed = [
   {
@@ -25,6 +29,11 @@ const staffUsersToSeed = [
     email: "joinabuhurayra@gmail.com",
     name: "Abu Hurayra",
     role: UserRole.SUPER_ADMIN,
+  },
+  {
+    email: "chamber.trucare@gmail.com",
+    name: "Chamber",
+    role: UserRole.SUPPORT,
   },
   {
     email: "thesakibdev@gmail.com",
@@ -136,8 +145,10 @@ const DEFAULT_DOCTOR = {
 };
 
 async function main() {
-  const passwordPlain = process.env.ADMIN_SEED_PASSWORD || FALLBACK_DEV_PASSWORD;
-  const hash = await bcrypt.hash(passwordPlain, 10);
+  const roleHashes = {};
+  for (const [role, plain] of Object.entries(ROLE_SEED_PASSWORDS)) {
+    roleHashes[role] = await bcrypt.hash(plain, 10);
+  }
 
   for (const staffUser of staffUsersToSeed) {
     const existing = await prisma.user.findUnique({
@@ -154,7 +165,7 @@ async function main() {
       data: {
         email: staffUser.email,
         name: staffUser.name,
-        password: hash,
+        password: roleHashes[staffUser.role],
         role: staffUser.role,
       },
     });
