@@ -328,7 +328,7 @@ export default function PrivacyPolicySections() {
         </p>
       </ScrollReveal>
 
-      <ScrollReveal direction="up" className="text-center pt-4 pb-8">
+      <ScrollReveal direction="up" className="text-center pt-4">
         <p className="font-bold text-text-main dark:text-white mb-4">
           Privacy Commitment
         </p>

@@ -62,7 +62,7 @@ export default function AfterTreatmentWarning() {
         ))}
       </div>
       <div className="mt-8 flex justify-center">
-        <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full transition-colors shadow-lg shadow-red-200 dark:shadow-none">
+        <Link href="/contact" className="inline-flex items-center justify-center text-center text-sm md:text-base gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full transition-colors shadow-lg shadow-red-200 dark:shadow-none">
           <span className="material-symbols-outlined">call</span>
           Contact Emergency Support
         </Link>

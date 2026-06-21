@@ -216,14 +216,14 @@ export default function MedicalDisclaimerSections() {
         </p>
       </ScrollReveal>
 
-      <ScrollReveal direction="up" className="text-center pt-4 pb-8">
+      <ScrollReveal direction="up" className="text-center pt-4">
         <h4 className="text-2xl font-bold text-primary dark:text-white mb-4">Our Commitment</h4>
         <blockquote className="text-lg md:text-xl text-text-main dark:text-white italic leading-relaxed max-w-3xl mx-auto mb-4">
           We are committed to providing reliable health education, evidence-based information, and patient-centered guidance.
           However, nothing on this website should replace personalized medical evaluation, diagnosis, or treatment from a qualified healthcare professional.
           <br /> <strong>Your health decisions should always be made in consultation with a licensed medical professional.</strong>
         </blockquote>
-      </ScrollReveal>
+    </ScrollReveal>
     </div>
   );
 }

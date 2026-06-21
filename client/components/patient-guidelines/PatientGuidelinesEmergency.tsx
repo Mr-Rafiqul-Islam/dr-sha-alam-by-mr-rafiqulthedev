@@ -2,7 +2,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 
 export default function PatientGuidelinesEmergency() {
   return (
-    <section className="py-16 bg-background-light dark:bg-background-dark" id="emergency-info">
+    <section className="py-12 md:py-16 bg-background-light dark:bg-background-dark" id="emergency-info">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="bg-primary rounded-3xl shadow-xl overflow-hidden relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>

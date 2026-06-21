@@ -30,7 +30,7 @@ const exerciseGuidelines = [
 export default function PatientGuidelinesExercise() {
   return (
     <section
-      className="py-20 bg-background-light dark:bg-background-dark"
+      className="py-12 md:py-20 bg-background-light dark:bg-background-dark"
       id="exercise-rules"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

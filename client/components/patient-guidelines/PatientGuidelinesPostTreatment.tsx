@@ -71,7 +71,7 @@ function Checklist({ items }: { items: string[] }) {
 
 export default function PatientGuidelinesPostTreatment() {
   return (
-    <section className="py-20 bg-white dark:bg-surface-dark" id="after-treatment">
+    <section className="py-12 md:py-20 bg-white dark:bg-surface-dark" id="after-treatment">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="mb-10">
           <div className="flex items-center gap-4 mb-2">

@@ -32,7 +32,7 @@ const items = [
 
 export default function PatientGuidelinesBeforeVisit() {
   return (
-    <section className="py-20 bg-background-light dark:bg-background-dark" id="before-visit">
+    <section className="py-12 md:py-20 bg-background-light dark:bg-background-dark" id="before-visit">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="mb-10">
           <div className='flex items-center gap-4 mb-2'>
