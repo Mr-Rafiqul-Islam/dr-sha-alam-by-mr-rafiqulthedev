@@ -52,7 +52,7 @@ export default function Footer() {
                 Phone: +880 1701313001
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
-                WhatsApp: +880 1312353577
+                WhatsApp: +880 1789639174
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Email: contact@doctorshahalam.com

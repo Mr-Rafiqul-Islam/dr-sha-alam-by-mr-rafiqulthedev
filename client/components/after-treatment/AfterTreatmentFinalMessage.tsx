@@ -5,10 +5,8 @@ export default function AfterTreatmentFinalMessage() {
     <section className="py-16 lg:py-20 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="text-center">
-          <p className="text-accent font-bold tracking-wider uppercase text-xs mb-3">
-            FINAL MESSAGE
-          </p>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-primary dark:text-white mb-6">
+        
+          <h2 className="text-2xl md:text-3xl font-extrabold text-primary dark:text-white mb-4">
             Thank You For Trusting Us With Your Care
           </h2>
           <div className="space-y-4 text-text-sub text-sm md:text-base leading-relaxed mb-10">

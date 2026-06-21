@@ -30,12 +30,9 @@ export default function WhyChooseUs() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <ScrollReveal direction="right">
-            <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">
-              WHY PATIENTS TRUST US
-            </h2>
-            <h3 className="text-3xl lg:text-4xl font-extrabold text-primary dark:text-white mb-6">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-primary dark:text-white mb-6">
               A Patient-First Approach To Recovery
-            </h3>
+            </h2>
             <p className="text-text-sub text-lg mb-8">
               Many patients come to us feeling confused, worried, and uncertain
               about what treatment they truly need. Our approach focuses on

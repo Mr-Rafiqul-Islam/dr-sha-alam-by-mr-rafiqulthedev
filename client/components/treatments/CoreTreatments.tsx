@@ -51,8 +51,7 @@ export default function CoreTreatments() {
     <section className="lg:py-20 py-12 bg-background-light dark:bg-background-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">SPECIALIZED SERVICES</h2>
-          <h3 className="text-3xl lg:text-4xl font-extrabold text-primary dark:text-white">Our Core Treatment Areas</h3>
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-primary dark:text-white">Our Core Treatment Areas</h2>
         </ScrollReveal>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {treatments.map((treatment, index) => (

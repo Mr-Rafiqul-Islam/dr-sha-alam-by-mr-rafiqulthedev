@@ -5,13 +5,10 @@ export default function FeaturedTransformations() {
   return (
     <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal direction="up" className="text-center lg:mb-16 mb-8">
-          <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">
-            Featured Transformations
-          </h2>
-          <h3 className="text-3xl md:text-4xl font-extrabold text-primary dark:text-white mb-3">
+          <ScrollReveal direction="up" className="text-center lg:mb-16 mb-8">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-primary dark:text-white mb-3">
             Life-Changing PLID Recovery Stories
-          </h3>
+          </h2>
           <p className="text-sm lg:text-base text-text-sub max-w-2xl mx-auto leading-relaxed font-medium">
             Discover how patients suffering from PLID, sciatica, nerve
             compression, and chronic back pain regained mobility, confidence,
@@ -74,7 +71,7 @@ export default function FeaturedTransformations() {
                     Problem
                   </p>
                   <p className="md:text-sm lg:text-base font-semibold text-primary dark:text-white">
-                    Severe PLID With Sciatica
+                    Severe PLID
                   </p>
                 </div>
                 <div>
@@ -82,8 +79,7 @@ export default function FeaturedTransformations() {
                     Treatment
                   </p>
                   <p className="font-semibold md:text-sm lg:text-base text-primary dark:text-white">
-                    Conservative PLID Treatment <br />
-                    Therapeutic Yoga & Rehabilitation
+                    Combined PLID Treatment
                   </p>
                 </div>
                 <div>
@@ -154,7 +150,7 @@ export default function FeaturedTransformations() {
                     Problem
                   </p>
                   <p className="md:text-sm lg:text-base font-semibold text-primary dark:text-white">
-                    PLID With Severe Sciatic Nerve Pain
+                    PLID
                   </p>
                 </div>
                 <div className="lg:text-right">
@@ -162,8 +158,7 @@ export default function FeaturedTransformations() {
                     Treatment
                   </p>
                   <p className="md:text-sm lg:text-base font-semibold text-primary dark:text-white">
-                    Personalized Recovery Program <br />
-                    Exercise Therapy & Lifestyle Modification
+                    Combined PLID Treatment
                   </p>
                 </div>
                 <div className="lg:text-right">

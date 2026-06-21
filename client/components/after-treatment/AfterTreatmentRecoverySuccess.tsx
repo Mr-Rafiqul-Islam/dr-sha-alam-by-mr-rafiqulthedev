@@ -6,10 +6,7 @@ export default function AfterTreatmentRecoverySuccess() {
       direction="up"
       className="bg-white dark:bg-surface-dark rounded-3xl p-8 md:p-10 shadow-sm border border-gray-100 dark:border-gray-800 text-center"
     >
-      <p className="text-accent font-bold tracking-wider uppercase text-xs mb-3">
-        RECOVERY SUCCESS
-      </p>
-      <h2 className="text-2xl md:text-3xl font-extrabold text-primary dark:text-white mb-6">
+      <h2 className="text-2xl md:text-3xl font-extrabold text-primary dark:text-white mb-3">
         Small Daily Actions Create Long-Term Recovery
       </h2>
       <div className="space-y-4 text-text-sub text-sm md:text-base leading-relaxed max-w-2xl mx-auto">

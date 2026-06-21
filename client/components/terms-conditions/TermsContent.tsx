@@ -221,8 +221,8 @@ export default function TermsContent() {
           </p>
           <p className="text-text-sub mb-1">
             Email:{' '}
-            <a className="text-primary hover:text-accent font-medium transition-colors" href="mailto:info@doctorshahalam.com">
-              info@doctorshahalam.com
+            <a className="text-primary hover:text-accent font-medium transition-colors" href="mailto:contact@doctorshahalam.com">
+              contact@doctorshahalam.com
             </a>
           </p>
           <p className="text-text-sub">

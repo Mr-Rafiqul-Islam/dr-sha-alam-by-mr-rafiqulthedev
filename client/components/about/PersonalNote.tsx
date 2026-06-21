@@ -35,12 +35,9 @@ export default function PersonalNote() {
             delay={0.2}
             className="order-1 lg:order-2"
           >
-            <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">
-              FROM DR. SHAH ALAM
-            </h2>
-            <h3 className="text-3xl font-extrabold text-text-main dark:text-white mb-6">
+            <h2 className="text-3xl font-extrabold text-text-main dark:text-white mb-6">
               A Personal Message
-            </h3>
+            </h2>
             <div className="prose dark:prose-invert text-text-sub text-lg leading-relaxed">
               <p className="mb-4">
                 &quot;Every patient has a story. Some come with pain. Some come

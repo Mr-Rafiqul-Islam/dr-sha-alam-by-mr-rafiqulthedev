@@ -163,7 +163,6 @@ export default function PatientStories() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-end lg:mb-16 mb-4 gap-6">
           <div className="max-w-2xl">
-            <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">Patient Stories</h2>
             <h3 className="text-3xl md:text-4xl font-extrabold text-primary">Real Patients. Real Recovery Stories.</h3>
             <p className="text-text-sub text-sm lg:text-base mt-2">Thousands of patients have regained confidence, movement, and quality of life through the right treatment approach.</p>
           </div>
