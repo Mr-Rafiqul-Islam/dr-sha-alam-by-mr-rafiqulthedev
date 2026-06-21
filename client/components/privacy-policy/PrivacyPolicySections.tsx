@@ -310,9 +310,9 @@ export default function PrivacyPolicySections() {
           Email:{" "}
           <a
             className="text-primary hover:text-accent font-medium transition-colors"
-            href="mailto:info@doctorshahalam.com"
+            href="mailto:contact@doctorshahalam.com"
           >
-            info@doctorshahalam.com
+            contact@doctorshahalam.com
           </a>
         </p>
         <p className="text-text-sub">
@@ -329,9 +329,7 @@ export default function PrivacyPolicySections() {
       </ScrollReveal>
 
       <ScrollReveal direction="up" className="text-center pt-4">
-        <p className="font-bold text-text-main dark:text-white mb-4">
-          Privacy Commitment
-        </p>
+        
         <blockquote className="text-lg md:text-xl text-text-main dark:text-white italic leading-relaxed max-w-2xl mx-auto mb-4">
           &quot;Your trust is important to us. We are committed to protecting
           your personal information and maintaining the confidentiality of your

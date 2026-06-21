@@ -4,14 +4,14 @@ import Link from 'next/link';
 const supportActions = [
   {
     label: 'WhatsApp Support',
-    href: 'https://wa.me/+8801312353577',
+    href: 'https://wa.me/+8801789639174',
     external: true,
     icon: (
       <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
         <i className="fab fa-whatsapp text-xl"></i>
       </div>
     ),
-    detail: '+880 1312 353 577',
+    detail: '+880 1789 639 174',
   },
   {
     label: 'Call Our Team',
@@ -34,9 +34,6 @@ export default function AfterTreatmentSupport() {
           direction="up"
           className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-800 dark:to-gray-800 rounded-3xl p-10 md:p-14 shadow-soft text-center"
         >
-          <p className="text-accent font-bold tracking-wider uppercase text-xs mb-3">
-            SUPPORT
-          </p>
           <h2 className="text-2xl md:text-3xl font-bold text-text-main dark:text-white mb-4">
             Need Help During Recovery?
           </h2>

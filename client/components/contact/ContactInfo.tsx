@@ -67,8 +67,7 @@ export default function ContactInfo() {
             </div>
             <div>
               <p className="font-bold text-lg mb-1 text-accent">Email Us</p>
-              <p className="text-gray-100 sm:text-base text-sm">info@doctorshahalam.com</p>
-              <p className="text-gray-100 sm:text-base text-sm">appointment@doctorshahalam.com</p>
+              <p className="text-gray-100 sm:text-base text-sm">contact@doctorshahalam.com</p>
             </div>
           </div>
         </div>

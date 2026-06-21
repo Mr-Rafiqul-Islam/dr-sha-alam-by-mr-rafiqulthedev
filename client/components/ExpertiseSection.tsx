@@ -67,7 +67,6 @@ export default function ExpertiseSection() {
           transition={{ duration: 0.6 }}
           className="text-center max-w-3xl mx-auto lg:mb-16 mb-8"
         >
-          <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">Our Expertise</h2>
           <h3 className="text-3xl md:text-4xl font-extrabold text-primary dark:text-white mb-4">Holistic Care for Your Recovery</h3>
           <p className="text-text-sub text-lg">We specialize in treating chronic conditions through a unique blend of orthopedic science and therapeutic yoga.</p>
         </motion.div>

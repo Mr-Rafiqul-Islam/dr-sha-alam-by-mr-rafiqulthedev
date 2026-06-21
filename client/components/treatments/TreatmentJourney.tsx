@@ -32,8 +32,7 @@ export default function TreatmentJourney() {
     <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up" className="text-center lg:mb-16 mb-8">
-          <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-3">YOUR RECOVERY JOURNEY</h2>
-          <h3 className="text-3xl font-extrabold text-primary dark:text-white">How We Help You Recover</h3>
+          <h2 className="text-3xl font-extrabold text-primary dark:text-white">How We Help You Recover</h2>
         </ScrollReveal>
         <div className="relative">
           <div className="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-gray-100 dark:bg-gray-700 -z-0"></div>

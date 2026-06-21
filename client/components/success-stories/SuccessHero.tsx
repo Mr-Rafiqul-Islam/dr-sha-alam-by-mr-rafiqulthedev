@@ -61,7 +61,7 @@ export default function SuccessHero() {
                   &quot;I never thought I&apos;d walk pain-free again.&quot;
                 </p>
                 <p className="text-gray-200 text-sm">
-                  — Shonjoy Kumar Mondol, recovered from PLID
+                  — Shonjoy Kumar Mondol
                 </p>
               </div>
             </div>

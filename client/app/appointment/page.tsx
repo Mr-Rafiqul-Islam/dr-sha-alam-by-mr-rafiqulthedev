@@ -141,12 +141,9 @@ export default function BookAppointment() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div className="space-y-8">
               <div>
-                <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-2">
-                  Visit Us
-                </h2>
-                <h3 className="text-3xl font-extrabold text-primary dark:text-white mb-6">
+                <h2 className="text-3xl font-extrabold text-primary dark:text-white mb-6">
                 TruCare Diagnostic Centre
-                </h3>
+                </h2>
                 <p className="text-text-sub text-lg leading-relaxed mb-8">
                   Our modern facility is equipped with the latest rehabilitation
                   technology. Visit us for a consultation and start your journey
@@ -238,7 +235,7 @@ export default function BookAppointment() {
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link
               className="inline-flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1"
-              href="https://wa.me/+8801312353577"
+              href="https://wa.me/+8801789639174"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -290,12 +287,9 @@ export default function BookAppointment() {
       <section className="lg:py-20 py-12 bg-white dark:bg-surface-dark">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-accent font-bold tracking-wider uppercase text-sm mb-2">
-              PATIENT QUESTIONS
-            </h2>
-            <h3 className="text-3xl font-extrabold text-primary dark:text-white">
+            <h2 className="text-3xl font-extrabold text-primary dark:text-white">
               Frequently Asked Questions
-            </h3>
+            </h2>
           </div>
           <div className="space-y-4">
             {bookingFaqs.map((faq) => (

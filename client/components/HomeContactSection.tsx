@@ -100,7 +100,7 @@ export default function HomeContactSection() {
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <label className="block text-sm font-bold text-text-main dark:text-gray-300">Name</label>
+                    <label className="block text-sm font-bold text-text-main dark:text-gray-300">Full Name</label>
                     <input
                       className="w-full px-5 py-3.5 rounded-xl bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                       placeholder="Your Name"
@@ -111,7 +111,7 @@ export default function HomeContactSection() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-sm font-bold text-text-main dark:text-gray-300">Phone</label>
+                    <label className="block text-sm font-bold text-text-main dark:text-gray-300">Phone Number</label>
                     <input
                       className="w-full px-5 py-3.5 rounded-xl bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                       placeholder="Phone Number"
@@ -191,7 +191,7 @@ export default function HomeContactSection() {
                         <br/>
                         01701-313002
                         <br/>
-                        help@doctorshahalam.com
+                        contact@doctorshahalam.com
                         </p>
                       </div>
                     </div>
