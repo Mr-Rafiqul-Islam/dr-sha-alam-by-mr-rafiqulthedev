@@ -1,6 +1,7 @@
 import {
   ActivityAction,
   ActivityEntityType,
+  DeleteRequestEntityType,
   UserRole,
   type Prisma,
 } from "@prisma/client";
@@ -8,6 +9,7 @@ import { prisma } from "../../config/db.js";
 import type { AdminRequestUser } from "../../types/express.js";
 import { buildActivitySummary } from "./activity.serializer.js";
 import type {
+  ActivityMetadata,
   LogActivityInput,
   SerializedActivityLog,
   TraceableStaffMember,
@@ -53,6 +55,77 @@ export async function logActivity(input: LogActivityInput): Promise<void> {
 export function logActivitySafe(input: LogActivityInput): void {
   void logActivity(input).catch((error) => {
     console.error("Failed to write activity log:", error);
+  });
+}
+
+function approverLabel(
+  name: string | null | undefined,
+  email: string | null | undefined,
+): string {
+  const trimmedName = name?.trim();
+  if (trimmedName) {
+    return trimmedName;
+  }
+
+  const trimmedEmail = email?.trim();
+  if (trimmedEmail) {
+    return trimmedEmail;
+  }
+
+  return "Admin";
+}
+
+export async function logApprovedDeleteActivity(input: {
+  requester: AdminRequestUser;
+  approver: { name: string | null; email: string | null };
+  entityType: DeleteRequestEntityType;
+  entityId: string;
+  entitySummary: { title: string; subtitle?: string | null };
+}): Promise<void> {
+  if (!shouldLogActivity(input.requester)) {
+    return;
+  }
+
+  const approvedByName = approverLabel(input.approver.name, input.approver.email);
+  let action: ActivityAction;
+  let activityEntityType: ActivityEntityType;
+  let metadata: ActivityMetadata;
+
+  switch (input.entityType) {
+    case DeleteRequestEntityType.APPOINTMENT:
+      action = ActivityAction.APPOINTMENT_DELETED;
+      activityEntityType = ActivityEntityType.Appointment;
+      metadata = {
+        patientName: input.entitySummary.title,
+        approvedByName,
+      };
+      break;
+    case DeleteRequestEntityType.BLOG:
+      action = ActivityAction.BLOG_DELETED;
+      activityEntityType = ActivityEntityType.Blog;
+      metadata = {
+        title: input.entitySummary.title,
+        approvedByName,
+      };
+      break;
+    case DeleteRequestEntityType.CONTACT_MESSAGE:
+      action = ActivityAction.CONTACT_MESSAGE_DELETED;
+      activityEntityType = ActivityEntityType.ContactMessage;
+      metadata = {
+        senderName: input.entitySummary.subtitle ?? input.entitySummary.title,
+        approvedByName,
+      };
+      break;
+    default:
+      return;
+  }
+
+  await logActivity({
+    actor: input.requester,
+    action,
+    entityType: activityEntityType,
+    entityId: input.entityId,
+    metadata,
   });
 }
 

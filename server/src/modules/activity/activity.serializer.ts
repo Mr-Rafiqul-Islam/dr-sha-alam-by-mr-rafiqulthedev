@@ -27,6 +27,15 @@ function formatDate(value: unknown): string {
   return String(value ?? "");
 }
 
+function deleteApprovalSuffix(metadata: ActivityMetadata): string {
+  const approvedByName = metadata.approvedByName;
+  if (typeof approvedByName === "string" && approvedByName.trim()) {
+    return ` (approved by ${approvedByName.trim()})`;
+  }
+
+  return "";
+}
+
 export function buildActivitySummary(
   action: ActivityAction,
   actorName: string | null | undefined,
@@ -48,7 +57,7 @@ export function buildActivitySummary(
     }
     case "APPOINTMENT_DELETED": {
       const patientName = metadata.patientName ? String(metadata.patientName) : "a patient";
-      return `${who} deleted appointment for ${patientName}`;
+      return `${who} deleted appointment for ${patientName}${deleteApprovalSuffix(metadata)}`;
     }
     case "CONTACT_MESSAGE_STATUS_CHANGED": {
       const senderName = metadata.senderName ? String(metadata.senderName) : "a contact";
@@ -57,7 +66,7 @@ export function buildActivitySummary(
     }
     case "CONTACT_MESSAGE_DELETED": {
       const senderName = metadata.senderName ? String(metadata.senderName) : "a contact";
-      return `${who} deleted contact message from ${senderName}`;
+      return `${who} deleted contact message from ${senderName}${deleteApprovalSuffix(metadata)}`;
     }
     case "BLOG_CREATED": {
       const title = metadata.title ? String(metadata.title) : "an article";
@@ -69,7 +78,7 @@ export function buildActivitySummary(
     }
     case "BLOG_DELETED": {
       const title = metadata.title ? String(metadata.title) : "an article";
-      return `${who} deleted article "${title}"`;
+      return `${who} deleted article "${title}"${deleteApprovalSuffix(metadata)}`;
     }
     case "BLOG_FEATURED_CHANGED": {
       const title = metadata.title ? String(metadata.title) : "an article";

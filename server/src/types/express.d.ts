@@ -15,6 +15,7 @@ declare global {
 
     interface Locals {
       activityLog?: import("../modules/activity/activity.middleware.js").ActivityRecordInput | null;
+      activityLogged?: boolean;
     }
   }
 }

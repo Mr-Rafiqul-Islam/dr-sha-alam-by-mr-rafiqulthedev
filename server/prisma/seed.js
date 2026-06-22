@@ -46,11 +46,6 @@ const staffUsersToSeed = [
     role: UserRole.SUPPORT,
   },
   {
-    email: "workmuhammadirakib@gmail.com",
-    name: "Muhammad Irfan",
-    role: UserRole.SUPPORT,
-  },
-  {
     email: "saymaoff9570@gmail.com",
     name: "Sayma",
     role: UserRole.SUPPORT,
@@ -63,6 +58,11 @@ const staffUsersToSeed = [
   {
     email: "supremedignity97@gmail.com",
     name: "Abdullah Abir",
+    role: UserRole.EDITOR,
+  },
+  {
+    email: "workmuhammadirakib@gmail.com",
+    name: "Muhammad Irfan",
     role: UserRole.EDITOR,
   },
   {

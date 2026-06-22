@@ -3,6 +3,7 @@ import {
   DeleteRequestStatus,
 } from "@prisma/client";
 import { prisma } from "../../config/db.js";
+import { logApprovedDeleteActivity } from "../activity/activity.service.js";
 import {
   canDeleteImmediately,
   DeleteRequestError,
@@ -168,7 +169,18 @@ export async function approveDeleteRequest(id: string, reviewedById: string) {
     throw new DeleteRequestError("Delete request is no longer pending", 409);
   }
 
-  await assertEntityExists(request.entityType, request.entityId);
+  const [entitySummary, requester, approver] = await Promise.all([
+    getEntitySummary(request.entityType, request.entityId),
+    prisma.user.findUnique({ where: { id: request.requestedById } }),
+    prisma.user.findUnique({
+      where: { id: reviewedById },
+      select: { name: true, email: true },
+    }),
+  ]);
+
+  if (!entitySummary) {
+    throw new DeleteRequestError("Entity not found", 404);
+  }
 
   await prisma.$transaction(async (tx) => {
     switch (request.entityType) {
@@ -192,6 +204,19 @@ export async function approveDeleteRequest(id: string, reviewedById: string) {
       },
     });
   });
+
+  if (requester) {
+    const { password: _password, ...requesterWithoutPassword } = requester;
+    void logApprovedDeleteActivity({
+      requester: requesterWithoutPassword,
+      approver: approver ?? { name: null, email: null },
+      entityType: request.entityType,
+      entityId: request.entityId,
+      entitySummary,
+    }).catch((error) => {
+      console.error("Failed to write approved delete activity log:", error);
+    });
+  }
 
   return request;
 }

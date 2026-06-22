@@ -64,12 +64,6 @@ export function inferActivityFromRequest(
         },
       };
     }
-    case "DELETE /api/v1/admin/appointments/:id":
-      return {
-        action: ActivityAction.APPOINTMENT_DELETED,
-        entityType: ActivityEntityType.Appointment,
-        entityId: id,
-      };
     case "PATCH /api/v1/admin/contact-messages/:id/status": {
       const message = getNestedRecord(payload, "data");
       return {
@@ -82,12 +76,6 @@ export function inferActivityFromRequest(
         },
       };
     }
-    case "DELETE /api/v1/admin/contact-messages/:id":
-      return {
-        action: ActivityAction.CONTACT_MESSAGE_DELETED,
-        entityType: ActivityEntityType.ContactMessage,
-        entityId: id,
-      };
     case "POST /api/v1/admin/blogs/":
     case "POST /api/v1/admin/blogs": {
       const blog = getNestedRecord(payload, "data");
@@ -107,12 +95,6 @@ export function inferActivityFromRequest(
         metadata: { title: blog?.title },
       };
     }
-    case "DELETE /api/v1/admin/blogs/:id":
-      return {
-        action: ActivityAction.BLOG_DELETED,
-        entityType: ActivityEntityType.Blog,
-        entityId: id,
-      };
     case "PATCH /api/v1/admin/blogs/:id/featured": {
       const blog = getNestedRecord(payload, "data");
       return {
