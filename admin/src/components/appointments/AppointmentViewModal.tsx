@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { Avatar, Badge, Button, Modal } from "../common";
+import { Badge, Button, Modal } from "../common";
 import type { Appointment } from "../../types/appointment";
 import {
   formatAppointmentDateTime,
   formatNullable,
-  getInitials,
   getPaymentStatusBadgeVariant,
   getPaymentStatusLabel,
   getSiteRefLabel,
@@ -71,8 +70,11 @@ export function AppointmentViewModal({
     >
       {appointment ? (
         <div className="flex flex-col gap-6">
-          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-outline-variant/30 bg-surface-container-low px-4 py-3">
-            <Avatar initials={getInitials(appointment.name)} size="md" />
+          <div className="flex flex-wrap items-center gap-5 rounded-lg border border-outline-variant/30 bg-surface-container-low px-4 py-3">
+            <div className="flex items-center gap-3">
+              <p className="text-label-lg text-on-surface-variant">Serial No:</p>
+              <p className="text-body-md font-semibold text-on-surface">#0{appointment.serialNumber}</p>
+            </div>
             <div className="min-w-0 flex-1">
               <p className="text-body-lg font-semibold text-on-surface">
                 {appointment.name}
