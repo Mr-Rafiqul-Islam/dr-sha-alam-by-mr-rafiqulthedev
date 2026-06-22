@@ -411,7 +411,6 @@ export function AppointmentsPage() {
                     <TableHead>Patient Name</TableHead>
                     <TableHead>Contact Info</TableHead>
                     <TableHead>Date &amp; Time</TableHead>
-                    <TableHead>Problems</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Payment Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -430,16 +429,10 @@ export function AppointmentsPage() {
                   ) : (
                     paginatedAppointments.map((appointment) => (
                       <TableRow key={appointment.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar
-                              initials={getInitials(appointment.name)}
-                              size="sm"
-                            />
-                            <span className="text-body-md font-medium text-on-surface">
-                              {appointment.name}
-                            </span>
-                          </div>
+                        <TableCell className="px-3! !md:px-0">
+                          <span className="text-sm font-medium text-on-surface">
+                            {appointment.name}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
@@ -463,11 +456,6 @@ export function AppointmentsPage() {
                             />
                             {formatAppointmentDateTime(appointment)}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <span className="line-clamp-1 block max-w-[200px] text-body-md text-on-surface-variant">
-                            {appointment.problem ?? "—"}
-                          </span>
                         </TableCell>
                         <TableCell>
                           <Badge

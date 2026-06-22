@@ -137,7 +137,7 @@ export function AppointmentForm({
 
       placeholder: "Enter patient's name",
     },
-
+    
     {
       name: "phone",
 
@@ -146,6 +146,34 @@ export function AppointmentForm({
       type: "tel",
 
       placeholder: "017XXXXXXXX",
+    },
+    
+    {
+      name: "preferredDate",
+
+      label: "Preferred Date *",
+
+      type: "date",
+
+      useAppointmentSchedules: true,
+
+      closedDates,
+
+      schedulesLoading,
+
+      schedulesError: schedulesError
+        ? "Could not load chamber availability"
+        : null,
+    },
+
+    {
+      name: "preferredTime",
+
+      label: "Preferred Time *",
+
+      type: "select",
+
+      options: timeSlotOptions,
     },
 
     {
@@ -178,33 +206,6 @@ export function AppointmentForm({
       placeholder: "Briefly describe the symptoms or condition...",
     },
 
-    {
-      name: "preferredDate",
-
-      label: "Preferred Date *",
-
-      type: "date",
-
-      useAppointmentSchedules: true,
-
-      closedDates,
-
-      schedulesLoading,
-
-      schedulesError: schedulesError
-        ? "Could not load chamber availability"
-        : null,
-    },
-
-    {
-      name: "preferredTime",
-
-      label: "Preferred Time *",
-
-      type: "select",
-
-      options: timeSlotOptions,
-    },
   ];
 
   if (slotDefaultsLoading || schedulesLoading) {

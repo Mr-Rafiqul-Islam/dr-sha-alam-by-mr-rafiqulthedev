@@ -20,7 +20,7 @@ function LayoutContent() {
       >
         <TopBar />
         <main className="flex-1 p-4 md:p-6 lg:p-margin-desktop">
-          <div className="max-w-container-max mx-auto w-full min-w-0">
+          <div className="mx-auto w-full min-w-0">
             <Suspense fallback={<PageLoadingFallback />}>
               <Outlet />
             </Suspense>
