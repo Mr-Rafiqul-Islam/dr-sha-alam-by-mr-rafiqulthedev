@@ -2,6 +2,7 @@ import Image from 'next/image';
 import ScrollReveal from '@/components/ScrollReveal';
 import Link from 'next/link';
 import { formatBlogDate, getPrimaryCategory } from '@/lib/utils';
+import { getBlogPath } from '@/lib/blog';
 import type { PublicBlog } from '@/types/blog';
 
 interface LatestArticlesProps {
@@ -39,7 +40,7 @@ export default function LatestArticles({ blogs, hasFilters = false }: LatestArti
                     </div>
                     <h4 className="text-xl font-bold text-primary mb-3 leading-tight group-hover:underline decoration-2 underline-offset-2">{blog.title}</h4>
                     <p className="text-text-sub text-sm mb-6 line-clamp-3 leading-relaxed">{blog.shortDesc}</p>
-                    <Link href={`/blog/${blog.slug}`} className="mt-auto inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors gap-1">
+                    <Link href={getBlogPath(blog.slug)} className="mt-auto inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors gap-1">
                       Read More <span className="material-symbols-outlined text-sm">arrow_forward</span>
                     </Link>
                   </div>
