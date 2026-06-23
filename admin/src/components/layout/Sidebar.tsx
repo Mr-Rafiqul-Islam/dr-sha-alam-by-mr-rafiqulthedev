@@ -28,6 +28,7 @@ function NavItemLink({
     <li>
       <NavLink
         to={path}
+        end={path === "/dashboard"}
         title={collapsed ? label : undefined}
         onClick={onNavigate}
         className={({ isActive }) =>

@@ -9,6 +9,8 @@ export type AppointmentFiltersProps = {
   onDateChange: (value: string) => void;
   onTodayToggle: () => void;
   onClear: () => void;
+  onRefresh: () => void;
+  isRefreshing?: boolean;
 };
 
 export function AppointmentFilters({
@@ -19,6 +21,8 @@ export function AppointmentFilters({
   onDateChange,
   onTodayToggle,
   onClear,
+  onRefresh,
+  isRefreshing = false,
 }: AppointmentFiltersProps) {
   const hasActiveFilters = search.trim() !== "" || date !== "" || todayOnly;
 
@@ -62,16 +66,33 @@ export function AppointmentFilters({
         Today&apos;s Appointments
       </Button>
 
-      <Button
-        type="button"
-        variant="ghost"
-        leftIcon={<Icon name="close" size={18} />}
-        onClick={onClear}
-        disabled={!hasActiveFilters}
-        className="shrink-0 justify-center border border-outline-variant bg-surface-container-lowest px-4 py-3 text-on-surface-variant hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Clear Filters
-      </Button>
+      <div className="flex shrink-0 items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          leftIcon={<Icon name="close" size={18} />}
+          onClick={onClear}
+          disabled={!hasActiveFilters}
+          className="justify-center border border-outline-variant bg-surface-container-lowest px-4 py-3 text-on-surface-variant hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Clear Filters
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          aria-label="Refresh appointments"
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          className="border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Icon
+            name="refresh"
+            size={18}
+            className={isRefreshing ? "animate-spin" : undefined}
+          />
+        </Button>
+      </div>
     </div>
   );
 }

@@ -177,16 +177,6 @@ export function AppointmentForm({
     },
 
     {
-      name: "email",
-
-      label: "Email Address",
-
-      type: "email",
-
-      placeholder: "email@example.com",
-    },
-
-    {
       name: "homeAddress",
 
       label: "Home Address *",
@@ -194,6 +184,16 @@ export function AppointmentForm({
       type: "text",
 
       placeholder: "Dhaka, Bangladesh",
+    },
+
+    {
+      name: "email",
+
+      label: "Email Address",
+
+      type: "email",
+
+      placeholder: "email@example.com",
     },
 
     {

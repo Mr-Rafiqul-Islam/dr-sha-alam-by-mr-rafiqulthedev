@@ -162,8 +162,14 @@ export function AppointmentsPage() {
     "",
   );
 
-  const { data: appointments = [], isLoading, isError, error } =
-    useGetAppointmentsQuery();
+  const {
+    data: appointments = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useGetAppointmentsQuery();
   const [updateStatus, { isLoading: isUpdating }] =
     useUpdateAppointmentStatusMutation();
   const [deleteAppointment, { isLoading: isDeleting }] =
@@ -255,6 +261,14 @@ export function AppointmentsPage() {
     setCurrentPage(1);
   };
 
+  const handleRefresh = async () => {
+    try {
+      await refetch().unwrap();
+    } catch {
+      console.error("Failed to refresh appointments");
+    }
+  };
+
   const handleExportCsv = () => {
     if (filteredAppointments.length === 0) {
       toast.info("No appointments to export");
@@ -307,6 +321,8 @@ export function AppointmentsPage() {
           }}
           onTodayToggle={handleTodayToggle}
           onClear={handleClearFilters}
+          onRefresh={handleRefresh}
+          isRefreshing={isFetching}
         />
       )}
 
@@ -430,13 +446,13 @@ export function AppointmentsPage() {
                     paginatedAppointments.map((appointment) => (
                       <TableRow key={appointment.id}>
                         <TableCell className="px-3! !md:px-0">
-                          <span className="text-sm font-medium text-on-surface">
+                          <span className="text-xs font-medium text-on-surface">
                             {appointment.name}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="text-body-md text-on-surface">
+                            <span className="text-sm font-medium text-on-surface">
                               {appointment.phone}
                             </span>
                             <span className="text-label-sm text-on-surface-variant">
