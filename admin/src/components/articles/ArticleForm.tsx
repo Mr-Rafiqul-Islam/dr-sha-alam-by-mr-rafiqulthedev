@@ -1,13 +1,11 @@
 import {
   forwardRef,
-  useEffect,
   useImperativeHandle,
 } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { BlogFormData } from "../../types/blog";
-import { slugify } from "../../utils/blog";
 import { cn } from "../../lib/cn";
 import { BlogImageUpload } from "./BlogImageUpload";
 import { CollapsibleSection } from "./CollapsibleSection";
@@ -16,7 +14,6 @@ import { ToggleSwitch } from "./ToggleSwitch";
 
 const blogFormSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
-  slug: z.string().trim().min(1, "Slug is required"),
   shortDesc: z.string().trim().min(1, "Short description is required"),
   content: z
     .string()
@@ -76,21 +73,11 @@ export const ArticleForm = forwardRef<ArticleFormRef, ArticleFormProps>(
       control,
       register,
       handleSubmit,
-      watch,
-      setValue,
       formState: { errors },
     } = useForm<BlogFormData>({
       resolver: zodResolver(blogFormSchema) as Resolver<BlogFormData>,
       defaultValues,
     });
-
-    const title = watch("title");
-
-    useEffect(() => {
-      if (title) {
-        setValue("slug", slugify(title));
-      }
-    }, [title, setValue]);
 
     useImperativeHandle(ref, () => ({
       submitAsDraft: () => {

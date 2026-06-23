@@ -60,7 +60,6 @@ export type CreateBlogPayload = {
   content: string;
   category: string;
   author: string;
-  slug: string;
   image: string;
   imagePublicId: string;
   published?: boolean;
@@ -72,7 +71,6 @@ export type UpdateBlogPayload = Partial<CreateBlogPayload>;
 
 export type BlogFormData = {
   title: string;
-  slug: string;
   shortDesc: string;
   content: string;
   category: string;

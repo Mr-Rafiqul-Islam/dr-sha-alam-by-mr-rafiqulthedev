@@ -12,6 +12,7 @@ import {
 } from "../../../modules/activity/activity.service.js";
 import { recordActivity } from "../../../modules/activity/activity.middleware.js";
 import { routeParamString } from "../../../utils/express-params.js";
+import { generateUniqueSlug } from "../../../modules/blogs/generate-unique-slug.js";
 import { parseCommaSeparatedField } from "../../../modules/blogs/parse-comma-separated.js";
 import {
   canDeleteImmediately,
@@ -158,7 +159,6 @@ export async function createBlog(req: Request, res: Response) {
       ["title", "title"],
       ["shortDesc", "shortDesc"],
       ["content", "content"],
-      ["slug", "slug"],
       ["image", "image"],
       ["imagePublicId", "imagePublicId"],
     ];
@@ -237,13 +237,15 @@ export async function createBlog(req: Request, res: Response) {
       views = v;
     }
 
+    const slug = await generateUniqueSlug(trimmed.title);
+
     const createData: Prisma.BlogCreateInput = {
       title: trimmed.title,
       shortDesc: trimmed.shortDesc,
       content: trimmed.content,
       category: categoryParsed.values,
       author: authorParsed.values,
-      slug: trimmed.slug.trim().toLowerCase(),
+      slug,
       image: trimmed.image,
       imagePublicId: trimmed.imagePublicId,
       isFeatured: false,
@@ -337,6 +339,12 @@ export async function updateBlog(req: Request, res: Response) {
       (data as Record<string, string>)[field] = v;
     }
 
+    if ("title" in body && body.title !== undefined) {
+      const raw = body.title;
+      const v = raw === null ? "" : String(raw).trim();
+      data.slug = await generateUniqueSlug(v, id);
+    }
+
     if ("category" in body) {
       const categoryParsed = parseCommaSeparatedField(body.category, "category");
       if (!categoryParsed.ok) {
@@ -354,16 +362,10 @@ export async function updateBlog(req: Request, res: Response) {
     }
 
     if ("slug" in body) {
-      const raw = body.slug;
-      if (raw !== undefined) {
-        const v = raw === null ? "" : String(raw).trim();
-        if (!v.length) {
-          return res
-            .status(400)
-            .json({ success: false, message: "slug cannot be empty" });
-        }
-        data.slug = v.toLowerCase();
-      }
+      return res.status(400).json({
+        success: false,
+        message: "Slug is generated automatically and cannot be set manually",
+      });
     }
 
     if ("isFeatured" in body) {
