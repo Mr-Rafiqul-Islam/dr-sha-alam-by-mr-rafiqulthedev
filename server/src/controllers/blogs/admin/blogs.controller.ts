@@ -12,7 +12,10 @@ import {
 } from "../../../modules/activity/activity.service.js";
 import { recordActivity } from "../../../modules/activity/activity.middleware.js";
 import { routeParamString } from "../../../utils/express-params.js";
-import { generateUniqueSlug } from "../../../modules/blogs/generate-unique-slug.js";
+import {
+  generateUniqueSlug,
+  handleSlugGenerationError,
+} from "../../../modules/blogs/generate-unique-slug.js";
 import { parseCommaSeparatedField } from "../../../modules/blogs/parse-comma-separated.js";
 import {
   canDeleteImmediately,
@@ -281,6 +284,7 @@ export async function createBlog(req: Request, res: Response) {
 
     res.status(201).json({ success: true, data: created });
   } catch (err) {
+    if (handleSlugGenerationError(res, err)) return;
     console.error(err);
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === "P2002") {
@@ -447,6 +451,7 @@ export async function updateBlog(req: Request, res: Response) {
 
     res.json({ success: true, data: updated });
   } catch (err) {
+    if (handleSlugGenerationError(res, err)) return;
     console.error(err);
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === "P2025") {
