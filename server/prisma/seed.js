@@ -76,7 +76,7 @@ const staffUsersToSeed = [
     role: UserRole.EDITOR,
   },
   {
-    email: "Mediabuyermahir@gmail.com",
+    email: "mediabuyermahir@gmail.com",
     name: "Mahir Sahariar",
     role: UserRole.EDITOR,
   },
