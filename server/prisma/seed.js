@@ -15,9 +15,19 @@ const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 /** Local-only defaults per role — override via env vars in any shared or production environment. */
 const ROLE_SEED_PASSWORDS = {
   [UserRole.SUPER_ADMIN]: process.env.SUPER_ADMIN_SEED_PASSWORD || "SuperAdmin@Dev123!",
-  [UserRole.EDITOR]:      process.env.EDITOR_SEED_PASSWORD      || "Editor@Dev123!",
-  [UserRole.SUPPORT]:     process.env.SUPPORT_SEED_PASSWORD     || "Support@Dev123!",
+  [UserRole.EDITOR]: process.env.EDITOR_SEED_PASSWORD || "Editor@Dev123!",
+  [UserRole.SUPPORT]: process.env.SUPPORT_SEED_PASSWORD || "Support@Dev123!",
 };
+
+const SEED_STAFF_ROLES = [UserRole.SUPER_ADMIN, UserRole.EDITOR, UserRole.SUPPORT];
+
+function seedPasswordPlainForRole(role) {
+  const plain = ROLE_SEED_PASSWORDS[role];
+  if (!plain) {
+    throw new Error(`No seed password configured for role: ${role}`);
+  }
+  return plain;
+}
 
 const staffUsersToSeed = [
   {
@@ -146,27 +156,41 @@ const DEFAULT_DOCTOR = {
 
 async function main() {
   const roleHashes = {};
-  for (const [role, plain] of Object.entries(ROLE_SEED_PASSWORDS)) {
-    roleHashes[role] = await bcrypt.hash(plain, 10);
+  for (const role of SEED_STAFF_ROLES) {
+    roleHashes[role] = await bcrypt.hash(seedPasswordPlainForRole(role), 10);
   }
 
   for (const staffUser of staffUsersToSeed) {
+    const passwordHash = roleHashes[staffUser.role];
+    if (!passwordHash) {
+      throw new Error(
+        `Missing seed password hash for ${staffUser.email} [${staffUser.role}]`,
+      );
+    }
+
     const existing = await prisma.user.findUnique({
       where: { email: staffUser.email },
     });
+
+    const userData = {
+      name: staffUser.name,
+      role: staffUser.role,
+      password: passwordHash,
+    };
+
     if (existing) {
-      console.log(
-        `Seed skip (exists): ${staffUser.email} [${existing.role}]`,
-      );
+      await prisma.user.update({
+        where: { email: staffUser.email },
+        data: userData,
+      });
+      console.log(`Seed updated ${staffUser.role}: ${staffUser.email}`);
       continue;
     }
 
     await prisma.user.create({
       data: {
         email: staffUser.email,
-        name: staffUser.name,
-        password: roleHashes[staffUser.role],
-        role: staffUser.role,
+        ...userData,
       },
     });
     console.log(`Seeded ${staffUser.role}: ${staffUser.email}`);
