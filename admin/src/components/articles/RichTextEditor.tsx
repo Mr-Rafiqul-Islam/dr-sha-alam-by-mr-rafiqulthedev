@@ -2,8 +2,8 @@
 import { Editor } from "@tinymce/tinymce-react";
 // import { TINYMCE_API_KEY } from "../../config/env";
 
-/** Same family as `index.css` / `index.html` — repeated here so the editor iframe can load it. */
-const RTE_GOOGLE_FONTS_IMPORT = String.raw`@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");`;
+/** Loaded inside the editor iframe so font picks render correctly in content. */
+const RTE_GOOGLE_FONTS_IMPORT = String.raw`@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Anek+Bangla:wght@400;500;600;700&display=swap");`;
 
 type RichTextEditorProps = {
   onInit?: (...args: any[]) => void;
@@ -77,7 +77,7 @@ export function RichTextEditor({
             body { font-family: Inter, sans-serif; font-size: 16px; color: #181c1f; }`,
 
           font_family_formats:
-            "Inter=Inter, sans-serif; Arial=arial,helvetica,sans-serif; Georgia=georgia,palatino,serif; Times New Roman=times new roman,times,serif; Courier New=courier new,courier,monospace",
+            "Inter=Inter, sans-serif; Montserrat=Montserrat, sans-serif; Anek Bangla='Anek Bangla', sans-serif; Arial=arial,helvetica,sans-serif; Georgia=georgia,palatino,serif; Times New Roman=times new roman,times,serif; Courier New=courier new,courier,monospace",
 
           font_size_formats:
             "8px 10px 12px 14px 16px 18px 20px 22px 24px 26px 30px 32px 36px 38px",
