@@ -69,16 +69,6 @@ export function filterBlogs(blogs: Blog[], filters: BlogFilterState): Blog[] {
   });
 }
 
-export function slugify(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
 export function formatBlogDate(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleDateString("en-US", {
@@ -161,7 +151,6 @@ export function blogToFormData(blog: Blog): BlogFormData {
 
   return {
     title: blog.title,
-    slug: blog.slug,
     shortDesc: blog.shortDesc,
     content: blog.content,
     category: blog.category.join(", "),
@@ -194,7 +183,6 @@ export function toCreateBlogPayload(
     content: data.content,
     category: data.category.trim(),
     author: data.author.trim(),
-    slug: slugify(data.slug || data.title),
     image: data.image,
     imagePublicId: data.imagePublicId,
     published,

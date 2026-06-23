@@ -50,8 +50,6 @@ const EMPTY_FORM: BlogFormData = {
 
   title: "",
 
-  slug: "",
-
   shortDesc: "",
 
   content: "",
