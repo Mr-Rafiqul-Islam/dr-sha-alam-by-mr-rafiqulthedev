@@ -20,6 +20,34 @@ export function buildBlogFilterUrl(
   return query ? `/blog?${query}` : "/blog";
 }
 
+export function normalizeBlogSlug(slug: string): string {
+  let value = slug.trim();
+  for (let i = 0; i < 3; i++) {
+    if (!/%[0-9A-Fa-f]{2}/.test(value)) {
+      break;
+    }
+    try {
+      const decoded = decodeURIComponent(value.replace(/\+/g, " "));
+      if (decoded === value) {
+        break;
+      }
+      value = decoded;
+    } catch {
+      break;
+    }
+  }
+  return value.toLowerCase();
+}
+
+export function getBlogPath(slug: string): string {
+  return `/blog/${encodeURI(normalizeBlogSlug(slug))}`;
+}
+
+export function getBlogUrl(slug: string, baseUrl?: string): string {
+  const base = baseUrl ?? process.env.NEXT_PUBLIC_FRONTEND_URL ?? "";
+  return `${base}${getBlogPath(slug)}`;
+}
+
 export function extractBlogCategories(blogs: PublicBlog[]): string[] {
   const categorySet = new Set<string>();
 

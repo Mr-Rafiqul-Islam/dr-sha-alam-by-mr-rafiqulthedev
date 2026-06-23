@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { getBlogUrl } from '@/lib/blog';
 import ShareArticle from './ShareArticle';
 
 interface AuthorInfo {
@@ -16,7 +17,7 @@ interface BlogContentProps {
 }
 
 export default function BlogContent({ imageUrl, content, author, slug }: BlogContentProps) {
-  const url = `${process.env.NEXT_PUBLIC_FRONTEND_URL}/blog/${slug}`;
+  const url = getBlogUrl(slug);
   return (
     <div className="lg:w-2/3">
       <div className="rounded-3xl overflow-hidden shadow-sm mb-10 w-full aspect-video relative">

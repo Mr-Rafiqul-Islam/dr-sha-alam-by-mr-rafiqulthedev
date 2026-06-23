@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ScrollReveal from '@/components/ScrollReveal';
 import { formatBlogDate, getPrimaryCategory } from '@/lib/utils';
+import { getBlogPath } from '@/lib/blog';
 import type { PublicBlog } from '@/types/blog';
 
 interface HomeBlogSectionProps {
@@ -36,7 +37,7 @@ export default function HomeBlogSection({ blogs }: HomeBlogSectionProps) {
                   </div>
                   <h4 className="text-xl font-bold text-text-main dark:text-white mb-3 group-hover:text-primary transition-colors leading-tight">{blog.title}</h4>
                   <p className="text-text-sub text-sm mb-6 line-clamp-3 leading-relaxed">{blog.shortDesc}</p>
-                  <Link className="mt-auto inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors gap-1" href={`/blog/${blog.slug}`}>
+                  <Link className="mt-auto inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors gap-1" href={getBlogPath(blog.slug)}>
                     Read Article <span className="material-symbols-outlined text-sm">arrow_outward</span>
                   </Link>
                 </div>

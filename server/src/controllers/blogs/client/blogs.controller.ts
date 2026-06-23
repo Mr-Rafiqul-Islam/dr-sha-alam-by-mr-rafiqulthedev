@@ -7,6 +7,7 @@ import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
 import { routeParamString } from "../../../utils/express-params.js";
+import { decodeRouteParam } from "../../../utils/decode-route-param.js";
 import { toPublicBlog } from "../../../modules/blogs/blogs.mapper.js";
 
 const DEFAULT_LIMIT = 50;
@@ -122,7 +123,8 @@ export async function listBlogs(req: Request, res: Response) {
 export async function getBlogBySlug(req: Request, res: Response) {
   try {
     const slugRaw = routeParamString(req.params.slug);
-    const slug = slugRaw != null ? slugRaw.trim().toLowerCase() : "";
+    const slug =
+      slugRaw != null ? decodeRouteParam(slugRaw).toLowerCase() : "";
     if (!slug) {
       return res.status(400).json({
         success: false,

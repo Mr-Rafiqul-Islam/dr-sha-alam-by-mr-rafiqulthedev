@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import ScrollReveal from '@/components/ScrollReveal';
 import Link from 'next/link';
+import { getBlogPath } from '@/lib/blog';
 import { getPrimaryCategory } from '@/lib/utils';
 import type { PublicBlog } from '@/types/blog';
 
@@ -33,7 +34,7 @@ export default function FeaturedArticle({ blog }: FeaturedArticleProps) {
             <p className="text-text-sub dark:text-gray-400 mb-8 leading-relaxed line-clamp-3">
               {blog.shortDesc}
             </p>
-            <Link href={`/blog/${blog.slug}`} className="self-start bg-accent hover:bg-accent-dark text-white font-bold py-3 px-8 rounded-full transition-all shadow-md hover:shadow-lg flex items-center gap-2">
+            <Link href={getBlogPath(blog.slug)} className="self-start bg-accent hover:bg-accent-dark text-white font-bold py-3 px-8 rounded-full transition-all shadow-md hover:shadow-lg flex items-center gap-2">
               Read Full Article <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </Link>
           </div>

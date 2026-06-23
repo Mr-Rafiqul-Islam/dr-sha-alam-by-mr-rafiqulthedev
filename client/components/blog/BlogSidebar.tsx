@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import type { BlogTocItem } from '@/lib/blog';
+import { getBlogPath, type BlogTocItem } from '@/lib/blog';
 import { getPrimaryCategory } from '@/lib/utils';
 import type { PublicBlog } from '@/types/blog';
 
@@ -40,7 +40,7 @@ export default function BlogSidebar({ toc, relatedArticles }: BlogSidebarProps) 
           </h3>
           <div className="space-y-6">
             {relatedArticles.map((article) => (
-              <Link key={article.id} href={`/blog/${article.slug}`} className="group flex gap-4 items-start">
+              <Link key={article.id} href={getBlogPath(article.slug)} className="group flex gap-4 items-start">
                 <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative">
                   <Image alt={article.title} className="object-cover group-hover:scale-110 transition-transform duration-500" src={article.image} fill sizes="80px" />
                 </div>

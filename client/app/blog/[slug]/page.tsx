@@ -7,6 +7,7 @@ import BlogDetailsCallToAction from '@/components/blog/BlogDetailsCallToAction';
 import {
   estimateReadTime,
   getRelatedBlogs,
+  normalizeBlogSlug,
   processBlogContent,
 } from '@/lib/blog';
 import { formatBlogDate, getPrimaryCategory } from '@/lib/utils';
@@ -33,8 +34,8 @@ export async function generateMetadata({
   params,
 }: BlogDetailsPageProps): Promise<Metadata> {
   try {
-    const { slug } = await params;
-    const blog = await loadBlog(slug);
+    const { slug: rawSlug } = await params;
+    const blog = await loadBlog(normalizeBlogSlug(rawSlug));
 
     return {
       title: blog.meta?.title ?? blog.title,
@@ -49,7 +50,8 @@ export async function generateMetadata({
 }
 
 export default async function BlogDetailsPage({ params }: BlogDetailsPageProps) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = normalizeBlogSlug(rawSlug);
 
   let blog: PublicBlog;
   try {
@@ -91,7 +93,7 @@ export default async function BlogDetailsPage({ params }: BlogDetailsPageProps) 
                 image: FALLBACK_AUTHOR_IMAGE,
                 bio: DEFAULT_AUTHOR_BIO,
               }}
-              slug={slug}
+              slug={blog.slug}
             />
             <BlogSidebar toc={toc} relatedArticles={relatedBlogs} />
           </div>
