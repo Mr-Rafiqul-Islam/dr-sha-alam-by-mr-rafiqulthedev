@@ -1,6 +1,6 @@
 import { Button, Icon } from "../common";
 import { useSidebar } from "../../contexts/SidebarContext";
-import logo from "../../../public/favicon.svg";
+import logo from "/logo-fav.png";
 
 export function TopBar() {
   const { isCollapsed, openMobile, toggleCollapsed } = useSidebar();
@@ -35,7 +35,7 @@ export function TopBar() {
           <Icon name="notifications" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full" />
         </Button> */}
-        <img src={logo} alt="Dr. Shah Alam" className="w-8 h-8 object-contain" />
+        <img src={logo} alt="Dr. Shah Alam" className="w-12 h-12 object-contain" />
       </div>
     </header>
   );
