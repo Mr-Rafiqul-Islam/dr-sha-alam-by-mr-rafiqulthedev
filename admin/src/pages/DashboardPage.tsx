@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityFeedList } from "../components/dashboard/ActivityFeedList";
 import { StaffActivityPicker } from "../components/dashboard/StaffActivityPicker";
 import { Icon, PageHeader, StatCard } from "../components/common";
@@ -201,8 +201,34 @@ function ActivityChart({ data }: { data: ActivityPoint[] }) {
   );
 }
 
+const ACTIVITY_PAGE_SIZE = 10;
+
 export function DashboardPage() {
   const [selectedActorId, setSelectedActorId] = useState<string | null>(null);
+  const [activityPageIndex, setActivityPageIndex] = useState(0);
+  const [activityPageCursors, setActivityPageCursors] = useState<
+    (string | undefined)[]
+  >([undefined]);
+  const activityFeedSectionRef = useRef<HTMLElement>(null);
+  const isFirstActivityPage = useRef(true);
+
+  const handleSelectActor = (actorId: string | null) => {
+    setSelectedActorId(actorId);
+    setActivityPageIndex(0);
+    setActivityPageCursors([undefined]);
+  };
+
+  useEffect(() => {
+    if (isFirstActivityPage.current) {
+      isFirstActivityPage.current = false;
+      return;
+    }
+
+    activityFeedSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [activityPageIndex]);
 
   const {
     data: appointments = [],
@@ -223,15 +249,37 @@ export function DashboardPage() {
     data: traceableStaff = [],
     isLoading: staffLoading,
   } = useGetTraceableStaffQuery();
+
+  const activityCursor = activityPageCursors[activityPageIndex];
   const {
     data: activityFeed,
     isLoading: activityFeedLoading,
+    isFetching: activityFeedFetching,
     isError: activityFeedError,
-  } = useGetActivityFeedQuery(
-    selectedActorId ? { actorId: selectedActorId, limit: 20 } : { limit: 20 },
-  );
+  } = useGetActivityFeedQuery({
+    ...(selectedActorId ? { actorId: selectedActorId } : {}),
+    limit: ACTIVITY_PAGE_SIZE,
+    ...(activityCursor ? { cursor: activityCursor } : {}),
+  });
 
-  console.log(activityFeed);
+  const handleActivityPreviousPage = () => {
+    setActivityPageIndex((index) => Math.max(0, index - 1));
+  };
+
+  const handleActivityNextPage = () => {
+    const nextCursor = activityFeed?.nextCursor;
+    if (!nextCursor) {
+      return;
+    }
+
+    setActivityPageCursors((cursors) => {
+      const nextCursors = cursors.slice(0, activityPageIndex + 1);
+      nextCursors.push(nextCursor);
+      return nextCursors;
+    });
+    setActivityPageIndex((index) => index + 1);
+  };
+
   const isLoading = appointmentsLoading || blogsLoading || messagesLoading;
   const hasError = appointmentsError || blogsError || messagesError;
 
@@ -333,7 +381,10 @@ export function DashboardPage() {
         )}
       </section>
 
-      <section className="mt-stack-lg rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)] md:p-6">
+      <section
+        ref={activityFeedSectionRef}
+        className="mt-stack-lg scroll-mt-20 rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)] md:p-6 lg:scroll-mt-24"
+      >
         <div className="mb-6">
           <p className="text-label-md font-semibold uppercase tracking-[0.16em] text-primary">
             Staff Work Trace
@@ -351,7 +402,7 @@ export function DashboardPage() {
           <StaffActivityPicker
             staff={traceableStaff}
             selectedActorId={selectedActorId}
-            onSelect={setSelectedActorId}
+            onSelect={handleSelectActor}
             isLoading={staffLoading}
           />
         </div>
@@ -359,7 +410,14 @@ export function DashboardPage() {
         <ActivityFeedList
           items={activityFeed?.items ?? []}
           isLoading={activityFeedLoading}
+          isFetching={activityFeedFetching}
           isError={activityFeedError}
+          page={activityPageIndex + 1}
+          pageSize={ACTIVITY_PAGE_SIZE}
+          hasPreviousPage={activityPageIndex > 0}
+          hasNextPage={Boolean(activityFeed?.nextCursor)}
+          onPreviousPage={handleActivityPreviousPage}
+          onNextPage={handleActivityNextPage}
         />
       </section>
     </>
