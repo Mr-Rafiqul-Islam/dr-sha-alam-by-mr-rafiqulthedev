@@ -135,6 +135,17 @@ export function AppointmentViewModal({
             />
           </DetailSection>
 
+          <DetailSection title="Audit">
+            <DetailRow
+              label="Created by"
+              value={formatNullable(appointment.createdBy)}
+            />
+            <DetailRow
+              label="Updated by"
+              value={formatNullable(appointment.updatedBy)}
+            />
+          </DetailSection>
+
           <div className="flex justify-end border-t border-outline-variant/30 pt-4">
             <Button variant="ghost" onClick={onClose}>
               Close

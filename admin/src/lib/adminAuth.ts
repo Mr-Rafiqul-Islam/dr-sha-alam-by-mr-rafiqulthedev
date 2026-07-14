@@ -91,10 +91,9 @@ export async function adminApiFetch(
   );
 
   const headers = new Headers(init.headers);
-  const shouldAttachAdminAuth = isAdminApiPath(requestPath);
   const token = getAdminToken();
 
-  if (shouldAttachAdminAuth && token && !headers.has("Authorization")) {
+  if (token && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
@@ -104,7 +103,7 @@ export async function adminApiFetch(
     credentials: init.credentials ?? "include",
   });
 
-  if (shouldAttachAdminAuth && response.status === 401) {
+  if (isAdminApiPath(requestPath) && response.status === 401) {
     clearAdminToken();
   }
 

@@ -19,11 +19,12 @@ function getRequestPath(args: string | FetchArgs): string {
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
   credentials: "include",
-  prepareHeaders: (headers, { arg }) => {
+  prepareHeaders: (headers) => {
     const token = getAdminToken();
-    const path = getRequestPath(arg);
 
-    if (token && isAdminApiPath(path)) {
+    // Attach for all API calls so staff creates on client routes
+    // (e.g. POST /api/v1/client/appointments) still record createdBy.
+    if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
 
