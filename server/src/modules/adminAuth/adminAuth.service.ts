@@ -21,6 +21,7 @@ const PUBLIC_USER_SELECT = {
   phone: true,
   image: true,
   role: true,
+  active: true,
   provider: true,
   providerId: true,
   doctorId: true,
@@ -34,6 +35,10 @@ export type AdminLoginResult = {
 };
 
 export { isStaffPanelRole };
+
+function isUserActive(active: boolean | null | undefined): boolean {
+  return active !== false;
+}
 
 export async function loginAdmin(params: {
   email: string;
@@ -56,6 +61,10 @@ export async function loginAdmin(params: {
     throw new AdminAuthError("Invalid email or password");
   }
 
+  if (!isUserActive(user.active)) {
+    throw new AdminAuthError("Account is inactive. Contact an administrator.", 403);
+  }
+
   const token = signAccessToken(user.id, {
     id: user.id,
     email: user.email,
@@ -76,7 +85,7 @@ export async function getAdminById(id: string): Promise<AdminRequestUser | null>
     select: PUBLIC_USER_SELECT,
   });
 
-  if (!user || !isStaffPanelRole(user.role)) {
+  if (!user || !isStaffPanelRole(user.role) || !isUserActive(user.active)) {
     return null;
   }
 

@@ -135,6 +135,7 @@ model User {
   provider   String? // যেমন: "google", "github"
   providerId String? // OAuth user এর unique id
   role       UserRole @default(ADMIN)
+  active     Boolean? @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
