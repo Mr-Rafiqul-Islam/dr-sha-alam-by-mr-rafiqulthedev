@@ -9,6 +9,7 @@ import {
 import { recordActivity } from "../../modules/activity/activity.middleware.js";
 import { sendCapiEvent } from "../../lib/metaCapi.js";
 import {
+  APPOINTMENT_ACTOR_INCLUDE,
   toPublicAppointment,
   toPublicAppointments,
 } from "../../modules/appointment/appointment.mapper.js";
@@ -75,6 +76,7 @@ export async function createAppointment(req: Request, res: Response) {
     );
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
+    const adminId = req.admin?.id ?? null;
 
     let smsLabel: string | null | undefined;
 
@@ -125,9 +127,13 @@ export async function createAppointment(req: Request, res: Response) {
           preferredTime: slotCode,
           appointmentDate: selectedDate,
           serialNumber,
+          siteRef: SiteRef.DOCTOR_SHA_ALAM,
           scheduleId: slotAvailability.scheduleId,
           slotId: slotAvailability.slotId,
+          createdById: adminId,
+          updatedById: adminId,
         },
+        include: APPOINTMENT_ACTOR_INCLUDE,
       });
     });
 
@@ -202,7 +208,11 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
 
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status },
+      data: {
+        status,
+        updatedById: req.admin?.id ?? null,
+      },
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     recordActivity(res, {
@@ -305,7 +315,11 @@ export async function cancelAppointment(req: Request, res: Response) {
   try {
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status: AppointmentStatus.CANCEL },
+      data: {
+        status: AppointmentStatus.CANCEL,
+        updatedById: null,
+      },
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     return res.status(200).json({
@@ -335,7 +349,9 @@ export async function rescheduleAppointment(req: Request, res: Response) {
       data: {
         status: AppointmentStatus.RESCHEDULED,
         appointmentDate: selectedDate,
+        updatedById: null,
       },
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     return res.status(200).json({
@@ -352,6 +368,7 @@ export async function getAllAppointments(_req: Request, res: Response) {
   try {
     const appointments = await prisma.appointment.findMany({
       orderBy: ALL_APPOINTMENTS_ORDER,
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     return res.status(200).json({
@@ -382,6 +399,7 @@ export async function getAppointmentsByDay(req: Request, res: Response) {
         appointmentDate: { gte: dayStart, lte: dayEnd },
       },
       orderBy: DAY_APPOINTMENT_ORDER,
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     return res.status(200).json({
@@ -409,6 +427,7 @@ export async function getAppointmentsByMonth(req: Request, res: Response) {
         appointmentDate: { gte: range.startDate, lte: range.endDate },
       },
       orderBy: { appointmentDate: "asc" },
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     return res.status(200).json({
