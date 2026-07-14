@@ -59,6 +59,11 @@ const PendingDeletesPage = lazyNamed(
   () => import("./pages/PendingDeletesPage"),
   "PendingDeletesPage",
 );
+const AdminsPage = lazyNamed(() => import("./pages/AdminsPage"), "AdminsPage");
+const AdminFormPage = lazyNamed(
+  () => import("./pages/AdminFormPage"),
+  "AdminFormPage",
+);
 
 function App() {
   return (
@@ -105,6 +110,11 @@ function App() {
           </Route>
           <Route element={<RequireAdminPermission permission="deleteApprovals" />}>
             <Route path="pending-deletes" element={<PendingDeletesPage />} />
+          </Route>
+          <Route element={<RequireAdminPermission permission="adminManagement" />}>
+            <Route path="admins/new" element={<AdminFormPage />} />
+            <Route path="admins/:id/edit" element={<AdminFormPage />} />
+            <Route path="admins" element={<AdminsPage />} />
           </Route>
         </Route>
         <Route path="*" element={<RoleDefaultRedirect />} />

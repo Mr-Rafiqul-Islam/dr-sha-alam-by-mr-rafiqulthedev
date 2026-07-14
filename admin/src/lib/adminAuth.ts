@@ -10,6 +10,7 @@ export type AdminUser = {
   phone: string | null;
   image: string | null;
   role: StaffRole;
+  active?: boolean | null;
   provider: string | null;
   providerId: string | null;
   doctorId: string | null;
