@@ -1,52 +1,43 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch, type Control } from "react-hook-form";
 import { z } from "zod";
 
-import { CommonForm } from "../forms";
-
+import { Button } from "../common/Button";
+import { CommonFormFields } from "../forms/CommonForm";
 import { getClosedDates } from "../../lib/appointmentSchedules";
-
 import { useGetAppointmentSchedulesQuery } from "../../store/api/appointmentSchedulesApi";
-
 import { useGetSlotDefaultsQuery } from "../../store/api/slotDefaultsApi";
-
 import type { AppointmentFormData } from "../../types/appointment";
-
 import type { FormFieldConfig } from "../../types/form";
-
-import { isFutureDateYmd } from "../../utils/appointment";
+import {
+  getMinPreferredDateYmd,
+  isValidPreferredDateYmd,
+  requiresFutureAppointmentDate,
+} from "../../utils/appointment";
 
 export type { AppointmentFormData } from "../../types/appointment";
 
 const defaultValues: AppointmentFormData = {
   patientName: "",
-
   phone: "",
-
   email: "",
-
   homeAddress: "",
-
   symptoms: "",
-
   preferredDate: "",
-
   preferredTime: "",
 };
 
 type AppointmentFormProps = {
   onSubmit: (data: AppointmentFormData) => void | Promise<void>;
-
   isSubmitting?: boolean;
-
   submitLabel?: string;
 };
 
 export function AppointmentForm({
   onSubmit,
-
   isSubmitting,
-
   submitLabel = "Book Appointment",
 }: AppointmentFormProps) {
   const { data: slotDefaults, isLoading: slotDefaultsLoading } =
@@ -54,15 +45,12 @@ export function AppointmentForm({
 
   const {
     data: schedules,
-
     isLoading: schedulesLoading,
-
     isError: schedulesError,
   } = useGetAppointmentSchedulesQuery();
 
   const closedDates = useMemo(
     () => getClosedDates(schedules ?? []),
-
     [schedules],
   );
 
@@ -71,141 +59,14 @@ export function AppointmentForm({
       .filter((slot) => slot.isActive)
       .map((slot) => slot.code) ?? [];
 
-  const appointmentSchema = z.object({
-    patientName: z.string().min(1, "Full name is required"),
-
-    phone: z.string().min(1, "Phone number is required"),
-
-    email: z.union([
-      z.literal(""),
-
-      z.string().email("Enter a valid email address"),
-    ]),
-
-    homeAddress: z.string().min(1, "Home address is required"),
-
-    symptoms: z.string().optional(),
-
-    preferredDate: z
-
-      .string()
-
-      .min(1, "Preferred date is required")
-
-      .refine(isFutureDateYmd, "Only future dates are allowed")
-
-      .refine(
-        (value) => !closedDates.has(value),
-
-        "The chamber is closed on this date.",
-      ),
-
-    preferredTime: z
-
-      .string()
-
-      .min(1, "Preferred time is required")
-
-      .refine(
-        (value) => slotCodes.length === 0 || slotCodes.includes(value),
-
-        "Select a valid time slot",
-      ),
-  });
-
   const timeSlotOptions = [
     { value: "", label: "Select Time Slot", disabled: true },
-
     ...(slotDefaults?.slots
-
       .filter((slot) => slot.isActive)
-
       .map((slot) => ({
         value: slot.code,
-
         label: slot.label,
       })) ?? []),
-  ];
-
-  const appointmentFields: FormFieldConfig[] = [
-    {
-      name: "patientName",
-
-      label: "Full Name *",
-
-      type: "text",
-
-      placeholder: "Enter patient's name",
-    },
-    
-    {
-      name: "phone",
-
-      label: "Phone Number *",
-
-      type: "tel",
-
-      placeholder: "017XXXXXXXX",
-    },
-    
-    {
-      name: "preferredDate",
-
-      label: "Preferred Date *",
-
-      type: "date",
-
-      useAppointmentSchedules: true,
-
-      closedDates,
-
-      schedulesLoading,
-
-      schedulesError: schedulesError
-        ? "Could not load chamber availability"
-        : null,
-    },
-
-    {
-      name: "preferredTime",
-
-      label: "Preferred Time *",
-
-      type: "select",
-
-      options: timeSlotOptions,
-    },
-
-    {
-      name: "homeAddress",
-
-      label: "Home Address *",
-
-      type: "text",
-
-      placeholder: "Dhaka, Bangladesh",
-    },
-
-    {
-      name: "email",
-
-      label: "Email Address",
-
-      type: "email",
-
-      placeholder: "email@example.com",
-    },
-
-    {
-      name: "symptoms",
-
-      label: "Describe Your Problem",
-
-      type: "textarea",
-
-      placeholder: "Briefly describe the symptoms or condition...",
-    },
-
   ];
 
   if (slotDefaultsLoading || schedulesLoading) {
@@ -217,15 +78,178 @@ export function AppointmentForm({
   }
 
   return (
-    <CommonForm
-      schema={appointmentSchema}
-      defaultValues={defaultValues}
-      fields={appointmentFields}
-      submitLabel={submitLabel}
-      onSubmit={onSubmit}
+    <AppointmentFormFields
+      closedDates={closedDates}
       isSubmitting={isSubmitting}
-      submitWrapperClassName="pt-2"
-      submitClassName="w-full justify-center"
+      onSubmit={onSubmit}
+      schedulesError={schedulesError}
+      slotCodes={slotCodes}
+      submitLabel={submitLabel}
+      timeSlotOptions={timeSlotOptions}
     />
+  );
+}
+
+function AppointmentFormFields({
+  closedDates,
+  isSubmitting,
+  onSubmit,
+  schedulesError,
+  slotCodes,
+  submitLabel,
+  timeSlotOptions,
+}: {
+  closedDates: Set<string>;
+  isSubmitting?: boolean;
+  onSubmit: (data: AppointmentFormData) => void | Promise<void>;
+  schedulesError: boolean;
+  slotCodes: string[];
+  submitLabel: string;
+  timeSlotOptions: Array<{ value: string; label: string; disabled?: boolean }>;
+}) {
+  const appointmentSchema = z
+    .object({
+      patientName: z.string().min(1, "Full name is required"),
+      phone: z.string().min(1, "Phone number is required"),
+      email: z.union([
+        z.literal(""),
+        z.string().email("Enter a valid email address"),
+      ]),
+      homeAddress: z.string().min(1, "Home address is required"),
+      symptoms: z.string().optional(),
+      preferredDate: z.string().min(1, "Preferred date is required"),
+      preferredTime: z
+        .string()
+        .min(1, "Preferred time is required")
+        .refine(
+          (value) => slotCodes.length === 0 || slotCodes.includes(value),
+          "Select a valid time slot",
+        ),
+    })
+    .superRefine((data, ctx) => {
+      if (!data.preferredDate) {
+        return;
+      }
+
+      if (closedDates.has(data.preferredDate)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "The chamber is closed on this date.",
+          path: ["preferredDate"],
+        });
+        return;
+      }
+
+      if (!isValidPreferredDateYmd(data.preferredDate, data.preferredTime)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: requiresFutureAppointmentDate(data.preferredTime)
+            ? "PLID appointments must be scheduled for a future date"
+            : "Past dates are not allowed",
+          path: ["preferredDate"],
+        });
+      }
+    });
+
+  const form = useForm<AppointmentFormData>({
+    resolver: zodResolver(appointmentSchema),
+    defaultValues,
+  });
+
+  const preferredTime =
+    useWatch({ control: form.control, name: "preferredTime" }) ?? "";
+  const minPreferredDate = getMinPreferredDateYmd(preferredTime);
+
+  useEffect(() => {
+    const preferredDate = form.getValues("preferredDate");
+    if (
+      preferredDate &&
+      !isValidPreferredDateYmd(preferredDate, preferredTime)
+    ) {
+      form.setValue("preferredDate", "", { shouldValidate: true });
+    }
+  }, [preferredTime, form]);
+
+  const appointmentFields: FormFieldConfig[] = useMemo(
+    () => [
+      {
+        name: "patientName",
+        label: "Full Name *",
+        type: "text",
+        placeholder: "Enter patient's name",
+      },
+      {
+        name: "phone",
+        label: "Phone Number *",
+        type: "tel",
+        placeholder: "017XXXXXXXX",
+      },
+      {
+        name: "preferredDate",
+        label: "Preferred Date *",
+        type: "date",
+        useAppointmentSchedules: true,
+        closedDates,
+        schedulesLoading: false,
+        schedulesError: schedulesError
+          ? "Could not load chamber availability"
+          : null,
+        minDate: minPreferredDate,
+      },
+      {
+        name: "preferredTime",
+        label: "Preferred Time *",
+        type: "select",
+        options: timeSlotOptions,
+      },
+      {
+        name: "homeAddress",
+        label: "Home Address *",
+        type: "text",
+        placeholder: "Dhaka, Bangladesh",
+      },
+      {
+        name: "email",
+        label: "Email Address",
+        type: "email",
+        placeholder: "email@example.com",
+      },
+      {
+        name: "symptoms",
+        label: "Describe Your Problem",
+        type: "textarea",
+        placeholder: "Briefly describe the symptoms or condition...",
+      },
+    ],
+    [
+      closedDates,
+      minPreferredDate,
+      schedulesError,
+      timeSlotOptions,
+    ],
+  );
+
+  return (
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="space-y-6"
+      noValidate
+    >
+      <CommonFormFields
+        control={form.control as Control<Record<string, unknown>>}
+        fields={appointmentFields}
+        disabled={isSubmitting}
+      />
+
+      <div className="pt-2">
+        <Button
+          type="submit"
+          className="w-full justify-center disabled:pointer-events-none disabled:opacity-50"
+          disabled={isSubmitting}
+        >
+          {submitLabel}
+        </Button>
+      </div>
+    </form>
   );
 }
