@@ -70,11 +70,10 @@ export function AdminsPage() {
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
   const effectivePage = Math.min(currentPage, totalPages);
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  // Clamp page when filters/deletes shrink the result set (avoid setState in an effect).
+  if (currentPage !== effectivePage) {
+    setCurrentPage(effectivePage);
+  }
 
   useEffect(() => {
     if (isError) {
