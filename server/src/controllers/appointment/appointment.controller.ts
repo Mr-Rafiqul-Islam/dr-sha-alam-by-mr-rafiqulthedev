@@ -31,6 +31,7 @@ import {
   parseAppointmentDate,
   parseAppointmentStatus,
   parseEmail,
+  parseAppointmentDateForSlot,
   parseFutureAppointmentDate,
   parseMonthYear,
   parseOptionalString,
@@ -66,8 +67,12 @@ export async function createAppointment(req: Request, res: Response) {
     const homeAddress = parseRequiredString(req.body.homeAddress, "homeAddress");
     const emailText = parseEmail(req.body.email);
     const problemText = parseOptionalString(req.body.problem);
-    const selectedDate = parseFutureAppointmentDate(req.body.preferredDate, "preferredDate");
     const slotCode = parseSlotCodeString(req.body.preferredTime);
+    const selectedDate = parseAppointmentDateForSlot(
+      req.body.preferredDate,
+      slotCode,
+      "preferredDate",
+    );
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
 

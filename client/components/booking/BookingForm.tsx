@@ -3,6 +3,11 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PreferredDatePicker from "@/components/booking/PreferredDatePicker";
+import {
+  getMinPreferredDateYmd,
+  getPreferredDateValidationMessage,
+  isValidPreferredDateYmd,
+} from "@/lib/appointmentDate";
 import { getClosedDates } from "@/lib/appointmentSchedules";
 import { getMetaCookiesFromDocument, trackMetaEvent } from "@/lib/metaAnalytics";
 import { getAppointmentSchedules } from "@/server-actions/getAppointmentSchedules";
@@ -42,15 +47,6 @@ const initialFormState: FormState = {
 
 const SHOW_FREE_BOOKING_OPTION = true;
 
-function getMinPreferredDate(): string {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const year = tomorrow.getFullYear();
-  const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
-  const day = String(tomorrow.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 export default function BookingForm() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialFormState);
@@ -68,7 +64,7 @@ export default function BookingForm() {
 
   const isSubmitting = isSubmittingFree || isSubmittingPaid;
   const activeError = bookingMode === "free" ? freeError : paidError;
-  const minPreferredDate = getMinPreferredDate();
+  const minPreferredDate = getMinPreferredDateYmd(form.preferredTime);
 
   const loadSchedules = useCallback(async (showLoading = true) => {
     if (showLoading) {
@@ -197,7 +193,27 @@ export default function BookingForm() {
   }, []);
 
   const updateField = (field: keyof FormState, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => {
+      const next = { ...current, [field]: value };
+
+      if (
+        field === "preferredTime" &&
+        next.preferredDate &&
+        !isValidPreferredDateYmd(next.preferredDate, value)
+      ) {
+        next.preferredDate = "";
+      }
+
+      return next;
+    });
+  };
+
+  const setBookingError = (message: string) => {
+    if (bookingMode === "free") {
+      setFreeError(message);
+    } else {
+      setPaidError(message);
+    }
   };
 
   const handleModeChange = (mode: BookingMode) => {
@@ -256,15 +272,18 @@ export default function BookingForm() {
     setPaidError(null);
 
     if (form.preferredDate && closedDates.has(form.preferredDate)) {
-      const message =
-        "The chamber is closed on the selected date. Please choose another date.";
+      setBookingError(
+        "The chamber is closed on the selected date. Please choose another date.",
+      );
+      return;
+    }
 
-      if (bookingMode === "free") {
-        setFreeError(message);
-      } else {
-        setPaidError(message);
-      }
-
+    if (
+      form.preferredDate &&
+      form.preferredTime &&
+      !isValidPreferredDateYmd(form.preferredDate, form.preferredTime)
+    ) {
+      setBookingError(getPreferredDateValidationMessage(form.preferredTime));
       return;
     }
 
