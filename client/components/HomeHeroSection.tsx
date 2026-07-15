@@ -79,8 +79,8 @@ export default function HomeHeroSection() {
                   <span className="material-symbols-outlined">check_circle</span>
                 </div>
                 <div>
-                  <p className="text-xs xl:text-sm font-bold text-text-main dark:text-white">CERTIFIED YOGA INSTRUCTOR</p>
-                  <p className="text-[10px] lg:text-xs text-text-sub">Orthopedic Specialist</p>
+                  <p className="text-xs xl:text-sm font-bold text-text-main dark:text-white">Orthopedic Specialist</p>
+                  <p className="text-[10px] lg:text-xs text-text-sub">CERTIFIED YOGA INSTRUCTOR</p>
                 </div>
               </div>
             </div>
