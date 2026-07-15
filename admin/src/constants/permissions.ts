@@ -13,9 +13,13 @@ export type AdminPermission =
   | "articles"
   | "settings"
   | "analyticsSettings"
-  | "deleteApprovals";
+  | "deleteApprovals"
+  | "userManagement";
 
 const ANALYTICS_SETTINGS_ROLES = new Set<string>(["SUPER_ADMIN", "MANAGER"]);
+
+/** Staff-user CRUD is limited to Super Admin and Admin (not Manager). */
+const USER_MANAGEMENT_ROLES = new Set<string>(["SUPER_ADMIN", "ADMIN"]);
 
 const STAFF_PANEL_ROLES = new Set<string>([
   "SUPER_ADMIN",
@@ -48,6 +52,7 @@ const PATH_PERMISSIONS: Array<{ prefix: string; permission: AdminPermission }> =
     { prefix: "/contact-messages", permission: "contactMessages" },
     { prefix: "/pending-deletes", permission: "deleteApprovals" },
     { prefix: "/settings", permission: "analyticsSettings" },
+    { prefix: "/users", permission: "userManagement" },
     { prefix: "/dashboard", permission: "dashboard" },
   ];
 
@@ -61,6 +66,10 @@ export function canAccessAdminPermission(
 ): boolean {
   if (permission === "analyticsSettings") {
     return ANALYTICS_SETTINGS_ROLES.has(role);
+  }
+
+  if (permission === "userManagement") {
+    return USER_MANAGEMENT_ROLES.has(role);
   }
 
   if (FULL_ACCESS_ROLES.has(role)) {

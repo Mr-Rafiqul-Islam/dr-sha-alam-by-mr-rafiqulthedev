@@ -36,6 +36,7 @@ const PUBLIC_USER_SELECT = {
   phone: true,
   image: true,
   role: true,
+  isActive: true,
   provider: true,
   providerId: true,
   doctorId: true,
@@ -92,6 +93,10 @@ async function assertStaffUserForChallenge(userId: string): Promise<User> {
     throw new AdminAuthError("Invalid or expired verification challenge");
   }
 
+  if (!user.isActive) {
+    throw new AdminAuthError("Account is deactivated. Contact an administrator.", 403);
+  }
+
   return user;
 }
 
@@ -105,6 +110,10 @@ export async function initiateAdminLoginOtp(params: {
 
   if (!user || !isStaffPanelRole(user.role) || !user.password) {
     throw new AdminAuthError("Invalid email or password");
+  }
+
+  if (!user.isActive) {
+    throw new AdminAuthError("Account is deactivated. Contact an administrator.", 403);
   }
 
   const passwordMatches = await bcrypt.compare(params.password, user.password);
@@ -340,7 +349,7 @@ export async function getAdminById(id: string): Promise<AdminRequestUser | null>
     select: PUBLIC_USER_SELECT,
   });
 
-  if (!user || !isStaffPanelRole(user.role)) {
+  if (!user || !isStaffPanelRole(user.role) || !user.isActive) {
     return null;
   }
 

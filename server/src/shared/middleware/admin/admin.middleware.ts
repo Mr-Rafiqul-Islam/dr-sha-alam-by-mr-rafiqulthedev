@@ -82,6 +82,7 @@ export async function requireAuth(
         phone: true,
         image: true,
         role: true,
+        isActive: true,
         provider: true,
         providerId: true,
         doctorId: true,

@@ -2,7 +2,7 @@
 
 | Task | Estimate | Working | Status |
 |------|----------|---------|
-| Admin dashboard access/auth | 1 day |
+| Admin dashboard access/auth | 1 day | Sakib | Done |
 | SMS confirmation | 1–1.5 days | Sakib | Done |
 | GAP serial manual modify | 0.5 day |
 | Support team serial tracking | 1 day |

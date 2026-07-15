@@ -19,6 +19,7 @@ const supportActor = {
   providerId: null,
   doctorId: null,
   role: UserRole.SUPPORT,
+  isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

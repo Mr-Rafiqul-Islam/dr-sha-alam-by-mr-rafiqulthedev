@@ -61,6 +61,12 @@ export const mainNavItems: NavItem[] = [
     permission: "deleteApprovals",
   },
   {
+    path: "/users",
+    label: "User Management",
+    icon: "group",
+    permission: "userManagement",
+  },
+  {
     path: "/settings",
     label: "Settings",
     icon: "settings",

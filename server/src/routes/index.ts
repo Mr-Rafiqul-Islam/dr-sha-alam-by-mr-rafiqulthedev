@@ -17,6 +17,7 @@ import {
   analyticsSettingsAdminRouter,
   analyticsSettingsClientRouter,
 } from "../modules/analyticsSettings/analyticsSettings.routes.js";
+import { userManagementAdminRouter } from "../modules/userManagement/userManagement.routes.js";
 
 
 /**
@@ -27,6 +28,7 @@ export function mountRoutes(app: Express): void {
   app.use("/api/v1/admin/activity", activityAdminRouter);
   app.use("/api/v1/admin/delete-requests", deleteRequestAdminRouter);
   app.use("/api/v1/admin/analytics-settings", analyticsSettingsAdminRouter);
+  app.use("/api/v1/admin/users", userManagementAdminRouter);
   app.use("/api/v1/client/analytics-config", analyticsSettingsClientRouter);
   app.use("/api/v1/client/appointments", appointmentClientRouter);
   app.use("/api/v1/admin/appointments", appointmentAdminRouter);

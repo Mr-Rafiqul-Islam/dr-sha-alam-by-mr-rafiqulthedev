@@ -22,11 +22,18 @@ export type AdminPermission =
   | "articles"
   | "settings"
   | "analyticsSettings"
-  | "deleteApprovals";
+  | "deleteApprovals"
+  | "userManagement";
 
 const ANALYTICS_SETTINGS_ROLES = new Set<UserRole>([
   UserRole.SUPER_ADMIN,
   UserRole.MANAGER,
+]);
+
+/** Staff-user CRUD is limited to Super Admin and Admin (not Manager). */
+const USER_MANAGEMENT_ROLES = new Set<UserRole>([
+  UserRole.SUPER_ADMIN,
+  UserRole.ADMIN,
 ]);
 
 const SUPPORT_PERMISSIONS = new Set<AdminPermission>([
@@ -46,6 +53,7 @@ const ALL_PERMISSIONS: AdminPermission[] = [
   "settings",
   "analyticsSettings",
   "deleteApprovals",
+  "userManagement",
 ];
 
 export function isStaffPanelRole(role: UserRole): boolean {
@@ -58,6 +66,10 @@ export function canAccessAdminPermission(
 ): boolean {
   if (permission === "analyticsSettings") {
     return ANALYTICS_SETTINGS_ROLES.has(role);
+  }
+
+  if (permission === "userManagement") {
+    return USER_MANAGEMENT_ROLES.has(role);
   }
 
   if (FULL_ACCESS_ROLES.has(role)) {

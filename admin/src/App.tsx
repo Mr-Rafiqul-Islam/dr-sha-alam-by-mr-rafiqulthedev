@@ -63,6 +63,7 @@ const PendingDeletesPage = lazyNamed(
   () => import("./pages/PendingDeletesPage"),
   "PendingDeletesPage",
 );
+const UsersPage = lazyNamed(() => import("./pages/UsersPage"), "UsersPage");
 
 function App() {
   return (
@@ -110,6 +111,9 @@ function App() {
           </Route>
           <Route element={<RequireAdminPermission permission="deleteApprovals" />}>
             <Route path="pending-deletes" element={<PendingDeletesPage />} />
+          </Route>
+          <Route element={<RequireAdminPermission permission="userManagement" />}>
+            <Route path="users" element={<UsersPage />} />
           </Route>
         </Route>
         <Route path="*" element={<RoleDefaultRedirect />} />
