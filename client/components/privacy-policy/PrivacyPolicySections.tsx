@@ -301,9 +301,9 @@ export default function PrivacyPolicySections() {
           Phone:{" "}
           <a
             className="text-primary hover:text-accent font-medium transition-colors"
-            href="tel:+8801701313001"
+            href="tel:+8801701313002"
           >
-            +880 1701313001
+            +880 1701313002
           </a>
         </p>
         <p className="text-text-sub mb-1">

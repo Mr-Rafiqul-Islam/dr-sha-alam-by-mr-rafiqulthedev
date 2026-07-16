@@ -49,10 +49,10 @@ export default function Footer() {
                 Chamber Time: Sat—Thu, 9AM—7PM
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Phone: +880 1701313001
+                Phone: +880 1701313002
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
-                WhatsApp: +880 1789639174
+                WhatsApp: +880 1701313001
               </p>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Email: contact@doctorshahalam.com

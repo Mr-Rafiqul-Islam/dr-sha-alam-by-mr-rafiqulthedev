@@ -179,7 +179,7 @@ export default function BookAppointment() {
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link
               className="inline-flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1"
-              href="https://wa.me/+8801789639174"
+              href="https://wa.me/+8801701313001"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -188,7 +188,7 @@ export default function BookAppointment() {
             </Link>
             <a
               className="inline-flex items-center justify-center gap-3 bg-white text-primary hover:bg-gray-50 px-8 py-4 rounded-full font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1"
-              href="tel:+8801701313001"
+              href="tel:+8801701313002"
             >
               <span className="material-symbols-outlined">call</span>
               Call Our Team

@@ -27,7 +27,7 @@ export default function BeforeVisitContact() {
           <div className="flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-4 sm:gap-6 mb-8">
             <a
               className="flex items-center gap-3 px-6 py-4 bg-white dark:bg-surface-dark rounded-xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition-all group w-full sm:w-auto justify-center"
-              href="https://wa.me/+8801789639174"
+              href="https://wa.me/+8801701313001"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -36,19 +36,19 @@ export default function BeforeVisitContact() {
               </div>
               <div className="text-left">
                 <p className="text-xs text-gray-500 font-semibold uppercase">WhatsApp Support</p>
-                <p className="text-sm font-bold text-text-main dark:text-white">+880 1789 639 174</p>
+                <p className="text-sm font-bold text-text-main dark:text-white">+880 1701 313 001</p>
               </div>
             </a>
             <a
               className="flex items-center gap-3 px-6 py-4 bg-white dark:bg-surface-dark rounded-xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition-all group w-full sm:w-auto justify-center"
-              href="tel:+8801701313001"
+              href="tel:+8801701313002"
             >
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined">call</span>
               </div>
               <div className="text-left">
                 <p className="text-xs text-gray-500 font-semibold uppercase">Call Our Team</p>
-                <p className="text-sm font-bold text-text-main dark:text-white">+880 1701 313 001</p>
+                <p className="text-sm font-bold text-text-main dark:text-white">+880 1701 313 002</p>
               </div>
             </a>
           </div>
