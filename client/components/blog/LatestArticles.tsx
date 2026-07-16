@@ -59,15 +59,14 @@ export default function LatestArticles({
                       <p className="text-text-sub text-sm mb-6 line-clamp-3 leading-relaxed">
                         {blog.shortDesc}
                       </p>
-                      <Link
-                        href={getBlogPath(blog.slug)}
+                      <span
                         className="mt-auto inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors gap-1"
                       >
                         Read More{" "}
                         <span className="material-symbols-outlined text-sm">
                           arrow_forward
                         </span>
-                      </Link>
+                      </span>
                     </div>
                   </Link>
                 </article>
