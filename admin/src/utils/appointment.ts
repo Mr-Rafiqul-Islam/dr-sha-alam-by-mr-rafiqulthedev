@@ -170,6 +170,39 @@ export function getTodayYmd(): string {
   return `${year}-${month}-${day}`;
 }
 
+export const PLID_SLOT_CODE = "P-9";
+
+export function requiresFutureAppointmentDate(slotCode: string): boolean {
+  return slotCode === PLID_SLOT_CODE;
+}
+
+export function isPastDateYmd(value: string): boolean {
+  const [year, month, day] = value.split("-").map(Number);
+  const selected = new Date(year, month - 1, day);
+  selected.setHours(0, 0, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return selected.getTime() < today.getTime();
+}
+
+export function isValidPreferredDateYmd(value: string, slotCode: string): boolean {
+  if (requiresFutureAppointmentDate(slotCode)) {
+    return isFutureDateYmd(value);
+  }
+
+  return !isPastDateYmd(value);
+}
+
+export function getMinPreferredDateYmd(slotCode: string): string {
+  if (!slotCode || requiresFutureAppointmentDate(slotCode)) {
+    return getTomorrowYmd();
+  }
+
+  return getTodayYmd();
+}
+
 export function isSameCalendarDay(isoDate: string, ymd: string): boolean {
   const date = new Date(isoDate);
 

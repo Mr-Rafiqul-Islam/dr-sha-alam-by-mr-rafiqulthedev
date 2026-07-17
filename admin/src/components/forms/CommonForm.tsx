@@ -11,7 +11,7 @@ import type { ZodTypeAny } from "zod";
 import { Button } from "../common/Button";
 import { Icon } from "../common/Icon";
 import { cn } from "../../lib/cn";
-import { getTomorrowYmd } from "../../utils/appointment";
+import { getTodayYmd } from "../../utils/appointment";
 import type { FormFieldConfig } from "../../types/form";
 import { AppointmentDatePicker } from "./AppointmentDatePicker";
 
@@ -218,7 +218,7 @@ export function CommonFormFields({
                           value={String(field.value ?? "")}
                           onChange={field.onChange}
                           onBlur={field.onBlur}
-                          minDate={getTomorrowYmd()}
+                          minDate={f.minDate ?? getTodayYmd()}
                           closedDates={f.closedDates ?? new Set()}
                           disabled={fDisabled}
                           isLoading={f.schedulesLoading}
@@ -232,7 +232,7 @@ export function CommonFormFields({
                           type="date"
                           className={controlInputClass}
                           disabled={fDisabled}
-                          min={getTomorrowYmd()}
+                          min={f.minDate ?? getTodayYmd()}
                           aria-invalid={!!fieldState.error}
                           aria-describedby={describedBy}
                           {...field}
