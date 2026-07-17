@@ -12,6 +12,17 @@ function isAdminApiPath(path: string): boolean {
   return path.includes("/api/v1/admin/");
 }
 
+const PUBLIC_ADMIN_AUTH_PATHS = [
+  "/api/v1/admin/auth/login",
+  "/api/v1/admin/auth/verify-otp",
+  "/api/v1/admin/auth/resend-otp",
+  "/api/v1/admin/auth/logout",
+] as const;
+
+function isPublicAdminAuthPath(path: string): boolean {
+  return PUBLIC_ADMIN_AUTH_PATHS.some((publicPath) => path.includes(publicPath));
+}
+
 function getRequestPath(args: string | FetchArgs): string {
   return typeof args === "string" ? args : args.url;
 }
@@ -38,8 +49,13 @@ const baseQueryWithAdminAuth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   const result = await rawBaseQuery(args, api, extraOptions);
+  const path = getRequestPath(args);
 
-  if (isAdminApiPath(getRequestPath(args)) && result.error?.status === 401) {
+  if (
+    isAdminApiPath(path) &&
+    !isPublicAdminAuthPath(path) &&
+    result.error?.status === 401
+  ) {
     clearAdminToken();
   }
 

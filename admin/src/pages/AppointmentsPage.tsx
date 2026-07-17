@@ -303,7 +303,9 @@ export function AppointmentsPage() {
         }
       />
 
-      {!isLoading && !isError && <AppointmentStats appointments={appointments} />}
+      {!isLoading && !isError && (
+        <AppointmentStats appointments={filteredAppointments} />
+      )}
 
       {!isLoading && !isError && (
         <AppointmentFilters

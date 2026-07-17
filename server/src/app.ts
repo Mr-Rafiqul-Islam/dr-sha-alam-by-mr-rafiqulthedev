@@ -6,7 +6,7 @@ import { corsOptions } from "./config/cors.js";
 import { mountRoutes } from "./routes/index.js";
 
 const app = express();
-const port: number | string = process.env.PORT || 5007;
+const port: number | string = process.env.PORT || 5001;
 
 app.use(cors(corsOptions));
 app.use(cookieParser());

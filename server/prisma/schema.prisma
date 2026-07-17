@@ -125,6 +125,10 @@ enum ActivityEntityType {
   AppointmentSlotDefaultConfig
 }
 
+enum AdminOtpPurpose {
+  LOGIN
+}
+
 model User {
   id         String   @id @default(uuid())
   name       String?
@@ -150,6 +154,32 @@ model User {
   doctorId                String?
 
   @@index([role])
+  @@index([isActive])
+}
+
+model AdminOtpChallenge {
+  id String @id @default(uuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  purpose AdminOtpPurpose @default(LOGIN)
+
+  otpHash String
+
+  expiresAt   DateTime
+  verifiedAt  DateTime?
+  consumedAt  DateTime?
+  lastSentAt  DateTime @default(now())
+
+  attempts    Int @default(0)
+  resendCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
 }
 
 model DeleteRequest {
