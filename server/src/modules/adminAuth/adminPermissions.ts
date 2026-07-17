@@ -23,7 +23,7 @@ export type AdminPermission =
   | "settings"
   | "analyticsSettings"
   | "deleteApprovals"
-  | "userManagement";
+  | "adminManagement";
 
 const ANALYTICS_SETTINGS_ROLES = new Set<UserRole>([
   UserRole.SUPER_ADMIN,
@@ -53,7 +53,7 @@ const ALL_PERMISSIONS: AdminPermission[] = [
   "settings",
   "analyticsSettings",
   "deleteApprovals",
-  "userManagement",
+  "adminManagement",
 ];
 
 export function isStaffPanelRole(role: UserRole): boolean {

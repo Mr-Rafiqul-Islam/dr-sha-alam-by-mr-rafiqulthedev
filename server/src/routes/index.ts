@@ -12,6 +12,7 @@ import { contactClientRouter } from "./contact/client/contact.routes.js";
 import { paymentRouter } from "./payment/payment.routes.js";
 import { adminAuthRouter } from "../modules/adminAuth/adminAuth.routes.js";
 import { activityAdminRouter } from "../modules/activity/activity.routes.js";
+import { adminManagementRouter } from "../modules/adminManagement/adminManagement.routes.js";
 import { deleteRequestAdminRouter } from "./deleteRequest/admin/deleteRequest.routes.js";
 import {
   analyticsSettingsAdminRouter,
@@ -26,6 +27,7 @@ import { userManagementAdminRouter } from "../modules/userManagement/userManagem
 export function mountRoutes(app: Express): void {
   app.use("/api/v1/admin/auth", adminAuthRouter);
   app.use("/api/v1/admin/activity", activityAdminRouter);
+  app.use("/api/v1/admin/users", adminManagementRouter);
   app.use("/api/v1/admin/delete-requests", deleteRequestAdminRouter);
   app.use("/api/v1/admin/analytics-settings", analyticsSettingsAdminRouter);
   app.use("/api/v1/admin/users", userManagementAdminRouter);

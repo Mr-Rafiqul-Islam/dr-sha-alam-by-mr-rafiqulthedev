@@ -14,7 +14,7 @@ export type AdminPermission =
   | "settings"
   | "analyticsSettings"
   | "deleteApprovals"
-  | "userManagement";
+  | "adminManagement";
 
 const ANALYTICS_SETTINGS_ROLES = new Set<string>(["SUPER_ADMIN", "MANAGER"]);
 
@@ -52,7 +52,7 @@ const PATH_PERMISSIONS: Array<{ prefix: string; permission: AdminPermission }> =
     { prefix: "/contact-messages", permission: "contactMessages" },
     { prefix: "/pending-deletes", permission: "deleteApprovals" },
     { prefix: "/settings", permission: "analyticsSettings" },
-    { prefix: "/users", permission: "userManagement" },
+    { prefix: "/admins", permission: "adminManagement" },
     { prefix: "/dashboard", permission: "dashboard" },
   ];
 

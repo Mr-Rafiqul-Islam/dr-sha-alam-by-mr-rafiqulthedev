@@ -36,7 +36,7 @@ const PUBLIC_USER_SELECT = {
   phone: true,
   image: true,
   role: true,
-  isActive: true,
+  active: true,
   provider: true,
   providerId: true,
   doctorId: true,
@@ -65,42 +65,11 @@ export type AdminResendOtpResult = {
 
 export { isStaffPanelRole };
 
-function toPublicUser(user: User): AdminRequestUser {
-  const { password: _password, ...publicUser } = user;
-  return publicUser;
+function isUserActive(active: boolean | null | undefined): boolean {
+  return active !== false;
 }
 
-async function invalidateOpenLoginChallenges(userId: string): Promise<void> {
-  const now = new Date();
-  await prisma.adminOtpChallenge.updateMany({
-    where: {
-      userId,
-      purpose: AdminOtpPurpose.LOGIN,
-      consumedAt: null,
-    },
-    data: {
-      consumedAt: now,
-    },
-  });
-}
-
-async function assertStaffUserForChallenge(userId: string): Promise<User> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-
-  if (!user || !isStaffPanelRole(user.role) || !user.password) {
-    throw new AdminAuthError("Invalid or expired verification challenge");
-  }
-
-  if (!user.isActive) {
-    throw new AdminAuthError("Account is deactivated. Contact an administrator.", 403);
-  }
-
-  return user;
-}
-
-export async function initiateAdminLoginOtp(params: {
+export async function loginAdmin(params: {
   email: string;
   password: string;
 }): Promise<AdminOtpChallengeResult> {
@@ -121,125 +90,9 @@ export async function initiateAdminLoginOtp(params: {
     throw new AdminAuthError("Invalid email or password");
   }
 
-  await invalidateOpenLoginChallenges(user.id);
-
-  const otp = generateAdminOtp();
-  const otpHash = hashAdminOtp(otp);
-  const expiresAt = new Date(Date.now() + getAdminOtpExpiryMinutes() * 60_000);
-
-  const challenge = await prisma.adminOtpChallenge.create({
-    data: {
-      userId: user.id,
-      purpose: AdminOtpPurpose.LOGIN,
-      otpHash,
-      expiresAt,
-    },
-  });
-
-  try {
-    const delivery = await sendAdminLoginOtp({
-      destinationEmail: user.email,
-      destinationPhone: user.phone,
-      otp,
-      recipientName: user.name,
-    });
-
-    return {
-      challengeId: challenge.id,
-      expiresIn: getAdminOtpExpirySeconds(),
-      maskedDestination: delivery.maskedDestination,
-      resendAvailableIn: getAdminOtpResendCooldownSeconds(),
-    };
-  } catch (error) {
-    await prisma.adminOtpChallenge.update({
-      where: { id: challenge.id },
-      data: { consumedAt: new Date() },
-    });
-
-    if (error instanceof AdminOtpDeliveryError) {
-      throw new AdminAuthError(error.message, 500);
-    }
-
-    throw error;
+  if (!isUserActive(user.active)) {
+    throw new AdminAuthError("Account is inactive. Contact an administrator.", 403);
   }
-}
-
-export async function verifyAdminLoginOtp(params: {
-  challengeId: string;
-  otp: string;
-}): Promise<AdminLoginResult> {
-  const challenge = await prisma.adminOtpChallenge.findUnique({
-    where: { id: params.challengeId },
-  });
-
-  if (!challenge || challenge.purpose !== AdminOtpPurpose.LOGIN) {
-    throw new AdminAuthError("Invalid or expired verification code");
-  }
-
-  if (challenge.consumedAt || challenge.verifiedAt) {
-    throw new AdminAuthError("Invalid or expired verification code");
-  }
-
-  if (challenge.expiresAt.getTime() <= Date.now()) {
-    await prisma.adminOtpChallenge.updateMany({
-      where: { id: challenge.id, consumedAt: null },
-      data: { consumedAt: new Date() },
-    });
-    throw new AdminAuthError("Verification code expired");
-  }
-
-  if (challenge.attempts >= getAdminOtpMaxAttempts()) {
-    await prisma.adminOtpChallenge.updateMany({
-      where: { id: challenge.id, consumedAt: null },
-      data: { consumedAt: new Date() },
-    });
-    throw new AdminAuthError(
-      "Too many invalid attempts. Please sign in again.",
-    );
-  }
-
-  const otpMatches = verifyAdminOtpHash(params.otp, challenge.otpHash);
-
-  if (!otpMatches) {
-    const updated = await prisma.adminOtpChallenge.update({
-      where: { id: challenge.id },
-      data: { attempts: { increment: 1 } },
-    });
-
-    if (updated.attempts >= getAdminOtpMaxAttempts()) {
-      await prisma.adminOtpChallenge.updateMany({
-        where: { id: challenge.id, consumedAt: null },
-        data: { consumedAt: new Date() },
-      });
-      throw new AdminAuthError(
-        "Too many invalid attempts. Please sign in again.",
-      );
-    }
-
-    throw new AdminAuthError("Invalid verification code");
-  }
-
-  const now = new Date();
-  const consumed = await prisma.adminOtpChallenge.updateMany({
-    where: {
-      id: challenge.id,
-      purpose: AdminOtpPurpose.LOGIN,
-      consumedAt: null,
-      verifiedAt: null,
-      expiresAt: { gt: now },
-      attempts: { lt: getAdminOtpMaxAttempts() },
-    },
-    data: {
-      verifiedAt: now,
-      consumedAt: now,
-    },
-  });
-
-  if (consumed.count !== 1) {
-    throw new AdminAuthError("Invalid or expired verification code");
-  }
-
-  const user = await assertStaffUserForChallenge(challenge.userId);
 
   const token = signAccessToken(user.id, {
     id: user.id,
@@ -349,7 +202,7 @@ export async function getAdminById(id: string): Promise<AdminRequestUser | null>
     select: PUBLIC_USER_SELECT,
   });
 
-  if (!user || !isStaffPanelRole(user.role) || !user.isActive) {
+  if (!user || !isStaffPanelRole(user.role) || !isUserActive(user.active)) {
     return null;
   }
 

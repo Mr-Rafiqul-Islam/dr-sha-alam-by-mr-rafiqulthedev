@@ -139,7 +139,7 @@ model User {
   provider   String? // যেমন: "google", "github"
   providerId String? // OAuth user এর unique id
   role       UserRole @default(ADMIN)
-  isActive   Boolean  @default(true)
+  active     Boolean? @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -149,7 +149,8 @@ model User {
   activityLogs            ActivityLog[]
   deleteRequestsRequested DeleteRequest[] @relation("DeleteRequestsRequested")
   deleteRequestsReviewed  DeleteRequest[] @relation("DeleteRequestsReviewed")
-  adminOtpChallenges      AdminOtpChallenge[]
+  appointmentsCreated     Appointment[]   @relation("AppointmentCreatedBy")
+  appointmentsUpdated     Appointment[]   @relation("AppointmentUpdatedBy")
   doctorId                String?
 
   @@index([role])
@@ -253,9 +254,13 @@ model Appointment {
   transactionId   String?           @unique
   scheduleId      String?
   slotId          String?
+  createdById     String?
+  updatedById     String?
 
-  schedule AppointmentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
-  slot     AppointmentSlot?     @relation(fields: [slotId], references: [id], onDelete: SetNull)
+  schedule  AppointmentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  slot      AppointmentSlot?     @relation(fields: [slotId], references: [id], onDelete: SetNull)
+  createdBy User?                @relation("AppointmentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?                @relation("AppointmentUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -263,6 +268,8 @@ model Appointment {
   @@index([appointmentDate])
   @@index([scheduleId])
   @@index([slotId])
+  @@index([createdById])
+  @@index([updatedById])
   @@index([appointmentDate, preferredTime, siteRef, status])
 }
 

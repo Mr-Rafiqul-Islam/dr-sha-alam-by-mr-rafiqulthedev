@@ -176,6 +176,7 @@ async function main() {
       name: staffUser.name,
       role: staffUser.role,
       password: passwordHash,
+      active: true,
     };
 
     if (existing) {

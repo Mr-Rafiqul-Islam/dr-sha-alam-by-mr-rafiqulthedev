@@ -11,6 +11,7 @@ const allowedOrigins = [
   "https://admin.doctorshahalam.com",
   "https://doctorshahalam.com",
   "https://doctorshahalam.com",
+  "https://admin.trucarehealingcentre.com",
   "https://www.doctorshahalam.com",
   "https://sandbox.sslcommerz.com",
   "https://securepay.sslcommerz.com",

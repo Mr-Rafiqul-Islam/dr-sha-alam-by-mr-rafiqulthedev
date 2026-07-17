@@ -28,6 +28,7 @@ export type FormFieldConfig =
       closedDates?: Set<string>;
       schedulesLoading?: boolean;
       schedulesError?: string | null;
+      minDate?: string;
     })
   | (BaseField & { type: "password"; passwordToggle?: boolean })
   | (BaseField & { type: "select"; options: SelectOption[] })

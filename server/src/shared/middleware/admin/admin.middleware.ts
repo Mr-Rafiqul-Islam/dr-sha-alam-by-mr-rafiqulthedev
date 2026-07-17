@@ -82,7 +82,7 @@ export async function requireAuth(
         phone: true,
         image: true,
         role: true,
-        isActive: true,
+        active: true,
         provider: true,
         providerId: true,
         doctorId: true,
@@ -91,7 +91,7 @@ export async function requireAuth(
       },
     });
 
-    if (!user) {
+    if (!user || user.active === false) {
       res.status(401).json({
         success: false,
         message: "Account not found.",

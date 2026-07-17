@@ -24,6 +24,8 @@ export type Appointment = {
   paymentStatus: AppointmentPaymentStatus | null;
   siteRef: SiteRef;
   transactionId: string | null;
+  createdBy: string;
+  updatedBy: string;
   createdAt: string;
   updatedAt: string;
 };
