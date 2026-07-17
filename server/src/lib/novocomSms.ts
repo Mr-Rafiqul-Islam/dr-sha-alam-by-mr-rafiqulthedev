@@ -1,4 +1,23 @@
 /**
+ * Normalizes a Bangladeshi phone number to the international MSISDN format
+ * (e.g. "01618574590" -> "8801618574590") expected by the Novocom gateway.
+ * Local-format numbers are accepted by the API but are not actually delivered.
+ */
+export function normalizeBdPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) {
+    return "";
+  }
+  if (digits.startsWith("880")) {
+    return digits;
+  }
+  if (digits.startsWith("0")) {
+    return `880${digits.slice(1)}`;
+  }
+  return digits;
+}
+
+/**
  * Thin shared client for the Novocom SMS gateway already used by appointment confirmations.
  */
 export async function sendNovocomSms(params: {
@@ -13,7 +32,7 @@ export async function sendNovocomSms(params: {
     throw new Error("Novocom SMS is not configured");
   }
 
-  const phone = params.phone.trim();
+  const phone = normalizeBdPhone(params.phone.trim());
   if (!phone) {
     throw new Error("Phone number is required for SMS");
   }
