@@ -18,9 +18,6 @@ export type AdminPermission =
 
 const ANALYTICS_SETTINGS_ROLES = new Set<string>(["SUPER_ADMIN", "MANAGER"]);
 
-/** Staff-user CRUD is limited to Super Admin and Admin (not Manager). */
-const USER_MANAGEMENT_ROLES = new Set<string>(["SUPER_ADMIN", "ADMIN"]);
-
 const STAFF_PANEL_ROLES = new Set<string>([
   "SUPER_ADMIN",
   "ADMIN",
@@ -66,10 +63,6 @@ export function canAccessAdminPermission(
 ): boolean {
   if (permission === "analyticsSettings") {
     return ANALYTICS_SETTINGS_ROLES.has(role);
-  }
-
-  if (permission === "userManagement") {
-    return USER_MANAGEMENT_ROLES.has(role);
   }
 
   if (FULL_ACCESS_ROLES.has(role)) {

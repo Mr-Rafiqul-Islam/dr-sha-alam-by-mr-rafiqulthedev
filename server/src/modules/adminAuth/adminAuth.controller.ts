@@ -7,15 +7,11 @@ import {
 import {
   AdminAuthError,
   getAdminById,
-  initiateAdminLoginOtp,
-  resendAdminLoginOtp,
-  verifyAdminLoginOtp,
+  loginAdmin,
 } from "./adminAuth.service.js";
 import {
   AdminAuthValidationError,
   parseAdminLoginBody,
-  parseAdminResendOtpBody,
-  parseAdminVerifyOtpBody,
 } from "./adminAuth.validation.js";
 
 function handleAdminAuthError(
@@ -47,23 +43,7 @@ function handleAdminAuthError(
 export async function loginHandler(req: Request, res: Response) {
   try {
     const input = parseAdminLoginBody(req.body);
-    const result = await initiateAdminLoginOtp(input);
-
-    return res.status(200).json({
-      success: true,
-      message: "Verification code sent",
-      data: result,
-    });
-    console.log(result);
-  } catch (error) {
-    return handleAdminAuthError(res, error, "Login failed");
-  }
-}
-
-export async function verifyOtpHandler(req: Request, res: Response) {
-  try {
-    const input = parseAdminVerifyOtpBody(req.body);
-    const result = await verifyAdminLoginOtp(input);
+    const result = await loginAdmin(input);
 
     res.cookie(
       ADMIN_TOKEN_COOKIE,
@@ -80,22 +60,7 @@ export async function verifyOtpHandler(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    return handleAdminAuthError(res, error, "OTP verification failed");
-  }
-}
-
-export async function resendOtpHandler(req: Request, res: Response) {
-  try {
-    const input = parseAdminResendOtpBody(req.body);
-    const result = await resendAdminLoginOtp(input);
-
-    return res.status(200).json({
-      success: true,
-      message: "Verification code resent",
-      data: result,
-    });
-  } catch (error) {
-    return handleAdminAuthError(res, error, "Failed to resend verification code");
+    return handleAdminAuthError(res, error, "Login failed");
   }
 }
 
