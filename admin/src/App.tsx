@@ -15,6 +15,10 @@ function lazyNamed<T extends Record<string, ComponentType<object>>>(
 }
 
 const LoginPage = lazyNamed(() => import("./pages/LoginPage"), "LoginPage");
+const VerifyOtpPage = lazyNamed(
+  () => import("./pages/VerifyOtpPage"),
+  "VerifyOtpPage",
+);
 const DashboardPage = lazyNamed(
   () => import("./pages/DashboardPage"),
   "DashboardPage",
@@ -69,6 +73,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
       <Route element={<RequireAdminAuth />}>
         <Route element={<AdminLayout />}>
           <Route index element={<RoleDefaultRedirect />} />

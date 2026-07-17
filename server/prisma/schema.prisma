@@ -99,6 +99,10 @@ enum DeleteRequestStatus {
   REJECTED
 }
 
+enum AdminOtpPurpose {
+  LOGIN
+}
+
 enum ActivityAction {
   APPOINTMENT_CREATED
   APPOINTMENT_STATUS_CHANGED
@@ -147,9 +151,35 @@ model User {
   deleteRequestsReviewed  DeleteRequest[] @relation("DeleteRequestsReviewed")
   appointmentsCreated     Appointment[]   @relation("AppointmentCreatedBy")
   appointmentsUpdated     Appointment[]   @relation("AppointmentUpdatedBy")
+  adminOtpChallenges      AdminOtpChallenge[]
   doctorId                String?
 
   @@index([role])
+}
+
+model AdminOtpChallenge {
+  id String @id @default(uuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  purpose AdminOtpPurpose @default(LOGIN)
+
+  otpHash String
+
+  expiresAt   DateTime
+  verifiedAt  DateTime?
+  consumedAt  DateTime?
+  lastSentAt  DateTime @default(now())
+
+  attempts    Int @default(0)
+  resendCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
 }
 
 model DeleteRequest {
