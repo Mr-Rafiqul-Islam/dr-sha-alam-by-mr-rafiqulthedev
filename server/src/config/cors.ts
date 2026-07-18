@@ -18,6 +18,7 @@ const allowedOrigins = [
   "https://interpolative-multicoil-lowell.ngrok-free.dev",
   "https://localhost:3000 ",
   "http://localhost:5173",
+  "https://admin.trucaredev.tech",
   process.env.FRONTEND_URL,
   process.env.BACKEND_URL,
   ...parseExtraOrigins(process.env.CORS_ALLOWED_ORIGINS),
