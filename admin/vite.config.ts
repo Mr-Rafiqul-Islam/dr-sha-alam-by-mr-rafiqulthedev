@@ -9,6 +9,7 @@ export default defineConfig({
     port: 5173,
     allowedHosts: [
       "admin.trucarehealingcentre.com",
+      "admin.trucaredev.tech",
     ],
   },
 });
