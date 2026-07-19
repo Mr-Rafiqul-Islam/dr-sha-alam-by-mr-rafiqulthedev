@@ -6,7 +6,9 @@ type PaginationProps = {
   totalPages: number;
   totalItems: number;
   pageSize: number;
+  pageSizeOptions?: number[];
   onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 };
 
 type PageItem = number | "ellipsis";
@@ -60,17 +62,42 @@ export function Pagination({
   totalPages,
   totalItems,
   pageSize,
+  pageSizeOptions,
   onPageChange,
+  onPageSizeChange,
 }: PaginationProps) {
   const start = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const end = Math.min(currentPage * pageSize, totalItems);
   const visiblePages = getVisiblePages(currentPage, totalPages);
+  const showPageSizeSelector =
+    pageSizeOptions !== undefined && onPageSizeChange !== undefined;
 
   return (
     <div className="flex flex-col gap-3 border-t border-outline-variant/30 bg-surface/30 px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-6">
-      <span className="text-center text-label-sm font-semibold text-on-surface-variant sm:text-left">
-        Showing {start} to {end} of {totalItems} entries
-      </span>
+      <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <span className="text-center text-label-sm font-semibold text-on-surface-variant sm:text-left">
+          Showing {start} to {end} of {totalItems} entries
+        </span>
+        {showPageSizeSelector ? (
+          <label className="flex items-center gap-2 text-label-sm font-semibold text-on-surface-variant">
+            <span>Show</span>
+            <select
+              value={pageSize}
+              onChange={(event) =>
+                onPageSizeChange(Number(event.target.value))
+              }
+              aria-label="Appointments per page"
+              className="rounded-md border border-outline-variant/50 bg-surface px-2 py-1 text-label-sm font-medium text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              {pageSizeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+      </div>
       <div className="flex min-w-0 flex-wrap items-center justify-center gap-1 sm:gap-2">
         <button
           type="button"
