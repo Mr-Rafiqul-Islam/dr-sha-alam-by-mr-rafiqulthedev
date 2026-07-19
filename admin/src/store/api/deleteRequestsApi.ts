@@ -49,7 +49,12 @@ export const deleteRequestsApi = baseApi.injectEndpoints({
         url: `/api/v1/admin/delete-requests/${id}/reject`,
         method: "POST",
       }),
-      invalidatesTags: [{ type: "DeleteRequest", id: "LIST" }],
+      invalidatesTags: [
+        { type: "DeleteRequest", id: "LIST" },
+        { type: "Blog", id: "LIST" },
+        { type: "Appointment", id: "LIST" },
+        { type: "ContactMessage", id: "LIST" },
+      ],
     }),
   }),
 });

@@ -19,10 +19,14 @@ import {
   validateAppointmentSlotAvailability,
 } from "../../modules/appointment/appointment.slot-availability.js";
 import {
+  annotatePendingDeleteMeta,
+  buildPendingDeleteListWhere,
   canDeleteImmediately,
   createDeleteRequest,
   DeleteRequestEntityType,
+  getPendingDeleteEntityMap,
   resolvePendingDeleteRequestsForEntity,
+  shouldHidePendingDeletesFromLists,
 } from "../../modules/deleteRequest/deleteRequest.service.js";
 import { DeleteRequestError } from "../../modules/deleteRequest/deleteRequest.types.js";
 import {
@@ -364,9 +368,44 @@ export async function rescheduleAppointment(req: Request, res: Response) {
   }
 }
 
-export async function getAllAppointments(_req: Request, res: Response) {
+async function getAdminAppointmentListContext(req: Request) {
+  const admin = req.admin;
+  if (!admin) {
+    throw new AppointmentValidationError("Authentication required.", 401);
+  }
+
+  const pendingDeleteMap = await getPendingDeleteEntityMap(
+    DeleteRequestEntityType.APPOINTMENT,
+  );
+  const hidePendingDeletes = shouldHidePendingDeletesFromLists(admin.role);
+
+  return {
+    pendingDeleteMap,
+    hidePendingDeletes,
+    pendingDeleteWhere: buildPendingDeleteListWhere(
+      hidePendingDeletes,
+      pendingDeleteMap,
+    ),
+  };
+}
+
+function mapAdminAppointments<T extends { id: string; preferredTime: string }>(
+  appointments: T[],
+  pendingDeleteMap: Map<string, string>,
+  hidePendingDeletes: boolean,
+) {
+  const mapped = toPublicAppointments(appointments);
+  return hidePendingDeletes
+    ? mapped
+    : annotatePendingDeleteMeta(mapped, pendingDeleteMap);
+}
+
+export async function getAllAppointments(req: Request, res: Response) {
   try {
+    const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
+      await getAdminAppointmentListContext(req);
     const appointments = await prisma.appointment.findMany({
+      where: pendingDeleteWhere,
       orderBy: ALL_APPOINTMENTS_ORDER,
       include: APPOINTMENT_ACTOR_INCLUDE,
     });
@@ -374,7 +413,11 @@ export async function getAllAppointments(_req: Request, res: Response) {
     return res.status(200).json({
       success: true,
       message: "Appointments fetched successfully",
-      appointments: toPublicAppointments(appointments),
+      appointments: mapAdminAppointments(
+        appointments,
+        pendingDeleteMap,
+        hidePendingDeletes,
+      ),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Failed to get appointments");
@@ -394,8 +437,11 @@ export async function getAppointmentsByDay(req: Request, res: Response) {
     }
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
+    const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
+      await getAdminAppointmentListContext(req);
     const appointments = await prisma.appointment.findMany({
       where: {
+        ...pendingDeleteWhere,
         appointmentDate: { gte: dayStart, lte: dayEnd },
       },
       orderBy: DAY_APPOINTMENT_ORDER,
@@ -405,7 +451,11 @@ export async function getAppointmentsByDay(req: Request, res: Response) {
     return res.status(200).json({
       success: true,
       message: "Appointments fetched successfully",
-      appointments: toPublicAppointments(appointments),
+      appointments: mapAdminAppointments(
+        appointments,
+        pendingDeleteMap,
+        hidePendingDeletes,
+      ),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Failed to get appointments");
@@ -422,8 +472,11 @@ export async function getAppointmentsByMonth(req: Request, res: Response) {
       return res.status(400).json({ success: false, message: "Invalid month or year" });
     }
 
+    const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
+      await getAdminAppointmentListContext(req);
     const appointments = await prisma.appointment.findMany({
       where: {
+        ...pendingDeleteWhere,
         appointmentDate: { gte: range.startDate, lte: range.endDate },
       },
       orderBy: { appointmentDate: "asc" },
@@ -433,7 +486,11 @@ export async function getAppointmentsByMonth(req: Request, res: Response) {
     return res.status(200).json({
       success: true,
       message: "Appointments fetched successfully",
-      appointments: toPublicAppointments(appointments),
+      appointments: mapAdminAppointments(
+        appointments,
+        pendingDeleteMap,
+        hidePendingDeletes,
+      ),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Failed to get appointments");
@@ -450,8 +507,11 @@ export async function getAppointmentsByMonthForCalendar(req: Request, res: Respo
       return res.status(400).json({ success: false, message: "Invalid month or year" });
     }
 
+    const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
+      await getAdminAppointmentListContext(req);
     const appointments = await prisma.appointment.findMany({
       where: {
+        ...pendingDeleteWhere,
         appointmentDate: { gte: range.startDate, lte: range.endDate },
       },
       orderBy: { appointmentDate: "asc" },
@@ -463,12 +523,24 @@ export async function getAppointmentsByMonthForCalendar(req: Request, res: Respo
       },
     });
 
-    const formattedAppointments = appointments.map((appointment) => ({
-      id: appointment.id,
-      name: appointment.name,
-      appointmentDate: appointment.appointmentDate,
-      preferredTime: toPublicAppointment(appointment).preferredTime,
-    }));
+    const formattedAppointments = appointments.map((appointment) => {
+      const mapped = {
+        id: appointment.id,
+        name: appointment.name,
+        appointmentDate: appointment.appointmentDate,
+        preferredTime: toPublicAppointment(appointment).preferredTime,
+      };
+      const deleteRequestId = pendingDeleteMap.get(appointment.id);
+      if (!deleteRequestId || hidePendingDeletes) {
+        return mapped;
+      }
+
+      return {
+        ...mapped,
+        pendingDelete: true as const,
+        deleteRequestId,
+      };
+    });
 
     return res.status(200).json({
       success: true,

@@ -222,18 +222,45 @@ export type AppointmentStats = {
   today: number;
   pending: number;
   completed: number;
+  todayAttended: number;
 };
+
+export function formatAppointmentDateLabel(ymd: string): string {
+  const [year, month, day] = ymd.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+
+  if (Number.isNaN(date.getTime())) {
+    return ymd;
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 export function computeAppointmentStats(
   appointments: Appointment[],
+  options?: { dateYmd?: string },
 ): AppointmentStats {
-  const todayYmd = getTodayYmd();
+  const referenceYmd = options?.dateYmd ?? getTodayYmd();
+  const scopedAppointments = options?.dateYmd
+    ? appointments.filter((appointment) =>
+        isSameCalendarDay(appointment.appointmentDate, options.dateYmd!),
+      )
+    : appointments;
 
-  return appointments.reduce<AppointmentStats>(
+  return scopedAppointments.reduce<AppointmentStats>(
     (stats, appointment) => {
       stats.total += 1;
 
-      if (isSameCalendarDay(appointment.appointmentDate, todayYmd)) {
+      const isReferenceDay = isSameCalendarDay(
+        appointment.appointmentDate,
+        referenceYmd,
+      );
+
+      if (isReferenceDay) {
         stats.today += 1;
       }
 
@@ -245,9 +272,13 @@ export function computeAppointmentStats(
         stats.completed += 1;
       }
 
+      if (isReferenceDay && appointment.status === "ATTEND") {
+        stats.todayAttended += 1;
+      }
+
       return stats;
     },
-    { total: 0, today: 0, pending: 0, completed: 0 },
+    { total: 0, today: 0, pending: 0, completed: 0, todayAttended: 0 },
   );
 }
 

@@ -18,15 +18,29 @@ import {
 } from "../../../modules/blogs/generate-unique-slug.js";
 import { parseCommaSeparatedField } from "../../../modules/blogs/parse-comma-separated.js";
 import {
+  annotatePendingDeleteMeta,
+  buildPendingDeleteListWhere,
   canDeleteImmediately,
   createDeleteRequest,
   DeleteRequestEntityType,
+  getPendingDeleteEntityMap,
+  getPendingDeleteRequestId,
   resolvePendingDeleteRequestsForEntity,
+  shouldHidePendingDeletesFromLists,
+  withPendingDeleteMeta,
 } from "../../../modules/deleteRequest/deleteRequest.service.js";
 import { DeleteRequestError } from "../../../modules/deleteRequest/deleteRequest.types.js";
 
 export async function listBlogsForAdmin(req: Request, res: Response) {
   try {
+    const admin = req.admin;
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
+
     const rawPub = req.query.published;
     let publishedFilter: boolean | null = null;
     let publishedAll = false;
@@ -101,7 +115,14 @@ export async function listBlogsForAdmin(req: Request, res: Response) {
       });
     }
 
-    const where: Prisma.BlogWhereInput = {};
+    const pendingDeleteMap = await getPendingDeleteEntityMap(
+      DeleteRequestEntityType.BLOG,
+    );
+    const hidePendingDeletes = shouldHidePendingDeletesFromLists(admin.role);
+
+    const where: Prisma.BlogWhereInput = {
+      ...buildPendingDeleteListWhere(hidePendingDeletes, pendingDeleteMap),
+    };
     if (!publishedAll && publishedFilter !== null) {
       where.published = publishedFilter;
     }
@@ -116,7 +137,10 @@ export async function listBlogsForAdmin(req: Request, res: Response) {
       where,
       orderBy: [{ createdAt: "desc" }],
     });
-    res.json({ success: true, data: rows });
+    const data = hidePendingDeletes
+      ? rows
+      : annotatePendingDeleteMeta(rows, pendingDeleteMap);
+    res.json({ success: true, data });
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -128,6 +152,14 @@ export async function listBlogsForAdmin(req: Request, res: Response) {
 
 export async function getBlogByIdForAdmin(req: Request, res: Response) {
   try {
+    const admin = req.admin;
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
+
     const id = routeParamString(req.params.id);
     if (!id) {
       return res.status(400).json({
@@ -144,7 +176,23 @@ export async function getBlogByIdForAdmin(req: Request, res: Response) {
       });
     }
 
-    res.json({ success: true, data: row });
+    const deleteRequestId = await getPendingDeleteRequestId(
+      DeleteRequestEntityType.BLOG,
+      id,
+    );
+    if (deleteRequestId && shouldHidePendingDeletesFromLists(admin.role)) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+      });
+    }
+
+    const pendingDeleteMap = deleteRequestId
+      ? new Map([[id, deleteRequestId]])
+      : new Map<string, string>();
+    const data = withPendingDeleteMeta(row, pendingDeleteMap);
+
+    res.json({ success: true, data });
   } catch (err) {
     console.error(err);
     res.status(500).json({

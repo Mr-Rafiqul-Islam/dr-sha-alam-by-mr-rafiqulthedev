@@ -53,7 +53,10 @@ export const contactMessagesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { id }) =>
         _result?.pending
-          ? [{ type: "DeleteRequest", id: "LIST" }]
+          ? [
+              { type: "DeleteRequest", id: "LIST" },
+              { type: "ContactMessage", id: "LIST" },
+            ]
           : [
               { type: "ContactMessage", id },
               { type: "ContactMessage", id: "LIST" },
