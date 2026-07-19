@@ -32,6 +32,7 @@ import {
   exportAppointmentsCsv,
   filterAppointments,
   formatAppointmentDateTime,
+  getTodayYmd,
   getInitials,
   getPaymentStatusBadgeVariant,
   getPaymentStatusLabel,
@@ -43,7 +44,8 @@ import {
   getPendingDeleteSurfaceClass,
 } from "../utils/pendingDelete";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [10, 30, 50] as const;
+const DEFAULT_PAGE_SIZE = 30;
 
 type AppointmentActionsProps = {
   appointment: Appointment;
@@ -157,6 +159,7 @@ function AppointmentCard({
 export function AppointmentsPage() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
   const [todayOnly, setTodayOnly] = useState(false);
@@ -183,16 +186,17 @@ export function AppointmentsPage() {
   const [deleteAppointment, { isLoading: isDeleting }] =
     useDeleteAppointmentMutation();
 
+  const effectiveDate = todayOnly ? getTodayYmd() : date;
   const filteredAppointments = filterAppointments(appointments, {
     search,
     date,
     todayOnly,
   });
   const totalItems = filteredAppointments.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const paginatedAppointments = filteredAppointments.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
   );
 
   useEffect(() => {
@@ -311,7 +315,12 @@ export function AppointmentsPage() {
         }
       />
 
-      {!isLoading && !isError && <AppointmentStats appointments={appointments} />}
+      {!isLoading && !isError && (
+        <AppointmentStats
+          appointments={appointments}
+          selectedDate={effectiveDate || undefined}
+        />
+      )}
 
       {!isLoading && !isError && (
         <AppointmentFilters
@@ -524,8 +533,13 @@ export function AppointmentsPage() {
               currentPage={currentPage}
               totalPages={totalPages}
               totalItems={totalItems}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
+              pageSizeOptions={[...PAGE_SIZE_OPTIONS]}
               onPageChange={setCurrentPage}
+              onPageSizeChange={(value) => {
+                setPageSize(value);
+                setCurrentPage(1);
+              }}
             />
           </>
         )}
