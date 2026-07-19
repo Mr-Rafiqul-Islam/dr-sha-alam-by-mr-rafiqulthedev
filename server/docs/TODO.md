@@ -11,9 +11,9 @@
 | 6      | Custom note / sharing review                   | 1 day      |         |                |
 | 7      | Announcement show in dashboard + appointment   | 1 day      |         |                |
 | 8      | Treatment field + editable column              | 0.5–1 day  |         |                |
-| 9      | Today's attendance status                      | 0.5 day    |         |                |
+| 9      | Today's attendance status                      | 0.5 day    | Masaud  | Done           |
 | 10     | Custom date-based overview stats               | 1 day      | Sakib   | Done           |
 | 11     | Chat system                                    | 2–3 days   | Sakib   | Done ( Today ) |
-| 12     | Support/Editor delete → pending admin approval | 1–1.5 days |         |                |
+| 12     | Support/Editor delete → pending admin approval | 1–1.5 days | Masaud  | Done           |
 
 
