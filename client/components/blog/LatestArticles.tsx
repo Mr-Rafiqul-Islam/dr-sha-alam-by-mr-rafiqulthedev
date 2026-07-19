@@ -59,9 +59,7 @@ export default function LatestArticles({
                       <p className="text-text-sub text-sm mb-6 line-clamp-3 leading-relaxed">
                         {blog.shortDesc}
                       </p>
-                      <span
-                        className="mt-auto inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors gap-1"
-                      >
+                      <span className="mt-auto inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors gap-1">
                         Read More{" "}
                         <span className="material-symbols-outlined text-sm">
                           arrow_forward
@@ -74,11 +72,6 @@ export default function LatestArticles({
             ))}
           </div>
         )}
-        <ScrollReveal direction="up" className="lg:mt-12 mt-8 text-center">
-          <button className="bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-sm hover:shadow-md">
-            Load More Articles
-          </button>
-        </ScrollReveal>
       </div>
     </section>
   );

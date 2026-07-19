@@ -3,6 +3,7 @@ import type { PublicBlog } from "@/types/blog";
 export function buildBlogFilterUrl(
   q?: string | null,
   category?: string | null,
+  page?: number,
 ): string {
   const params = new URLSearchParams();
 
@@ -14,6 +15,10 @@ export function buildBlogFilterUrl(
   const trimmedQuery = q?.trim();
   if (trimmedQuery) {
     params.set("q", trimmedQuery);
+  }
+
+  if (page != null && page > 1) {
+    params.set("page", String(page));
   }
 
   const query = params.toString();
