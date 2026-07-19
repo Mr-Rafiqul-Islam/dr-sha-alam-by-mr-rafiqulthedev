@@ -11,6 +11,7 @@ import {
   Modal,
   PageHeader,
   Pagination,
+  PendingDeleteBadge,
   Table,
   TableBody,
   TableCell,
@@ -39,6 +40,10 @@ import {
   getStatusBadgeVariant,
   getStatusLabel,
 } from "../utils/contact";
+import {
+  getPendingDeleteRowClass,
+  getPendingDeleteSurfaceClass,
+} from "../utils/pendingDelete";
 
 const PAGE_SIZE = 10;
 
@@ -99,7 +104,9 @@ function ContactMessageCard({
   onDelete,
 }: ContactMessageActionsProps) {
   return (
-    <article className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
+    <article
+      className={`rounded-xl border p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)] ${getPendingDeleteSurfaceClass(message.pendingDelete)}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <Avatar initials={getInitials(message.name)} size="sm" />
@@ -121,6 +128,7 @@ function ContactMessageCard({
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
+        {message.pendingDelete ? <PendingDeleteBadge /> : null}
         <Badge variant={getStatusBadgeVariant(message.status)}>
           {getStatusLabel(message.status)}
         </Badge>
@@ -401,7 +409,10 @@ export function ContactMessagesPage() {
                     </TableRow>
                   ) : (
                     paginatedMessages.map((message) => (
-                      <TableRow key={message.id}>
+                      <TableRow
+                        key={message.id}
+                        className={getPendingDeleteRowClass(message.pendingDelete)}
+                      >
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar
@@ -415,6 +426,11 @@ export function ContactMessagesPage() {
                               <p className="truncate text-label-sm text-on-surface-variant">
                                 {message.email ?? "—"}
                               </p>
+                              {message.pendingDelete ? (
+                                <div className="mt-1">
+                                  <PendingDeleteBadge />
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         </TableCell>

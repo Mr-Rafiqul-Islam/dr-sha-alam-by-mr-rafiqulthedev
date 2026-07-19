@@ -10,6 +10,7 @@ import {
   Modal,
   PageHeader,
   Pagination,
+  PendingDeleteBadge,
   Table,
   TableBody,
   TableCell,
@@ -37,6 +38,10 @@ import {
   getStatusBadgeVariant,
   getStatusLabel,
 } from "../utils/appointment";
+import {
+  getPendingDeleteRowClass,
+  getPendingDeleteSurfaceClass,
+} from "../utils/pendingDelete";
 
 const PAGE_SIZE = 10;
 
@@ -91,7 +96,9 @@ function AppointmentCard({
   onDelete,
 }: AppointmentActionsProps) {
   return (
-    <article className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
+    <article
+      className={`rounded-xl border p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)] ${getPendingDeleteSurfaceClass(appointment.pendingDelete)}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <Avatar initials={getInitials(appointment.name)} size="sm" />
@@ -113,6 +120,7 @@ function AppointmentCard({
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
+        {appointment.pendingDelete ? <PendingDeleteBadge /> : null}
         <Badge
           variant="neutral"
           className="gap-2 rounded-md px-3 py-1.5"
@@ -444,11 +452,19 @@ export function AppointmentsPage() {
                     </TableRow>
                   ) : (
                     paginatedAppointments.map((appointment) => (
-                      <TableRow key={appointment.id}>
+                      <TableRow
+                        key={appointment.id}
+                        className={getPendingDeleteRowClass(appointment.pendingDelete)}
+                      >
                         <TableCell className="px-3! !md:px-0">
-                          <span className="text-xs font-medium text-on-surface">
-                            {appointment.name}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs font-medium text-on-surface">
+                              {appointment.name}
+                            </span>
+                            {appointment.pendingDelete ? (
+                              <PendingDeleteBadge />
+                            ) : null}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">

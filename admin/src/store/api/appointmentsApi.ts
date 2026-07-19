@@ -56,7 +56,10 @@ export const appointmentsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { id }) =>
         _result?.pending
-          ? [{ type: "DeleteRequest", id: "LIST" }]
+          ? [
+              { type: "DeleteRequest", id: "LIST" },
+              { type: "Appointment", id: "LIST" },
+            ]
           : [
               { type: "Appointment", id },
               { type: "Appointment", id: "LIST" },

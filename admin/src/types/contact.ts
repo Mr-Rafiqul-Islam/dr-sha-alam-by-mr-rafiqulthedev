@@ -1,6 +1,8 @@
 export type ContactMessageStatus = "PENDING" | "IN_PROGRESS" | "READ";
 
-export type ContactMessage = {
+import type { PendingDeleteMeta } from "./pendingDelete";
+
+export type ContactMessage = PendingDeleteMeta & {
   id: string;
   status: ContactMessageStatus;
   name: string;
