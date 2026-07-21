@@ -18,6 +18,7 @@ import {
   analyticsSettingsAdminRouter,
   analyticsSettingsClientRouter,
 } from "../modules/analyticsSettings/analyticsSettings.routes.js";
+import { announcementAdminRouter } from "./announcement/admin/announcement.routes.js";
 
 
 /**
@@ -38,5 +39,6 @@ export function mountRoutes(app: Express): void {
   app.use("/api/v1/admin/blogs", blogsAdminRouter);
   app.use("/api/v1/client/contact-messages", contactClientRouter);
   app.use("/api/v1/admin/contact-messages", contactAdminRouter);
+  app.use("/api/v1/admin/announcements", announcementAdminRouter);
   app.use("/api/v1/payment", paymentRouter);
 }

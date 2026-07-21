@@ -103,6 +103,17 @@ enum AdminOtpPurpose {
   LOGIN
 }
 
+enum AnnouncementType {
+  INFO
+  WARNING
+  URGENT
+}
+
+enum AnnouncementStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum ActivityAction {
   APPOINTMENT_CREATED
   APPOINTMENT_STATUS_CHANGED
@@ -153,6 +164,8 @@ model User {
   appointmentsUpdated     Appointment[]   @relation("AppointmentUpdatedBy")
   adminOtpChallenges      AdminOtpChallenge[]
   doctorId                String?
+  announcementsCreated    Announcement[]
+  userAnnouncements       UserAnnouncement[]
 
   @@index([role])
 }
@@ -541,4 +554,35 @@ model AnalyticsSetting {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Announcement {
+  id          String             @id @default(uuid())
+  title       String
+  content     String
+  type        AnnouncementType   @default(INFO)
+  status      AnnouncementStatus @default(ACTIVE)
+  createdById String?
+  createdBy   User?              @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  userAnnouncements UserAnnouncement[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UserAnnouncement {
+  id             String    @id @default(uuid())
+  userId         String
+  announcementId String
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, announcementId])
+  @@index([userId, isRead])
 }
