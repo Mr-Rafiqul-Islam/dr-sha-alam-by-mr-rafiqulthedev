@@ -3,8 +3,15 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PreferredDatePicker from "@/components/booking/PreferredDatePicker";
-import { getClosedDates } from "@/lib/appointmentSchedules";
-import { getMetaCookiesFromDocument, trackMetaEvent } from "@/lib/metaAnalytics";
+import {
+  getClosedDates,
+  getTodayDate,
+  getTomorrowDate,
+} from "@/lib/appointmentSchedules";
+import {
+  getMetaCookiesFromDocument,
+  trackMetaEvent,
+} from "@/lib/metaAnalytics";
 import { getAppointmentSchedules } from "@/server-actions/getAppointmentSchedules";
 import { getSlotDefaults } from "@/server-actions/getSlotDefaults";
 import { startPayment } from "@/server-actions/startPayment";
@@ -41,14 +48,12 @@ const initialFormState: FormState = {
 };
 
 const SHOW_FREE_BOOKING_OPTION = true;
+const PLID_SLOT_CODE = "P-9";
 
-function getMinPreferredDate(): string {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const year = tomorrow.getFullYear();
-  const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
-  const day = String(tomorrow.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+function getMinPreferredDateForSlot(preferredTime: string): string {
+  return preferredTime === PLID_SLOT_CODE
+    ? getTomorrowDate()
+    : getTodayDate();
 }
 
 export default function BookingForm() {
@@ -68,7 +73,7 @@ export default function BookingForm() {
 
   const isSubmitting = isSubmittingFree || isSubmittingPaid;
   const activeError = bookingMode === "free" ? freeError : paidError;
-  const minPreferredDate = getMinPreferredDate();
+  const minPreferredDate = getMinPreferredDateForSlot(form.preferredTime);
 
   const loadSchedules = useCallback(async (showLoading = true) => {
     if (showLoading) {
@@ -180,9 +185,7 @@ export default function BookingForm() {
         }
 
         setSlotsError(
-          error instanceof Error
-            ? error.message
-            : "Could not load time slots",
+          error instanceof Error ? error.message : "Could not load time slots",
         );
       })
       .finally(() => {
@@ -198,6 +201,21 @@ export default function BookingForm() {
 
   const updateField = (field: keyof FormState, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const handlePreferredTimeChange = (preferredTime: string) => {
+    setForm((current) => {
+      const next: FormState = { ...current, preferredTime };
+
+      if (
+        preferredTime === PLID_SLOT_CODE &&
+        current.preferredDate === getTodayDate()
+      ) {
+        next.preferredDate = "";
+      }
+
+      return next;
+    });
   };
 
   const handleModeChange = (mode: BookingMode) => {
@@ -242,7 +260,8 @@ export default function BookingForm() {
       email: form.email || undefined,
       gender: form.gender || undefined,
       problem: form.problem || undefined,
-      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+      userAgent:
+        typeof navigator !== "undefined" ? navigator.userAgent : undefined,
       ...metaCookies,
     });
 
@@ -392,7 +411,9 @@ export default function BookingForm() {
                   required
                   type="text"
                   value={form.fullName}
-                  onChange={(event) => updateField("fullName", event.target.value)}
+                  onChange={(event) =>
+                    updateField("fullName", event.target.value)
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -430,7 +451,9 @@ export default function BookingForm() {
                   <select
                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all appearance-none"
                     value={form.gender}
-                    onChange={(event) => updateField("gender", event.target.value)}
+                    onChange={(event) =>
+                      updateField("gender", event.target.value)
+                    }
                   >
                     <option value="">Select gender (optional)</option>
                     <option value="Male">Male</option>
@@ -473,21 +496,6 @@ export default function BookingForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-bold text-text-main dark:text-gray-300">
-                  Preferred Date <span className="text-red-500">*</span>
-                </label>
-                <PreferredDatePicker
-                  closedDates={closedDates}
-                  isLoading={schedulesLoading}
-                  minDate={minPreferredDate}
-                  required
-                  schedulesError={schedulesError}
-                  value={form.preferredDate}
-                  onChange={(value) => updateField("preferredDate", value)}
-                  onOpen={() => void loadSchedules(false)}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-text-main dark:text-gray-300">
                   Preferred Time <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -497,7 +505,7 @@ export default function BookingForm() {
                     disabled={slotsLoading || timeSlots.length === 0}
                     value={form.preferredTime}
                     onChange={(event) =>
-                      updateField("preferredTime", event.target.value)
+                      handlePreferredTimeChange(event.target.value)
                     }
                   >
                     <option value="">
@@ -515,6 +523,21 @@ export default function BookingForm() {
                     expand_more
                   </span>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-text-main dark:text-gray-300">
+                  Preferred Date <span className="text-red-500">*</span>
+                </label>
+                <PreferredDatePicker
+                  closedDates={closedDates}
+                  isLoading={schedulesLoading}
+                  minDate={minPreferredDate}
+                  required
+                  schedulesError={schedulesError}
+                  value={form.preferredDate}
+                  onChange={(value) => updateField("preferredDate", value)}
+                  onOpen={() => void loadSchedules(false)}
+                />
               </div>
             </div>
 
