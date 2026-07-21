@@ -27,8 +27,9 @@ function ThankYouContent() {
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
   const tranId = searchParams.get("tranId");
+  const hasAppointmentId = Boolean(appointmentId);
   const [appointment, setAppointment] = useState<AppointmentSummary | null>(null);
-  const [loadFailed, setLoadFailed] = useState(false);
+  const [fetchFailed, setFetchFailed] = useState(false);
 
   useEffect(() => {
     if (!tranId) {
@@ -40,7 +41,6 @@ function ThankYouContent() {
 
   useEffect(() => {
     if (!appointmentId) {
-      setLoadFailed(true);
       return;
     }
 
@@ -56,7 +56,7 @@ function ThankYouContent() {
         }
       } catch {
         if (!cancelled) {
-          setLoadFailed(true);
+          setFetchFailed(true);
         }
       }
     }
@@ -132,7 +132,7 @@ function ThankYouContent() {
                 </p>
               </div>
             </div>
-          ) : loadFailed ? (
+          ) : fetchFailed || !hasAppointmentId ? (
             <p className="text-sm text-text-sub">
               Your payment was successful. Appointment details will be sent to
               your phone shortly.
