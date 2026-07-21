@@ -46,7 +46,7 @@ import {
   getPendingDeleteSurfaceClass,
 } from "../utils/pendingDelete";
 
-const PAGE_SIZE_OPTIONS = [10, 30, 50] as const;
+const PAGE_SIZE_OPTIONS = [30, 50, 100] as const;
 const DEFAULT_PAGE_SIZE = 30;
 const ADMIN_NOTE_MAX_LENGTH = 200;
 

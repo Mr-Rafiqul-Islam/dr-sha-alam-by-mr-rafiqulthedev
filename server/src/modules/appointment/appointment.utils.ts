@@ -124,6 +124,7 @@ export function parseAppointmentDateForSlot(
   value: unknown,
   slotCode: string,
   fieldName: string,
+  options?: { allowTodayForPlid?: boolean },
 ): Date {
   if (value === null || value === undefined || value === "") {
     throw new AppointmentValidationError(`${fieldName} is required`);
@@ -134,7 +135,10 @@ export function parseAppointmentDateForSlot(
     throw new AppointmentValidationError(`Invalid ${fieldName}`);
   }
 
-  if (requiresFutureAppointmentDate(slotCode)) {
+  const plidRequiresFutureDate =
+    requiresFutureAppointmentDate(slotCode) && !options?.allowTodayForPlid;
+
+  if (plidRequiresFutureDate) {
     if (isPastOrToday(date)) {
       throw new AppointmentValidationError("Only future dates are allowed");
     }

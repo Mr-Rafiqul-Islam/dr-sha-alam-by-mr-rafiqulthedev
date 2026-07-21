@@ -14,7 +14,6 @@ import type { FormFieldConfig } from "../../types/form";
 import {
   getMinPreferredDateYmd,
   isValidPreferredDateYmd,
-  requiresFutureAppointmentDate,
 } from "../../utils/appointment";
 
 export type { AppointmentFormData } from "../../types/appointment";
@@ -145,9 +144,7 @@ function AppointmentFormFields({
       if (!isValidPreferredDateYmd(data.preferredDate, data.preferredTime)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: requiresFutureAppointmentDate(data.preferredTime)
-            ? "PLID appointments must be scheduled for a future date"
-            : "Past dates are not allowed",
+          message: "Past dates are not allowed",
           path: ["preferredDate"],
         });
       }

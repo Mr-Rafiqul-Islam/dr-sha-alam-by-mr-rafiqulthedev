@@ -155,7 +155,10 @@ export function AppointmentViewModal({
             />
           </DetailSection>
 
-          <div className="flex justify-end border-t border-outline-variant/30 pt-4">
+          <div className="flex justify-end gap-5 border-t border-outline-variant/30 pt-4">
+            <Button variant="primary" onClick={() => console.log('print')}>
+              Print
+            </Button>
             <Button variant="ghost" onClick={onClose}>
               Close
             </Button>

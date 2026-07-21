@@ -188,19 +188,11 @@ export function isPastDateYmd(value: string): boolean {
   return selected.getTime() < today.getTime();
 }
 
-export function isValidPreferredDateYmd(value: string, slotCode: string): boolean {
-  if (requiresFutureAppointmentDate(slotCode)) {
-    return isFutureDateYmd(value);
-  }
-
+export function isValidPreferredDateYmd(value: string): boolean {
   return !isPastDateYmd(value);
 }
 
-export function getMinPreferredDateYmd(slotCode: string): string {
-  if (!slotCode || requiresFutureAppointmentDate(slotCode)) {
-    return getTomorrowYmd();
-  }
-
+export function getMinPreferredDateYmd(): string {
   return getTodayYmd();
 }
 

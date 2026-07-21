@@ -79,6 +79,7 @@ export async function createAppointment(req: Request, res: Response) {
       req.body.preferredDate,
       slotCode,
       "preferredDate",
+      { allowTodayForPlid: Boolean(req.admin) },
     );
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
