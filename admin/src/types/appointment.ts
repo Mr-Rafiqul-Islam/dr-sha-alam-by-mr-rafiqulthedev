@@ -22,6 +22,7 @@ export type Appointment = PendingDeleteMeta & {
   appointmentDate: string;
   serialNumber: number;
   gender: string | null;
+  age: string | null;
   status: AppointmentStatus;
   paymentStatus: AppointmentPaymentStatus | null;
   siteRef: SiteRef;
@@ -46,6 +47,7 @@ export type AppointmentResponse = {
 
 export type AppointmentFormData = {
   patientName: string;
+  age?: string;
   phone: string;
   email: string;
   homeAddress: string;
@@ -59,6 +61,7 @@ export type CreateAppointmentPayload = {
   fullName: string;
   phoneNumber: string;
   email?: string;
+  age?: string;
   homeAddress: string;
   problem?: string;
   preferredDate: string;

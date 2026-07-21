@@ -248,6 +248,7 @@ model Appointment {
   appointmentDate DateTime
   serialNumber    Int
   gender          String?
+  age             String?
   status          AppointmentStatus @default(PENDING)
   paymentStatus   AppointmentPaymentStatus?
   siteRef         SiteRef           @default(DOCTOR_SHA_ALAM)

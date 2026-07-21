@@ -72,6 +72,7 @@ export async function createAppointment(req: Request, res: Response) {
     const homeAddress = parseRequiredString(req.body.homeAddress, "homeAddress");
     const emailText = parseEmail(req.body.email);
     const problemText = parseOptionalString(req.body.problem);
+    const ageText = parseOptionalString(req.body.age);
     const slotCode = parseSlotCodeString(req.body.preferredTime);
     const selectedDate = parseAppointmentDateForSlot(
       req.body.preferredDate,
@@ -128,6 +129,7 @@ export async function createAppointment(req: Request, res: Response) {
           email: emailText,
           homeAddress,
           problem: problemText,
+          age: ageText,
           preferredTime: slotCode,
           appointmentDate: selectedDate,
           serialNumber,
@@ -571,6 +573,7 @@ export async function getAppointmentsById(req: Request, res: Response) {
         preferredTime: true,
         serialNumber: true,
         gender: true,
+        age: true,
         status: true,
         transactionId: true,
       },

@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch, type Control } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "../common/Button";
@@ -21,6 +21,7 @@ export type { AppointmentFormData } from "../../types/appointment";
 
 const defaultValues: AppointmentFormData = {
   patientName: "",
+  age: "",
   phone: "",
   email: "",
   homeAddress: "",
@@ -110,6 +111,7 @@ function AppointmentFormFields({
   const appointmentSchema = z
     .object({
       patientName: z.string().min(1, "Full name is required"),
+      age: z.string().optional(),
       phone: z.string().min(1, "Phone number is required"),
       email: z.union([
         z.literal(""),
@@ -179,10 +181,22 @@ function AppointmentFormFields({
         placeholder: "Enter patient's name",
       },
       {
+        name: "age",
+        label: "Age",
+        type: "text",
+        placeholder: "e.g. 35",
+      },
+      {
         name: "phone",
         label: "Phone Number *",
         type: "tel",
         placeholder: "017XXXXXXXX",
+      },
+      {
+        name: "preferredTime",
+        label: "Preferred Time *",
+        type: "select",
+        options: timeSlotOptions,
       },
       {
         name: "preferredDate",
@@ -195,12 +209,6 @@ function AppointmentFormFields({
           ? "Could not load chamber availability"
           : null,
         minDate: minPreferredDate,
-      },
-      {
-        name: "preferredTime",
-        label: "Preferred Time *",
-        type: "select",
-        options: timeSlotOptions,
       },
       {
         name: "homeAddress",
@@ -236,7 +244,7 @@ function AppointmentFormFields({
       noValidate
     >
       <CommonFormFields
-        control={form.control as Control<Record<string, unknown>>}
+        control={form.control}
         fields={appointmentFields}
         disabled={isSubmitting}
       />

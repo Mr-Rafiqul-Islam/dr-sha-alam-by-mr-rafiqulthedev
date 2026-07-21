@@ -138,6 +138,7 @@ export function toCreateAppointmentPayload(
     preferredDate: data.preferredDate,
     preferredTime: data.preferredTime,
     ...(data.email.trim() ? { email: data.email.trim() } : {}),
+    ...(data.age?.trim() ? { age: data.age.trim() } : {}),
     ...(data.symptoms?.trim() ? { problem: data.symptoms.trim() } : {}),
   };
 }
@@ -329,6 +330,7 @@ function escapeCsvValue(value: string): string {
 export function exportAppointmentsCsv(appointments: Appointment[]): void {
   const headers = [
     "Patient Name",
+    "Age",
     "Phone",
     "Email",
     "Date & Time",
@@ -343,6 +345,7 @@ export function exportAppointmentsCsv(appointments: Appointment[]): void {
 
   const rows = appointments.map((appointment) => [
     appointment.name,
+    appointment.age ?? "",
     appointment.phone,
     appointment.email ?? "",
     formatAppointmentDateTime(appointment),

@@ -88,6 +88,10 @@ export function AppointmentViewModal({
           <DetailSection title="Patient Information">
             <DetailRow label="Phone" value={appointment.phone} />
             <DetailRow
+              label="Age"
+              value={formatNullable(appointment.age)}
+            />
+            <DetailRow
               label="Email"
               value={formatNullable(appointment.email)}
             />
