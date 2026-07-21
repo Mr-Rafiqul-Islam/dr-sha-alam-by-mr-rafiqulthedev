@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Editor } from "@tinymce/tinymce-react";
-// import { TINYMCE_API_KEY } from "../../config/env";
+import { TINYMCE_API_KEY } from "../../config/env";
 
 /** Loaded inside the editor iframe so font picks render correctly in content. */
 const RTE_GOOGLE_FONTS_IMPORT = String.raw`@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Anek+Bangla:wght@400;500;600;700&display=swap");`;
@@ -29,8 +29,8 @@ export function RichTextEditor({
     <div className="overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest">
       <Editor
         onInit={onInit}
-        // apiKey={TINYMCE_API_KEY}
-        apiKey="dvpt6yrghqn11su5e7uutgqqjqrvjq3l1khrnit4hkgv762u"
+        apiKey={TINYMCE_API_KEY}
+        // apiKey="dvpt6yrghqn11su5e7uutgqqjqrvjq3l1khrnit4hkgv762u"
         // apiKey="b40orfn9hpx3sw7p1wp654ssunzz4mf5s7ic8ljsycua7nu4"
         disabled={disabled}
         {...(controlled

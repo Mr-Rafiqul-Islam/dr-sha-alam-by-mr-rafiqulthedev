@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "../components/common";
 import { AppointmentFilters } from "../components/appointments/AppointmentFilters";
+import { AnnouncementBannerList } from "../components/announcements/AnnouncementBannerList";
 import { AppointmentStats } from "../components/appointments/AppointmentStats";
 import { AppointmentViewModal } from "../components/appointments/AppointmentViewModal";
 import {
@@ -331,6 +332,10 @@ export function AppointmentsPage() {
           </div>
         }
       />
+
+      <div className="mb-6">
+        <AnnouncementBannerList todayOnly />
+      </div>
 
       {!isLoading && !isError && (
         <AppointmentStats

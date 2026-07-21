@@ -49,6 +49,6 @@ const baseQueryWithAdminAuth: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithAdminAuth,
-  tagTypes: ["Appointment", "AppointmentSchedule", "Blog", "ContactMessage", "SlotDefault", "ActivityLog", "DeleteRequest", "AnalyticsSetting", "AdminUser"],
+  tagTypes: ["Appointment", "AppointmentSchedule", "Blog", "ContactMessage", "SlotDefault", "ActivityLog", "DeleteRequest", "AnalyticsSetting", "AdminUser", "Announcement"],
   endpoints: () => ({}),
 });

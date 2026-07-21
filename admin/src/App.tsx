@@ -64,6 +64,10 @@ const PendingDeletesPage = lazyNamed(
   "PendingDeletesPage",
 );
 const AdminsPage = lazyNamed(() => import("./pages/AdminsPage"), "AdminsPage");
+const AnnouncementsPage = lazyNamed(
+  () => import("./pages/AnnouncementsPage"),
+  "AnnouncementsPage",
+);
 const AdminFormPage = lazyNamed(
   () => import("./pages/AdminFormPage"),
   "AdminFormPage",
@@ -109,6 +113,9 @@ function App() {
               element={<ContactMessageDetailPage />}
             />
             <Route path="contact-messages" element={<ContactMessagesPage />} />
+          </Route>
+          <Route element={<RequireAdminPermission permission="announcements" />}>
+            <Route path="announcements" element={<AnnouncementsPage />} />
           </Route>
           <Route element={<RequireAdminPermission permission="analyticsSettings" />}>
             <Route path="settings" element={<SettingsPage />} />

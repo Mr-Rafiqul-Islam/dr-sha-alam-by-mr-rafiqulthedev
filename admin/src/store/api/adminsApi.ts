@@ -1,10 +1,10 @@
-import type { StaffRole } from "../constants/permissions";
+import type { StaffRole } from "../../constants/permissions";
 import type {
   AdminFilterState,
   AdminManagedUser,
   CreateAdminPayload,
   UpdateAdminPayload,
-} from "../types/admin";
+} from "../../types/admin";
 import { baseApi } from "./baseApi";
 
 type ListAdminsArgs = {

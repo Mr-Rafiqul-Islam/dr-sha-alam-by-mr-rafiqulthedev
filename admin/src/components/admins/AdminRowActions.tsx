@@ -96,7 +96,6 @@ export function AdminRowActions({
   return (
     <>
       <Button
-        ref={triggerRef}
         type="button"
         variant="ghost"
         size="sm"
@@ -117,7 +116,7 @@ export function AdminRowActions({
               role="menu"
               style={menuStyle}
               className={cn(
-                "min-w-[11rem] overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest py-1",
+                "min-w-44 overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest py-1",
                 "shadow-[0_8px_24px_-8px_rgba(0,93,122,0.18)]",
               )}
             >
