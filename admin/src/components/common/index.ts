@@ -8,6 +8,7 @@ export { Input } from "./Input";
 export { PageHeader } from "./PageHeader";
 export { PageLoadingFallback } from "./PageLoadingFallback";
 export { Pagination } from "./Pagination";
+export { PendingDeleteBadge } from "./PendingDeleteBadge";
 export { StatCard } from "./StatCard";
 export {
   Table,

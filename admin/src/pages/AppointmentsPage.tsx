@@ -10,6 +10,7 @@ import {
   Modal,
   PageHeader,
   Pagination,
+  PendingDeleteBadge,
   Table,
   TableBody,
   TableCell,
@@ -31,14 +32,20 @@ import {
   exportAppointmentsCsv,
   filterAppointments,
   formatAppointmentDateTime,
+  getTodayYmd,
   getInitials,
   getPaymentStatusBadgeVariant,
   getPaymentStatusLabel,
   getStatusBadgeVariant,
   getStatusLabel,
 } from "../utils/appointment";
+import {
+  getPendingDeleteRowClass,
+  getPendingDeleteSurfaceClass,
+} from "../utils/pendingDelete";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [10, 30, 50] as const;
+const DEFAULT_PAGE_SIZE = 30;
 
 type AppointmentActionsProps = {
   appointment: Appointment;
@@ -91,7 +98,9 @@ function AppointmentCard({
   onDelete,
 }: AppointmentActionsProps) {
   return (
-    <article className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
+    <article
+      className={`rounded-xl border p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)] ${getPendingDeleteSurfaceClass(appointment.pendingDelete)}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <Avatar initials={getInitials(appointment.name)} size="sm" />
@@ -113,6 +122,7 @@ function AppointmentCard({
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
+        {appointment.pendingDelete ? <PendingDeleteBadge /> : null}
         <Badge
           variant="neutral"
           className="gap-2 rounded-md px-3 py-1.5"
@@ -149,6 +159,7 @@ function AppointmentCard({
 export function AppointmentsPage() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
   const [todayOnly, setTodayOnly] = useState(false);
@@ -175,16 +186,17 @@ export function AppointmentsPage() {
   const [deleteAppointment, { isLoading: isDeleting }] =
     useDeleteAppointmentMutation();
 
+  const effectiveDate = todayOnly ? getTodayYmd() : date;
   const filteredAppointments = filterAppointments(appointments, {
     search,
     date,
     todayOnly,
   });
   const totalItems = filteredAppointments.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const paginatedAppointments = filteredAppointments.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
   );
 
   useEffect(() => {
@@ -303,7 +315,12 @@ export function AppointmentsPage() {
         }
       />
 
-      {!isLoading && !isError && <AppointmentStats appointments={appointments} />}
+      {!isLoading && !isError && (
+        <AppointmentStats
+          appointments={appointments}
+          selectedDate={effectiveDate || undefined}
+        />
+      )}
 
       {!isLoading && !isError && (
         <AppointmentFilters
@@ -444,11 +461,19 @@ export function AppointmentsPage() {
                     </TableRow>
                   ) : (
                     paginatedAppointments.map((appointment) => (
-                      <TableRow key={appointment.id}>
+                      <TableRow
+                        key={appointment.id}
+                        className={getPendingDeleteRowClass(appointment.pendingDelete)}
+                      >
                         <TableCell className="px-3! !md:px-0">
-                          <span className="text-xs font-medium text-on-surface">
-                            {appointment.name}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs font-medium text-on-surface">
+                              {appointment.name}
+                            </span>
+                            {appointment.pendingDelete ? (
+                              <PendingDeleteBadge />
+                            ) : null}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
@@ -508,8 +533,13 @@ export function AppointmentsPage() {
               currentPage={currentPage}
               totalPages={totalPages}
               totalItems={totalItems}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
+              pageSizeOptions={[...PAGE_SIZE_OPTIONS]}
               onPageChange={setCurrentPage}
+              onPageSizeChange={(value) => {
+                setPageSize(value);
+                setCurrentPage(1);
+              }}
             />
           </>
         )}

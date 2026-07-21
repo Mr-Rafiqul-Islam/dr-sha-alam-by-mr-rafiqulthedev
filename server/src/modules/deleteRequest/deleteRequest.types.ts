@@ -10,6 +10,15 @@ export function canDeleteImmediately(role: UserRole): boolean {
   return DELETE_APPROVAL_ROLES.has(role);
 }
 
+export function shouldHidePendingDeletesFromLists(role: UserRole): boolean {
+  return role === UserRole.SUPPORT || role === UserRole.EDITOR;
+}
+
+export type PendingDeleteMeta = {
+  pendingDelete?: true;
+  deleteRequestId?: string;
+};
+
 export type DeleteRequestWithRelations = DeleteRequest & {
   requestedBy: Pick<User, "id" | "name" | "email" | "role">;
   reviewedBy: Pick<User, "id" | "name" | "email" | "role"> | null;

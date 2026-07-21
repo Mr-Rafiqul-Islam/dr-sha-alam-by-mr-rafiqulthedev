@@ -4,14 +4,12 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PreferredDatePicker from "@/components/booking/PreferredDatePicker";
 import {
-  getClosedDates,
-  getTodayDate,
-  getTomorrowDate,
-} from "@/lib/appointmentSchedules";
-import {
-  getMetaCookiesFromDocument,
-  trackMetaEvent,
-} from "@/lib/metaAnalytics";
+  getMinPreferredDateYmd,
+  getPreferredDateValidationMessage,
+  isValidPreferredDateYmd,
+} from "@/lib/appointmentDate";
+import { getClosedDates } from "@/lib/appointmentSchedules";
+import { getMetaCookiesFromDocument, trackMetaEvent } from "@/lib/metaAnalytics";
 import { getAppointmentSchedules } from "@/server-actions/getAppointmentSchedules";
 import { getSlotDefaults } from "@/server-actions/getSlotDefaults";
 import { startPayment } from "@/server-actions/startPayment";
@@ -48,13 +46,6 @@ const initialFormState: FormState = {
 };
 
 const SHOW_FREE_BOOKING_OPTION = true;
-const PLID_SLOT_CODE = "P-9";
-
-function getMinPreferredDateForSlot(preferredTime: string): string {
-  return preferredTime === PLID_SLOT_CODE
-    ? getTomorrowDate()
-    : getTodayDate();
-}
 
 export default function BookingForm() {
   const router = useRouter();
@@ -73,7 +64,7 @@ export default function BookingForm() {
 
   const isSubmitting = isSubmittingFree || isSubmittingPaid;
   const activeError = bookingMode === "free" ? freeError : paidError;
-  const minPreferredDate = getMinPreferredDateForSlot(form.preferredTime);
+  const minPreferredDate = getMinPreferredDateYmd(form.preferredTime);
 
   const loadSchedules = useCallback(async (showLoading = true) => {
     if (showLoading) {
@@ -200,16 +191,13 @@ export default function BookingForm() {
   }, []);
 
   const updateField = (field: keyof FormState, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
-  };
-
-  const handlePreferredTimeChange = (preferredTime: string) => {
     setForm((current) => {
-      const next: FormState = { ...current, preferredTime };
+      const next = { ...current, [field]: value };
 
       if (
-        preferredTime === PLID_SLOT_CODE &&
-        current.preferredDate === getTodayDate()
+        field === "preferredTime" &&
+        next.preferredDate &&
+        !isValidPreferredDateYmd(next.preferredDate, value)
       ) {
         next.preferredDate = "";
       }
@@ -217,7 +205,13 @@ export default function BookingForm() {
       return next;
     });
   };
-
+  const setBookingError = (message: string) => {
+    if (bookingMode === "free") {
+      setFreeError(message);
+    } else {
+      setPaidError(message);
+    }
+  };
   const handleModeChange = (mode: BookingMode) => {
     setBookingMode(mode);
     setFreeError(null);
@@ -275,15 +269,18 @@ export default function BookingForm() {
     setPaidError(null);
 
     if (form.preferredDate && closedDates.has(form.preferredDate)) {
-      const message =
-        "The chamber is closed on the selected date. Please choose another date.";
+      setBookingError(
+        "The chamber is closed on the selected date. Please choose another date.",
+      );
+      return;
+    }
 
-      if (bookingMode === "free") {
-        setFreeError(message);
-      } else {
-        setPaidError(message);
-      }
-
+    if (
+      form.preferredDate &&
+      form.preferredTime &&
+      !isValidPreferredDateYmd(form.preferredDate, form.preferredTime)
+    ) {
+      setBookingError(getPreferredDateValidationMessage(form.preferredTime));
       return;
     }
 
@@ -505,7 +502,7 @@ export default function BookingForm() {
                     disabled={slotsLoading || timeSlots.length === 0}
                     value={form.preferredTime}
                     onChange={(event) =>
-                      handlePreferredTimeChange(event.target.value)
+                      updateField("preferredTime", event.target.value)
                     }
                   >
                     <option value="">

@@ -9,7 +9,9 @@ export type AppointmentPaymentStatus = "PENDING" | "SUCCESS" | "CANCEL";
 
 export type SiteRef = "DOCTOR_SHA_ALAM" | "TRUE_CARE_HELLING_CENTER";
 
-export type Appointment = {
+import type { PendingDeleteMeta } from "./pendingDelete";
+
+export type Appointment = PendingDeleteMeta & {
   id: string;
   name: string;
   phone: string;
@@ -24,6 +26,8 @@ export type Appointment = {
   paymentStatus: AppointmentPaymentStatus | null;
   siteRef: SiteRef;
   transactionId: string | null;
+  createdBy: string;
+  updatedBy: string;
   createdAt: string;
   updatedAt: string;
 };

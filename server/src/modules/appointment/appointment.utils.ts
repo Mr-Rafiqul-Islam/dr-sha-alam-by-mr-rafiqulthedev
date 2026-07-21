@@ -5,6 +5,8 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const APPOINTMENT_STATUSES = new Set<string>(Object.values(AppointmentStatus));
 
+export const PLID_SLOT_CODE = "P-9";
+
 export class AppointmentValidationError extends Error {
   constructor(
     message: string,
@@ -47,12 +49,24 @@ export function parseAppointmentDate(value: unknown): Date | null {
   return null;
 }
 
+export function isPast(date: Date): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const normalized = new Date(date);
+  normalized.setHours(0, 0, 0, 0);
+  return normalized.getTime() < today.getTime();
+}
+
 export function isPastOrToday(date: Date): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const normalized = new Date(date);
   normalized.setHours(0, 0, 0, 0);
   return normalized.getTime() <= today.getTime();
+}
+
+export function requiresFutureAppointmentDate(slotCode: string): boolean {
+  return slotCode === PLID_SLOT_CODE;
 }
 
 export function parseOptionalString(value: unknown): string | null {
@@ -91,6 +105,31 @@ export function parseFutureAppointmentDate(value: unknown, fieldName: string): D
   if (isPastOrToday(date)) {
     throw new AppointmentValidationError("Only future dates are allowed");
   }
+  return date;
+}
+
+export function parseAppointmentDateForSlot(
+  value: unknown,
+  slotCode: string,
+  fieldName: string,
+): Date {
+  if (value === null || value === undefined || value === "") {
+    throw new AppointmentValidationError(`${fieldName} is required`);
+  }
+
+  const date = parseAppointmentDate(value);
+  if (!date) {
+    throw new AppointmentValidationError(`Invalid ${fieldName}`);
+  }
+
+  if (requiresFutureAppointmentDate(slotCode)) {
+    if (isPastOrToday(date)) {
+      throw new AppointmentValidationError("Only future dates are allowed");
+    }
+  } else if (isPast(date)) {
+    throw new AppointmentValidationError("Past dates are not allowed");
+  }
+
   return date;
 }
 
