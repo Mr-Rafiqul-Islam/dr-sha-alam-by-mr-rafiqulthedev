@@ -257,6 +257,7 @@ model Appointment {
   slotId          String?
   createdById     String?
   updatedById     String?
+  note            String?
 
   schedule  AppointmentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
   slot      AppointmentSlot?     @relation(fields: [slotId], references: [id], onDelete: SetNull)

@@ -77,6 +77,18 @@ export function parseOptionalString(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+const ADMIN_NOTE_MAX_LENGTH = 200;
+
+export function parseAdminNote(value: unknown): string | null {
+  const text = parseOptionalString(value);
+  if (text && text.length > ADMIN_NOTE_MAX_LENGTH) {
+    throw new AppointmentValidationError(
+      `Note must be ${ADMIN_NOTE_MAX_LENGTH} characters or less`,
+    );
+  }
+  return text;
+}
+
 export function parseRequiredString(value: unknown, fieldName: string): string {
   const text = parseOptionalString(value);
   if (!text) {
