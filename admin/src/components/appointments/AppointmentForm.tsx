@@ -141,7 +141,7 @@ function AppointmentFormFields({
         return;
       }
 
-      if (!isValidPreferredDateYmd(data.preferredDate, data.preferredTime)) {
+      if (!isValidPreferredDateYmd(data.preferredDate)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Past dates are not allowed",
@@ -157,13 +157,13 @@ function AppointmentFormFields({
 
   const preferredTime =
     useWatch({ control: form.control, name: "preferredTime" }) ?? "";
-  const minPreferredDate = getMinPreferredDateYmd(preferredTime);
+  const minPreferredDate = getMinPreferredDateYmd();
 
   useEffect(() => {
     const preferredDate = form.getValues("preferredDate");
     if (
       preferredDate &&
-      !isValidPreferredDateYmd(preferredDate, preferredTime)
+      !isValidPreferredDateYmd(preferredDate)
     ) {
       form.setValue("preferredDate", "", { shouldValidate: true });
     }
