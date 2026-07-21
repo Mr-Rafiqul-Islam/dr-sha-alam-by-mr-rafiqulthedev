@@ -27,6 +27,7 @@ export type Appointment = PendingDeleteMeta & {
   paymentStatus: AppointmentPaymentStatus | null;
   siteRef: SiteRef;
   transactionId: string | null;
+  note: string | null;
   createdBy: string;
   updatedBy: string;
   createdAt: string;

@@ -141,6 +141,11 @@ export function AppointmentViewModal({
 
           <DetailSection title="Audit">
             <DetailRow
+              label="Admin Note"
+              value={formatNullable(appointment.note)}
+              multiline
+            />
+            <DetailRow
               label="Created by"
               value={formatNullable(appointment.createdBy)}
             />

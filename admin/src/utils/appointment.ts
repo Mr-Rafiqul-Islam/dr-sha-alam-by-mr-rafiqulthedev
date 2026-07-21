@@ -340,6 +340,7 @@ export function exportAppointmentsCsv(appointments: Appointment[]): void {
     "Home Address",
     "Serial Number",
     "Site",
+    "Admin Note",
     "Created At",
   ];
 
@@ -355,6 +356,7 @@ export function exportAppointmentsCsv(appointments: Appointment[]): void {
     appointment.homeAddress,
     String(appointment.serialNumber),
     getSiteRefLabel(appointment.siteRef),
+    appointment.note ?? "",
     formatTimestamp(appointment.createdAt),
   ]);
 

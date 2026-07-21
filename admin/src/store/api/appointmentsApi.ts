@@ -33,12 +33,12 @@ export const appointmentsApi = baseApi.injectEndpoints({
     }),
     updateAppointmentStatus: builder.mutation<
       Appointment,
-      { id: string; status: AppointmentStatus }
+      { id: string; status: AppointmentStatus; note?: string | null }
     >({
-      query: ({ id, status }) => ({
+      query: ({ id, status, note }) => ({
         url: `/api/v1/admin/appointments/${id}/status`,
         method: "PATCH",
-        body: { status },
+        body: { status, ...(note !== undefined ? { note } : {}) },
       }),
       transformResponse: (response: AppointmentResponse) => response.appointment,
       invalidatesTags: (_result, _error, { id }) => [
