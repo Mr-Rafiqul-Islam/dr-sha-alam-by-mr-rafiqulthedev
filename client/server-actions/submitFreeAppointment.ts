@@ -29,6 +29,7 @@ export async function submitFreeAppointment(
     homeAddress: payload.homeAddress.trim(),
     preferredDate: payload.preferredDate.trim(),
     preferredTime: payload.preferredTime.trim(),
+    age: payload.age?.trim() ?? "",
   };
 
   const email = payload.email?.trim();

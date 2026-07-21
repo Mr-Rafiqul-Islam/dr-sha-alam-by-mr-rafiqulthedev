@@ -29,6 +29,7 @@ type FormState = {
   email: string;
   gender: string;
   homeAddress: string;
+  age: string;
   problem: string;
   preferredDate: string;
   preferredTime: string;
@@ -40,6 +41,7 @@ const initialFormState: FormState = {
   email: "",
   gender: "",
   homeAddress: "",
+  age: "",
   problem: "",
   preferredDate: "",
   preferredTime: "",
@@ -227,6 +229,7 @@ export default function BookingForm() {
       phoneNumber: form.phoneNumber,
       email: form.email || undefined,
       homeAddress: form.homeAddress,
+      age: form.age || undefined,
       problem: form.problem || undefined,
       preferredDate: form.preferredDate,
       preferredTime: form.preferredTime,
@@ -248,6 +251,7 @@ export default function BookingForm() {
       name: form.fullName,
       phone: form.phoneNumber,
       homeAddress: form.homeAddress,
+      age: form.age || undefined,
       preferredTime: form.preferredTime,
       appointmentDate: form.preferredDate,
       siteRef: "DOCTOR_SHA_ALAM",
@@ -462,7 +466,7 @@ export default function BookingForm() {
                   </span>
                 </div>
               </div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2">
                 <label className="block text-sm font-bold text-text-main dark:text-gray-300">
                   Home Address <span className="text-red-500">*</span>
                 </label>
@@ -474,6 +478,20 @@ export default function BookingForm() {
                   value={form.homeAddress}
                   onChange={(event) =>
                     updateField("homeAddress", event.target.value)
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-text-main dark:text-gray-300">
+                  Patient's Age 
+                </label>
+                <input
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all"
+                  placeholder="Enter your age"
+                  type="text"
+                  value={form.age}
+                  onChange={(event) =>
+                    updateField("age", event.target.value)
                   }
                 />
               </div>
