@@ -550,10 +550,10 @@ export function AppointmentsPage() {
         description={
           resettingSerialAppointment
             ? `Reset ${resettingSerialAppointment.name}'s serial from modified ${formatSerialDisplay(
-                resettingSerialAppointment.modifiedSerialNumber!,
-              )} back to original ${formatSerialDisplay(
-                resettingSerialAppointment.serialNumber,
-              )}?`
+              resettingSerialAppointment.modifiedSerialNumber!,
+            )} back to original ${formatSerialDisplay(
+              resettingSerialAppointment.serialNumber,
+            )}?`
             : undefined
         }
         confirmLabel="Reset Serial"
@@ -611,8 +611,8 @@ export function AppointmentsPage() {
               <Table className="w-full">
                 <TableHeader>
                   <TableRow className="border-b border-outline-variant/50 bg-surface/50 hover:bg-surface/50">
-                    <TableHead>Patient Name</TableHead>
                     <TableHead>Serial</TableHead>
+                    <TableHead className="whitespace-nowrap">Patient Name</TableHead>
                     <TableHead>Contact Info</TableHead>
                     <TableHead>Date &amp; Time</TableHead>
                     <TableHead>Status</TableHead>
@@ -638,16 +638,6 @@ export function AppointmentsPage() {
                         key={appointment.id}
                         className={getPendingDeleteRowClass(appointment.pendingDelete)}
                       >
-                        <TableCell className="px-3! !md:px-0">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-xs font-medium text-on-surface">
-                              {appointment.name}
-                            </span>
-                            {appointment.pendingDelete ? (
-                              <PendingDeleteBadge />
-                            ) : null}
-                          </div>
-                        </TableCell>
                         <TableCell className="whitespace-nowrap">
                           <div className="flex flex-col">
                             <span className="text-sm font-semibold text-on-surface">
@@ -662,6 +652,17 @@ export function AppointmentsPage() {
                             ) : null}
                           </div>
                         </TableCell>
+                        <TableCell className="px-3! !md:px-0">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-sm font-medium text-on-surface">
+                              {appointment.name}
+                            </span>
+                            {appointment.pendingDelete ? (
+                              <PendingDeleteBadge />
+                            ) : null}
+                          </div>
+                        </TableCell>
+
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="text-sm font-medium text-on-surface">
@@ -688,7 +689,7 @@ export function AppointmentsPage() {
                                 day: "numeric",
                                 year: "numeric",
                               })}
-                              </span>
+                            </span>
                             <span className="text-label-sm text-on-surface-variant">{appointment.preferredTime}</span>
                           </Badge>
                         </TableCell>

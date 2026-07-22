@@ -15,6 +15,7 @@ import type { Appointment } from "../../../types/appointment";
 import {
   buildInvoiceLineItems,
   formatInvoiceDate,
+  formatInvoicePatientName,
 } from "../../../utils/invoice";
 
 type InvoiceDocumentProps = {
@@ -254,7 +255,9 @@ export function InvoiceDocument({ appointment }: InvoiceDocumentProps) {
           <View style={styles.metaRow}>
             <View style={styles.metaField}>
               <Text style={styles.metaLabel}>Name:</Text>
-              <Text style={styles.metaValue}>{appointment.name}</Text>
+              <Text style={styles.metaValue}>
+                {formatInvoicePatientName(appointment)} {appointment?.age ? `(${appointment.age})` : ""}
+              </Text>
             </View>
             <View style={[styles.metaField, { flex: 0.55 }]}>
               <Text style={styles.metaLabel}>Date:</Text>

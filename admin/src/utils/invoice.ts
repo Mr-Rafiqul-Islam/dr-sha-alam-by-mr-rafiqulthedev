@@ -7,6 +7,10 @@ import {
   formatNullable,
   getPaymentStatusLabel,
 } from "./appointment";
+import {
+  formatSerialDisplay,
+  getEffectiveSerialNumber,
+} from "./appointmentSerial";
 
 export type InvoiceLineItem = {
   serial: number;
@@ -29,47 +33,71 @@ export function formatInvoiceDate(appointmentDate: string): string {
   });
 }
 
+export function formatInvoicePatientName(appointment: Appointment): string {
+  const age = appointment.age?.trim();
+
+  if (age) {
+    return `${appointment.name} (${age})`;
+  }
+
+  return appointment.name;
+}
+
+function hasPaidConsultation(appointment: Appointment): boolean {
+  return (
+    appointment.paymentStatus === "SUCCESS" && appointment.transactionId != null
+  );
+}
+
 export function buildInvoiceLineItems(appointment: Appointment): {
   lineItems: InvoiceLineItem[];
-  totalAmount: number;
+  totalAmount: string;
 } {
   const fee = CONSULTATION_FEE_BDT;
+  const paid = hasPaidConsultation(appointment);
+  const feeDisplay = paid ? String(fee) : "-";
   const lineItems: InvoiceLineItem[] = [
     {
       serial: 1,
+      label: "Serial No.",
+      value: `${formatSerialDisplay(getEffectiveSerialNumber(appointment))} - ${appointment.preferredTime}`,
+      amount: "",
+    },
+    {
+      serial: 3,
       label: "Attend Date",
       value: formatInvoiceDate(appointment.appointmentDate),
       amount: "",
     },
     {
       serial: 2,
-      label: "Attend Time",
-      value: appointment.preferredTime,
+      label: "Phone No.",
+      value: appointment.phone,
       amount: "",
     },
     {
-      serial: 3,
+      serial: 5,
       label: "Transaction ID",
       value: appointment.transactionId ?? "",
       amount: "",
     },
     {
-      serial: 4,
+      serial: 6,
       label: "Symptoms / Problem",
       value: formatNullable(appointment.problem),
       amount: "",
     },
     {
-      serial: 5,
+      serial: 7,
       label: "Payment Status",
       value: getPaymentStatusLabel(appointment.paymentStatus),
       amount: "",
     },
     {
-      serial: 6,
+      serial: 8,
       label: "Consultation Fee",
       value: "",
-      amount: String(fee),
+      amount: feeDisplay,
     },
   ];
 
@@ -82,5 +110,5 @@ export function buildInvoiceLineItems(appointment: Appointment): {
     });
   }
 
-  return { lineItems, totalAmount: fee };
+  return { lineItems, totalAmount: feeDisplay };
 }
