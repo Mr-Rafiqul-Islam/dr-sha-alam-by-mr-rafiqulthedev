@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -46,6 +46,12 @@ import {
   getPendingDeleteSurfaceClass,
 } from "../utils/pendingDelete";
 
+const InvoicePrintModal = lazy(() =>
+  import("../components/appointments/invoice/InvoicePrintModal").then((module) => ({
+    default: module.InvoicePrintModal,
+  })),
+);
+
 const PAGE_SIZE_OPTIONS = [30, 50, 100] as const;
 const DEFAULT_PAGE_SIZE = 30;
 const ADMIN_NOTE_MAX_LENGTH = 200;
@@ -55,6 +61,7 @@ type AppointmentActionsProps = {
   onView: (appointment: Appointment) => void;
   onEdit: (appointment: Appointment) => void;
   onDelete: (appointment: Appointment) => void;
+  onPrint: (appointment: Appointment) => void;
 };
 
 function AppointmentActions({
@@ -62,6 +69,7 @@ function AppointmentActions({
   onView,
   onEdit,
   onDelete,
+  onPrint,
 }: AppointmentActionsProps) {
   return (
     <div className="flex shrink-0 items-center gap-2">
@@ -72,6 +80,14 @@ function AppointmentActions({
         onClick={() => onView(appointment)}
       >
         <Icon name="visibility" size={20} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="Print appointment invoice"
+        onClick={() => onPrint(appointment)}
+      >
+        <Icon name="print" size={20} />
       </Button>
       <Button
         variant="ghost"
@@ -99,6 +115,7 @@ function AppointmentCard({
   onView,
   onEdit,
   onDelete,
+  onPrint,
 }: AppointmentActionsProps) {
   return (
     <article
@@ -121,6 +138,7 @@ function AppointmentCard({
           onView={onView}
           onEdit={onEdit}
           onDelete={onDelete}
+          onPrint={onPrint}
         />
       </div>
 
@@ -183,6 +201,8 @@ export function AppointmentsPage() {
     useState<Appointment | null>(null);
   const [viewingAppointment, setViewingAppointment] =
     useState<Appointment | null>(null);
+  const [printingAppointment, setPrintingAppointment] =
+    useState<Appointment | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus | "">(
     "",
   );
@@ -242,6 +262,15 @@ export function AppointmentsPage() {
 
   const closeViewModal = () => {
     setViewingAppointment(null);
+  };
+
+  const openPrintModal = (appointment: Appointment) => {
+    setViewingAppointment(null);
+    setPrintingAppointment(appointment);
+  };
+
+  const closePrintModal = () => {
+    setPrintingAppointment(null);
   };
 
   const handleStatusUpdate = async () => {
@@ -438,7 +467,15 @@ export function AppointmentsPage() {
       <AppointmentViewModal
         appointment={viewingAppointment}
         onClose={closeViewModal}
+        onPrint={openPrintModal}
       />
+
+      <Suspense fallback={null}>
+        <InvoicePrintModal
+          appointment={printingAppointment}
+          onClose={closePrintModal}
+        />
+      </Suspense>
 
       <div className="w-full rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
         {isLoading ? (
@@ -471,6 +508,7 @@ export function AppointmentsPage() {
                       onView={openViewModal}
                       onEdit={openStatusModal}
                       onDelete={setDeletingAppointment}
+                      onPrint={openPrintModal}
                     />
                   ))}
                 </div>
@@ -585,6 +623,7 @@ export function AppointmentsPage() {
                             onView={openViewModal}
                             onEdit={openStatusModal}
                             onDelete={setDeletingAppointment}
+                            onPrint={openPrintModal}
                           />
                         </TableCell>
                       </TableRow>
