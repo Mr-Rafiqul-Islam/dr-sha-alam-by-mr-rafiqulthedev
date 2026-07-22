@@ -14,6 +14,7 @@ import {
 type AppointmentViewModalProps = {
   appointment: Appointment | null;
   onClose: () => void;
+  onPrint?: (appointment: Appointment) => void;
 };
 
 type DetailRowProps = {
@@ -60,6 +61,7 @@ function DetailSection({ title, children }: DetailSectionProps) {
 export function AppointmentViewModal({
   appointment,
   onClose,
+  onPrint,
 }: AppointmentViewModalProps) {
   return (
     <Modal
@@ -156,7 +158,14 @@ export function AppointmentViewModal({
           </DetailSection>
 
           <div className="flex justify-end gap-5 border-t border-outline-variant/30 pt-4">
-            <Button variant="primary" onClick={() => console.log('print')}>
+            <Button
+              variant="primary"
+              onClick={() => {
+                if (appointment) {
+                  onPrint?.(appointment);
+                }
+              }}
+            >
               Print
             </Button>
             <Button variant="ghost" onClick={onClose}>
