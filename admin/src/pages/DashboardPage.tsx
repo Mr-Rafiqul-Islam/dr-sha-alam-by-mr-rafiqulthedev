@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityFeedList } from "../components/dashboard/ActivityFeedList";
 import { StaffActivityPicker } from "../components/dashboard/StaffActivityPicker";
+import { AnnouncementBannerList } from "../components/announcements/AnnouncementBannerList";
 import { Icon, PageHeader, StatCard } from "../components/common";
 import {
   useGetActivityFeedQuery,
@@ -302,6 +303,10 @@ export function DashboardPage() {
         title="Dashboard"
         subtitle="Monitor appointments, articles, and patient messages from one place."
       />
+
+      <div className="mb-stack-lg">
+        <AnnouncementBannerList />
+      </div>
 
       <section className="mb-stack-lg">
         <div className="mb-4">

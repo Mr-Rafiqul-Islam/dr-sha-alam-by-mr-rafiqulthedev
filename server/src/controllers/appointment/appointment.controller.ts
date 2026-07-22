@@ -33,6 +33,7 @@ import {
   AppointmentValidationError,
   getDayRange,
   handleAppointmentError,
+  parseAdminNote,
   parseAppointmentDate,
   parseAppointmentStatus,
   parseEmail,
@@ -72,11 +73,13 @@ export async function createAppointment(req: Request, res: Response) {
     const homeAddress = parseRequiredString(req.body.homeAddress, "homeAddress");
     const emailText = parseEmail(req.body.email);
     const problemText = parseOptionalString(req.body.problem);
+    const ageText = parseOptionalString(req.body.age);
     const slotCode = parseSlotCodeString(req.body.preferredTime);
     const selectedDate = parseAppointmentDateForSlot(
       req.body.preferredDate,
       slotCode,
       "preferredDate",
+      { allowTodayForPlid: Boolean(req.admin) },
     );
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
@@ -128,6 +131,7 @@ export async function createAppointment(req: Request, res: Response) {
           email: emailText,
           homeAddress,
           problem: problemText,
+          age: ageText,
           preferredTime: slotCode,
           appointmentDate: selectedDate,
           serialNumber,
@@ -210,14 +214,28 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       return res.status(404).json({ success: false, message: "Appointment not found" });
     }
 
+    const updateData: {
+      status: typeof status;
+      updatedById: string | null;
+      note?: string | null;
+    } = {
+      status,
+      updatedById: req.admin?.id ?? null,
+    };
+
+    if (Object.prototype.hasOwnProperty.call(req.body, "note")) {
+      updateData.note = parseAdminNote(req.body.note);
+    }
+
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
-      data: {
-        status,
-        updatedById: req.admin?.id ?? null,
-      },
+      data: updateData,
       include: APPOINTMENT_ACTOR_INCLUDE,
     });
+
+    const noteChanged =
+      Object.prototype.hasOwnProperty.call(req.body, "note") &&
+      (existing.note ?? null) !== (appointment.note ?? null);
 
     recordActivity(res, {
       action: ActivityAction.APPOINTMENT_STATUS_CHANGED,
@@ -227,12 +245,13 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
         from: existing.status,
         to: appointment.status,
         patientName: appointment.name,
+        ...(noteChanged ? { noteChanged: true } : {}),
       },
     });
 
     return res.status(200).json({
       success: true,
-      message: "Appointment status updated successfully",
+      message: "Appointment updated successfully",
       appointment: toPublicAppointment(appointment),
     });
   } catch (error) {
@@ -571,6 +590,7 @@ export async function getAppointmentsById(req: Request, res: Response) {
         preferredTime: true,
         serialNumber: true,
         gender: true,
+        age: true,
         status: true,
         transactionId: true,
       },
@@ -603,6 +623,25 @@ export async function getAppointmentsByPhone(req: Request, res: Response) {
     const appointments = await prisma.appointment.findMany({
       where: { phone },
       orderBy: { appointmentDate: "desc" },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        homeAddress: true,
+        problem: true,
+        preferredTime: true,
+        appointmentDate: true,
+        serialNumber: true,
+        gender: true,
+        age: true,
+        status: true,
+        paymentStatus: true,
+        siteRef: true,
+        transactionId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return res.status(200).json({

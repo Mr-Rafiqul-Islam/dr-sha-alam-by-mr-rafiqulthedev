@@ -138,6 +138,7 @@ export function toCreateAppointmentPayload(
     preferredDate: data.preferredDate,
     preferredTime: data.preferredTime,
     ...(data.email.trim() ? { email: data.email.trim() } : {}),
+    ...(data.age?.trim() ? { age: data.age.trim() } : {}),
     ...(data.symptoms?.trim() ? { problem: data.symptoms.trim() } : {}),
   };
 }
@@ -187,19 +188,11 @@ export function isPastDateYmd(value: string): boolean {
   return selected.getTime() < today.getTime();
 }
 
-export function isValidPreferredDateYmd(value: string, slotCode: string): boolean {
-  if (requiresFutureAppointmentDate(slotCode)) {
-    return isFutureDateYmd(value);
-  }
-
+export function isValidPreferredDateYmd(value: string): boolean {
   return !isPastDateYmd(value);
 }
 
-export function getMinPreferredDateYmd(slotCode: string): string {
-  if (!slotCode || requiresFutureAppointmentDate(slotCode)) {
-    return getTomorrowYmd();
-  }
-
+export function getMinPreferredDateYmd(): string {
   return getTodayYmd();
 }
 
@@ -329,6 +322,7 @@ function escapeCsvValue(value: string): string {
 export function exportAppointmentsCsv(appointments: Appointment[]): void {
   const headers = [
     "Patient Name",
+    "Age",
     "Phone",
     "Email",
     "Date & Time",
@@ -338,11 +332,13 @@ export function exportAppointmentsCsv(appointments: Appointment[]): void {
     "Home Address",
     "Serial Number",
     "Site",
+    "Admin Note",
     "Created At",
   ];
 
   const rows = appointments.map((appointment) => [
     appointment.name,
+    appointment.age ?? "",
     appointment.phone,
     appointment.email ?? "",
     formatAppointmentDateTime(appointment),
@@ -352,6 +348,7 @@ export function exportAppointmentsCsv(appointments: Appointment[]): void {
     appointment.homeAddress,
     String(appointment.serialNumber),
     getSiteRefLabel(appointment.siteRef),
+    appointment.note ?? "",
     formatTimestamp(appointment.createdAt),
   ]);
 

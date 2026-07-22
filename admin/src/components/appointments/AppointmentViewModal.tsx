@@ -88,6 +88,10 @@ export function AppointmentViewModal({
           <DetailSection title="Patient Information">
             <DetailRow label="Phone" value={appointment.phone} />
             <DetailRow
+              label="Age"
+              value={formatNullable(appointment.age)}
+            />
+            <DetailRow
               label="Email"
               value={formatNullable(appointment.email)}
             />
@@ -137,6 +141,11 @@ export function AppointmentViewModal({
 
           <DetailSection title="Audit">
             <DetailRow
+              label="Admin Note"
+              value={formatNullable(appointment.note)}
+              multiline
+            />
+            <DetailRow
               label="Created by"
               value={formatNullable(appointment.createdBy)}
             />
@@ -146,7 +155,10 @@ export function AppointmentViewModal({
             />
           </DetailSection>
 
-          <div className="flex justify-end border-t border-outline-variant/30 pt-4">
+          <div className="flex justify-end gap-5 border-t border-outline-variant/30 pt-4">
+            <Button variant="primary" onClick={() => console.log('print')}>
+              Print
+            </Button>
             <Button variant="ghost" onClick={onClose}>
               Close
             </Button>

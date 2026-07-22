@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch, type Control } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "../common/Button";
@@ -14,13 +14,13 @@ import type { FormFieldConfig } from "../../types/form";
 import {
   getMinPreferredDateYmd,
   isValidPreferredDateYmd,
-  requiresFutureAppointmentDate,
 } from "../../utils/appointment";
 
 export type { AppointmentFormData } from "../../types/appointment";
 
 const defaultValues: AppointmentFormData = {
   patientName: "",
+  age: "",
   phone: "",
   email: "",
   homeAddress: "",
@@ -110,6 +110,7 @@ function AppointmentFormFields({
   const appointmentSchema = z
     .object({
       patientName: z.string().min(1, "Full name is required"),
+      age: z.string().optional(),
       phone: z.string().min(1, "Phone number is required"),
       email: z.union([
         z.literal(""),
@@ -140,12 +141,10 @@ function AppointmentFormFields({
         return;
       }
 
-      if (!isValidPreferredDateYmd(data.preferredDate, data.preferredTime)) {
+      if (!isValidPreferredDateYmd(data.preferredDate)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: requiresFutureAppointmentDate(data.preferredTime)
-            ? "PLID appointments must be scheduled for a future date"
-            : "Past dates are not allowed",
+          message: "Past dates are not allowed",
           path: ["preferredDate"],
         });
       }
@@ -158,13 +157,13 @@ function AppointmentFormFields({
 
   const preferredTime =
     useWatch({ control: form.control, name: "preferredTime" }) ?? "";
-  const minPreferredDate = getMinPreferredDateYmd(preferredTime);
+  const minPreferredDate = getMinPreferredDateYmd();
 
   useEffect(() => {
     const preferredDate = form.getValues("preferredDate");
     if (
       preferredDate &&
-      !isValidPreferredDateYmd(preferredDate, preferredTime)
+      !isValidPreferredDateYmd(preferredDate)
     ) {
       form.setValue("preferredDate", "", { shouldValidate: true });
     }
@@ -179,10 +178,22 @@ function AppointmentFormFields({
         placeholder: "Enter patient's name",
       },
       {
+        name: "age",
+        label: "Age",
+        type: "text",
+        placeholder: "e.g. 35",
+      },
+      {
         name: "phone",
         label: "Phone Number *",
         type: "tel",
         placeholder: "017XXXXXXXX",
+      },
+      {
+        name: "preferredTime",
+        label: "Preferred Time *",
+        type: "select",
+        options: timeSlotOptions,
       },
       {
         name: "preferredDate",
@@ -195,12 +206,6 @@ function AppointmentFormFields({
           ? "Could not load chamber availability"
           : null,
         minDate: minPreferredDate,
-      },
-      {
-        name: "preferredTime",
-        label: "Preferred Time *",
-        type: "select",
-        options: timeSlotOptions,
       },
       {
         name: "homeAddress",
@@ -236,7 +241,7 @@ function AppointmentFormFields({
       noValidate
     >
       <CommonFormFields
-        control={form.control as Control<Record<string, unknown>>}
+        control={form.control}
         fields={appointmentFields}
         disabled={isSubmitting}
       />

@@ -118,3 +118,20 @@ body {
 .admin-date-picker .rdp-button_next, .admin-date-picker .rdp-button_previous {
   --rdp-accent-color: #00cbc0;
 }
+
+@keyframes announcement-ticker-scroll {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.announcement-ticker-track {
+  animation: announcement-ticker-scroll 24s linear infinite;
+}
+
+.announcement-ticker-track:hover {
+  animation-play-state: paused;
+}

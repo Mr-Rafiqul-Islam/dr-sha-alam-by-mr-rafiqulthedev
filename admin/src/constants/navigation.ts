@@ -55,6 +55,12 @@ export const mainNavItems: NavItem[] = [
     permission: "contactMessages",
   },
   {
+    path: "/announcements",
+    label: "Announcements",
+    icon: "campaign",
+    permission: "announcements",
+  },
+  {
     path: "/pending-deletes",
     label: "Pending Deletes",
     icon: "pending_actions",

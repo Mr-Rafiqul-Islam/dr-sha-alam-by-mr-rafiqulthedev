@@ -4,7 +4,7 @@ import {
 } from "../appointmentSchedule/slotDefaults.bootstrap.js";
 
 const SITE_REF_WEBSITE_LABELS: Record<SiteRef, string> = {
-  DOCTOR_SHA_ALAM: "Dr. Sha Alam website",
+  DOCTOR_SHA_ALAM: "https://doctorshahalam.com ",
   TRUE_CARE_HELLING_CENTER: "True Care Helling Center website",
 };
 

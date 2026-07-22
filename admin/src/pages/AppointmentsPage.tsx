@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "../components/common";
 import { AppointmentFilters } from "../components/appointments/AppointmentFilters";
+import { AnnouncementBannerList } from "../components/announcements/AnnouncementBannerList";
 import { AppointmentStats } from "../components/appointments/AppointmentStats";
 import { AppointmentViewModal } from "../components/appointments/AppointmentViewModal";
 import {
@@ -32,6 +33,7 @@ import {
   exportAppointmentsCsv,
   filterAppointments,
   formatAppointmentDateTime,
+  formatNullable,
   getTodayYmd,
   getInitials,
   getPaymentStatusBadgeVariant,
@@ -44,8 +46,9 @@ import {
   getPendingDeleteSurfaceClass,
 } from "../utils/pendingDelete";
 
-const PAGE_SIZE_OPTIONS = [10, 30, 50] as const;
+const PAGE_SIZE_OPTIONS = [30, 50, 100] as const;
 const DEFAULT_PAGE_SIZE = 30;
+const ADMIN_NOTE_MAX_LENGTH = 200;
 
 type AppointmentActionsProps = {
   appointment: Appointment;
@@ -151,6 +154,17 @@ function AppointmentCard({
             {appointment.problem ?? "—"}
           </dd>
         </div>
+        {appointment.note ? (
+          <div className="col-span-2">
+            <dt className="text-label-sm text-on-surface-variant">Admin Note</dt>
+            <dd
+              className="mt-0.5 line-clamp-2 wrap-break-word text-body-sm text-on-surface-variant"
+              title={appointment.note}
+            >
+              {appointment.note}
+            </dd>
+          </div>
+        ) : null}
       </dl>
     </article>
   );
@@ -172,6 +186,7 @@ export function AppointmentsPage() {
   const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus | "">(
     "",
   );
+  const [selectedNote, setSelectedNote] = useState("");
 
   const {
     data: appointments = [],
@@ -208,11 +223,13 @@ export function AppointmentsPage() {
   const openStatusModal = (appointment: Appointment) => {
     setEditingAppointment(appointment);
     setSelectedStatus(appointment.status);
+    setSelectedNote(appointment.note ?? "");
   };
 
   const closeStatusModal = () => {
     setEditingAppointment(null);
     setSelectedStatus("");
+    setSelectedNote("");
   };
 
   const closeDeleteModal = () => {
@@ -234,11 +251,12 @@ export function AppointmentsPage() {
       await updateStatus({
         id: editingAppointment.id,
         status: selectedStatus,
+        note: selectedNote.trim() || null,
       }).unwrap();
-      toast.success("Appointment status updated successfully");
+      toast.success("Appointment updated successfully");
       closeStatusModal();
     } catch {
-      toast.error("Failed to update appointment status");
+      toast.error("Failed to update appointment");
     }
   };
 
@@ -315,6 +333,10 @@ export function AppointmentsPage() {
         }
       />
 
+      <div className="mb-6">
+        <AnnouncementBannerList todayOnly />
+      </div>
+
       {!isLoading && !isError && (
         <AppointmentStats
           appointments={appointments}
@@ -346,7 +368,7 @@ export function AppointmentsPage() {
       <Modal
         open={editingAppointment !== null}
         onClose={closeStatusModal}
-        title="Update Status"
+        title="Update Appointment"
         subtitle={
           editingAppointment
             ? `Change status for ${editingAppointment.name}`
@@ -372,6 +394,24 @@ export function AppointmentsPage() {
               ))}
             </select>
           </label>
+          <label className="flex flex-col gap-2">
+            <span className="text-label-md font-medium text-on-surface">
+              Admin Note
+            </span>
+            <textarea
+              value={selectedNote}
+              onChange={(e) =>
+                setSelectedNote(e.target.value.slice(0, ADMIN_NOTE_MAX_LENGTH))
+              }
+              rows={3}
+              maxLength={ADMIN_NOTE_MAX_LENGTH}
+              placeholder="Internal note for staff (optional)"
+              className="w-full resize-y rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <span className="text-label-sm text-on-surface-variant">
+              {selectedNote.length}/{ADMIN_NOTE_MAX_LENGTH}
+            </span>
+          </label>
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="ghost" onClick={closeStatusModal}>
               Cancel
@@ -380,7 +420,7 @@ export function AppointmentsPage() {
               onClick={handleStatusUpdate}
               disabled={!selectedStatus || isUpdating}
             >
-              {isUpdating ? "Saving..." : "Save Status"}
+              {isUpdating ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>
@@ -400,7 +440,7 @@ export function AppointmentsPage() {
         onClose={closeViewModal}
       />
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)] overflow-hidden">
+      <div className="w-full rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-on-surface-variant">
             <Icon
@@ -437,8 +477,8 @@ export function AppointmentsPage() {
               )}
             </div>
 
-            <div className="hidden overflow-x-auto xl:block">
-              <Table>
+            <div className="hidden min-w-0 max-w-full overflow-x-auto xl:block">
+              <Table className="w-full">
                 <TableHeader>
                   <TableRow className="border-b border-outline-variant/50 bg-surface/50 hover:bg-surface/50">
                     <TableHead>Patient Name</TableHead>
@@ -446,6 +486,8 @@ export function AppointmentsPage() {
                     <TableHead>Date &amp; Time</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Payment Status</TableHead>
+                    <TableHead>Manage By</TableHead>
+                    <TableHead>Note</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -453,7 +495,7 @@ export function AppointmentsPage() {
                   {paginatedAppointments.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={7}
+                        colSpan={8}
                         className="py-12 text-center text-on-surface-variant"
                       >
                         No appointments found.
@@ -485,27 +527,34 @@ export function AppointmentsPage() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           <Badge
                             variant="neutral"
-                            className="gap-2 rounded-md px-3 py-1.5"
+                            className="gap-2 flex flex-col items-start rounded-md px-3 py-1.5"
                           >
-                            <Icon
-                              name="event"
-                              size={16}
-                              className="text-primary"
-                            />
-                            {formatAppointmentDateTime(appointment)}
+                            <span className="flex items-center gap-2">
+                              <Icon
+                                name="event"
+                                size={16}
+                                className="text-primary"
+                              />
+                              {new Date(appointment.appointmentDate as string).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                              </span>
+                            <span className="text-label-sm text-on-surface-variant">{appointment.preferredTime}</span>
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           <Badge
                             variant={getStatusBadgeVariant(appointment.status)}
                           >
                             {getStatusLabel(appointment.status)}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           <Badge
                             variant={getPaymentStatusBadgeVariant(
                               appointment.paymentStatus,
@@ -513,6 +562,22 @@ export function AppointmentsPage() {
                           >
                             {getPaymentStatusLabel(appointment.paymentStatus)}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className="block max-w-36 truncate text-label-sm text-on-surface-variant"
+                            title={appointment.updatedBy ?? undefined}
+                          >
+                            {appointment.updatedBy ?? "—"}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className="block max-w-50 line-clamp-2 wrap-break-word text-label-sm text-on-surface-variant"
+                            title={appointment.note ?? undefined}
+                          >
+                            {formatNullable(appointment.note)}
+                          </span>
                         </TableCell>
                         <TableCell className="text-right">
                           <AppointmentActions

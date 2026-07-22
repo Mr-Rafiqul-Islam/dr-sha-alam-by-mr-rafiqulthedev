@@ -2,6 +2,8 @@ import {
   useForm,
   Controller,
   type Control,
+  type FieldValues,
+  type Path,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -84,13 +86,12 @@ function PasswordInputBlock({
   );
 }
 
-export function CommonFormFields({
+export function CommonFormFields<TFieldValues extends FieldValues>({
   control,
   fields,
   disabled = false,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: Control<any>;
+  control: Control<TFieldValues>;
   fields: FormFieldConfig[];
   disabled?: boolean;
 }) {
@@ -104,7 +105,7 @@ export function CommonFormFields({
           <Controller
             key={f.name}
             control={control}
-            name={f.name}
+            name={f.name as Path<TFieldValues>}
             render={({ field, fieldState }) => {
               const describedBy = f.description ? `${fieldId}-desc` : undefined;
 
