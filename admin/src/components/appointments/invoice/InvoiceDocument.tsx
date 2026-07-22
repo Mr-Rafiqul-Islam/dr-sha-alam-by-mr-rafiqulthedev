@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#1A1A1A",
     paddingBottom: 72,
-  }, 
+  },
   header: {
     backgroundColor: "#0F7B70",
     height: 95,
@@ -256,7 +256,7 @@ export function InvoiceDocument({ appointment }: InvoiceDocumentProps) {
             <View style={styles.metaField}>
               <Text style={styles.metaLabel}>Name:</Text>
               <Text style={styles.metaValue}>
-                {formatInvoicePatientName(appointment)} {appointment?.age ? `(${appointment.age})` : ""}
+                {formatInvoicePatientName(appointment)}
               </Text>
             </View>
             <View style={[styles.metaField, { flex: 0.55 }]}>
