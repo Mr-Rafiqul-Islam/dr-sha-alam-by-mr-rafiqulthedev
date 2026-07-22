@@ -7,6 +7,10 @@ import ScrollReveal from "@/components/ScrollReveal";
 import { trackMetaEvent } from "@/lib/metaAnalytics";
 import { getAppointmentById } from "@/server-actions/getAppointmentById";
 import type { PublicAppointmentSummary } from "@/types/booking";
+import {
+  formatSerialDisplay,
+  getEffectiveSerialNumber,
+} from "@/lib/appointmentSerial";
 import Image from "next/image";
 
 type AppointmentSummary = PublicAppointmentSummary;
@@ -27,8 +31,9 @@ function ThankYouContent() {
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
   const tranId = searchParams.get("tranId");
+  const hasAppointmentId = Boolean(appointmentId);
   const [appointment, setAppointment] = useState<AppointmentSummary | null>(null);
-  const [loadFailed, setLoadFailed] = useState(false);
+  const [fetchFailed, setFetchFailed] = useState(false);
 
   useEffect(() => {
     if (!tranId) {
@@ -40,7 +45,6 @@ function ThankYouContent() {
 
   useEffect(() => {
     if (!appointmentId) {
-      setLoadFailed(true);
       return;
     }
 
@@ -56,7 +60,7 @@ function ThankYouContent() {
         }
       } catch {
         if (!cancelled) {
-          setLoadFailed(true);
+          setFetchFailed(true);
         }
       }
     }
@@ -110,7 +114,7 @@ function ThankYouContent() {
               <div>
                 <p className="text-xs text-text-sub mb-1">Serial Number</p>
                 <p className="text-lg font-bold text-text-main dark:text-white">
-                  #{appointment.serialNumber}
+                  {formatSerialDisplay(getEffectiveSerialNumber(appointment))}
                 </p>
               </div>
               <div>
@@ -132,7 +136,7 @@ function ThankYouContent() {
                 </p>
               </div>
             </div>
-          ) : loadFailed ? (
+          ) : fetchFailed || !hasAppointmentId ? (
             <p className="text-sm text-text-sub">
               Your payment was successful. Appointment details will be sent to
               your phone shortly.
@@ -279,7 +283,7 @@ function ThankYouContent() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full"
         >
           <Link
-            href="https://wa.me/+8801789639174"
+            href="https://wa.me/+8801701313001"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full flex items-center justify-center gap-2 sm:w-auto text-center bg-primary hover:bg-primary-dark text-white font-bold py-4 px-8 rounded-full transition-all duration-300 shadow-lg shadow-primary/20 hover:shadow-primary/40 transform hover:-translate-y-1"

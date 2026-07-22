@@ -7,6 +7,9 @@ import type {
   SiteRef,
 } from "../types/appointment";
 import type { BadgeVariant } from "../components/common/Badge";
+import {
+  getEffectiveSerialNumber,
+} from "./appointmentSerial";
 
 export function formatNullable(value: string | null | undefined): string {
   if (value == null || value.trim() === "") {
@@ -138,6 +141,7 @@ export function toCreateAppointmentPayload(
     preferredDate: data.preferredDate,
     preferredTime: data.preferredTime,
     ...(data.email.trim() ? { email: data.email.trim() } : {}),
+    ...(data.age?.trim() ? { age: data.age.trim() } : {}),
     ...(data.symptoms?.trim() ? { problem: data.symptoms.trim() } : {}),
   };
 }
@@ -170,6 +174,31 @@ export function getTodayYmd(): string {
   return `${year}-${month}-${day}`;
 }
 
+export const PLID_SLOT_CODE = "P-9";
+
+export function requiresFutureAppointmentDate(slotCode: string): boolean {
+  return slotCode === PLID_SLOT_CODE;
+}
+
+export function isPastDateYmd(value: string): boolean {
+  const [year, month, day] = value.split("-").map(Number);
+  const selected = new Date(year, month - 1, day);
+  selected.setHours(0, 0, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return selected.getTime() < today.getTime();
+}
+
+export function isValidPreferredDateYmd(value: string): boolean {
+  return !isPastDateYmd(value);
+}
+
+export function getMinPreferredDateYmd(): string {
+  return getTodayYmd();
+}
+
 export function isSameCalendarDay(isoDate: string, ymd: string): boolean {
   const date = new Date(isoDate);
 
@@ -189,18 +218,45 @@ export type AppointmentStats = {
   today: number;
   pending: number;
   completed: number;
+  todayAttended: number;
 };
+
+export function formatAppointmentDateLabel(ymd: string): string {
+  const [year, month, day] = ymd.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+
+  if (Number.isNaN(date.getTime())) {
+    return ymd;
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 export function computeAppointmentStats(
   appointments: Appointment[],
+  options?: { dateYmd?: string },
 ): AppointmentStats {
-  const todayYmd = getTodayYmd();
+  const referenceYmd = options?.dateYmd ?? getTodayYmd();
+  const scopedAppointments = options?.dateYmd
+    ? appointments.filter((appointment) =>
+        isSameCalendarDay(appointment.appointmentDate, options.dateYmd!),
+      )
+    : appointments;
 
-  return appointments.reduce<AppointmentStats>(
+  return scopedAppointments.reduce<AppointmentStats>(
     (stats, appointment) => {
       stats.total += 1;
 
-      if (isSameCalendarDay(appointment.appointmentDate, todayYmd)) {
+      const isReferenceDay = isSameCalendarDay(
+        appointment.appointmentDate,
+        referenceYmd,
+      );
+
+      if (isReferenceDay) {
         stats.today += 1;
       }
 
@@ -212,9 +268,13 @@ export function computeAppointmentStats(
         stats.completed += 1;
       }
 
+      if (isReferenceDay && appointment.status === "ATTEND") {
+        stats.todayAttended += 1;
+      }
+
       return stats;
     },
-    { total: 0, today: 0, pending: 0, completed: 0 },
+    { total: 0, today: 0, pending: 0, completed: 0, todayAttended: 0 },
   );
 }
 
@@ -265,6 +325,7 @@ function escapeCsvValue(value: string): string {
 export function exportAppointmentsCsv(appointments: Appointment[]): void {
   const headers = [
     "Patient Name",
+    "Age",
     "Phone",
     "Email",
     "Date & Time",
@@ -272,13 +333,17 @@ export function exportAppointmentsCsv(appointments: Appointment[]): void {
     "Status",
     "Payment Status",
     "Home Address",
-    "Serial Number",
+    "Original Serial",
+    "Modified Serial",
+    "Current Serial",
     "Site",
+    "Admin Note",
     "Created At",
   ];
 
   const rows = appointments.map((appointment) => [
     appointment.name,
+    appointment.age ?? "",
     appointment.phone,
     appointment.email ?? "",
     formatAppointmentDateTime(appointment),
@@ -287,7 +352,12 @@ export function exportAppointmentsCsv(appointments: Appointment[]): void {
     getPaymentStatusLabel(appointment.paymentStatus),
     appointment.homeAddress,
     String(appointment.serialNumber),
+    appointment.modifiedSerialNumber != null
+      ? String(appointment.modifiedSerialNumber)
+      : "",
+    String(getEffectiveSerialNumber(appointment)),
     getSiteRefLabel(appointment.siteRef),
+    appointment.note ?? "",
     formatTimestamp(appointment.createdAt),
   ]);
 

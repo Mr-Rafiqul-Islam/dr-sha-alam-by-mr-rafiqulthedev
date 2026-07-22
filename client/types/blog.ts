@@ -26,10 +26,14 @@ export type BlogsListMeta = {
   total: number;
   limit: number;
   offset: number;
+  page?: number;
+  totalPages?: number;
+  hasMore?: boolean;
 };
 
 export type GetAllBlogsParams = {
   limit?: number;
+  page?: number;
   offset?: number;
   category?: string;
   featured?: boolean;

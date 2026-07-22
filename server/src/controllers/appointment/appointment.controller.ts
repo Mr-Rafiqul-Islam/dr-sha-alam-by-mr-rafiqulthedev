@@ -9,28 +9,44 @@ import {
 import { recordActivity } from "../../modules/activity/activity.middleware.js";
 import { sendCapiEvent } from "../../lib/metaCapi.js";
 import {
+  APPOINTMENT_ACTOR_INCLUDE,
+  toAdminAppointment,
+  toAdminAppointments,
   toPublicAppointment,
   toPublicAppointments,
 } from "../../modules/appointment/appointment.mapper.js";
+import {
+  assignNextSerialNumber,
+  getEffectiveSerialNumber,
+  modifyAppointmentSerial,
+  parseModifiedSerialNumberFromBody,
+  parseSerialModificationReason,
+} from "../../modules/appointment/appointment.serial.js";
 import {
   parseSlotCodeString,
   runSerializableTransaction,
   validateAppointmentSlotAvailability,
 } from "../../modules/appointment/appointment.slot-availability.js";
 import {
+  annotatePendingDeleteMeta,
+  buildPendingDeleteListWhere,
   canDeleteImmediately,
   createDeleteRequest,
   DeleteRequestEntityType,
+  getPendingDeleteEntityMap,
   resolvePendingDeleteRequestsForEntity,
+  shouldHidePendingDeletesFromLists,
 } from "../../modules/deleteRequest/deleteRequest.service.js";
 import { DeleteRequestError } from "../../modules/deleteRequest/deleteRequest.types.js";
 import {
   AppointmentValidationError,
   getDayRange,
   handleAppointmentError,
+  parseAdminNote,
   parseAppointmentDate,
   parseAppointmentStatus,
   parseEmail,
+  parseAppointmentDateForSlot,
   parseFutureAppointmentDate,
   parseMonthYear,
   parseOptionalString,
@@ -66,10 +82,17 @@ export async function createAppointment(req: Request, res: Response) {
     const homeAddress = parseRequiredString(req.body.homeAddress, "homeAddress");
     const emailText = parseEmail(req.body.email);
     const problemText = parseOptionalString(req.body.problem);
-    const selectedDate = parseFutureAppointmentDate(req.body.preferredDate, "preferredDate");
+    const ageText = parseOptionalString(req.body.age);
     const slotCode = parseSlotCodeString(req.body.preferredTime);
+    const selectedDate = parseAppointmentDateForSlot(
+      req.body.preferredDate,
+      slotCode,
+      "preferredDate",
+      { allowTodayForPlid: Boolean(req.admin) },
+    );
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
+    const adminId = req.admin?.id ?? null;
 
     let smsLabel: string | null | undefined;
 
@@ -117,12 +140,17 @@ export async function createAppointment(req: Request, res: Response) {
           email: emailText,
           homeAddress,
           problem: problemText,
+          age: ageText,
           preferredTime: slotCode,
           appointmentDate: selectedDate,
           serialNumber,
+          siteRef: SiteRef.DOCTOR_SHA_ALAM,
           scheduleId: slotAvailability.scheduleId,
           slotId: slotAvailability.slotId,
+          createdById: adminId,
+          updatedById: adminId,
         },
+        include: APPOINTMENT_ACTOR_INCLUDE,
       });
     });
 
@@ -130,6 +158,7 @@ export async function createAppointment(req: Request, res: Response) {
       name,
       phone,
       serialNumber: newAppointment.serialNumber,
+      modifiedSerialNumber: newAppointment.modifiedSerialNumber,
       slotCode,
       smsLabel,
     }).catch((smsError) => {
@@ -195,10 +224,28 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       return res.status(404).json({ success: false, message: "Appointment not found" });
     }
 
+    const updateData: {
+      status: typeof status;
+      updatedById: string | null;
+      note?: string | null;
+    } = {
+      status,
+      updatedById: req.admin?.id ?? null,
+    };
+
+    if (Object.prototype.hasOwnProperty.call(req.body, "note")) {
+      updateData.note = parseAdminNote(req.body.note);
+    }
+
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status },
+      data: updateData,
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
+
+    const noteChanged =
+      Object.prototype.hasOwnProperty.call(req.body, "note") &&
+      (existing.note ?? null) !== (appointment.note ?? null);
 
     recordActivity(res, {
       action: ActivityAction.APPOINTMENT_STATUS_CHANGED,
@@ -208,16 +255,63 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
         from: existing.status,
         to: appointment.status,
         patientName: appointment.name,
+        ...(noteChanged ? { noteChanged: true } : {}),
       },
     });
 
     return res.status(200).json({
       success: true,
-      message: "Appointment status updated successfully",
-      appointment: toPublicAppointment(appointment),
+      message: "Appointment updated successfully",
+      appointment: toAdminAppointment(appointment),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Internal server error");
+  }
+}
+
+export async function updateAppointmentSerial(req: Request, res: Response) {
+  const appointmentId = routeParamString(req.params.id);
+  if (!appointmentId) {
+    return res.status(400).json({ success: false, message: "Invalid appointment id" });
+  }
+
+  const admin = req.admin;
+  if (!admin) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication required.",
+    });
+  }
+
+  try {
+    const modifiedSerialNumber = parseModifiedSerialNumberFromBody(req.body);
+    const reason = parseSerialModificationReason(req.body.reason);
+
+    const result = await modifyAppointmentSerial({
+      appointmentId,
+      modifiedSerialNumber,
+      reason,
+      adminId: admin.id,
+    });
+
+    recordActivity(res, {
+      action: ActivityAction.APPOINTMENT_SERIAL_CHANGED,
+      entityType: ActivityEntityType.Appointment,
+      entityId: result.appointment.id,
+      metadata: result.metadata,
+    });
+
+    const message = result.metadata.isReset
+      ? "Appointment serial reset to original successfully"
+      : "Appointment serial updated successfully";
+
+    return res.status(200).json({
+      success: true,
+      message,
+      appointment: toAdminAppointment(result.appointment),
+    });
+  } catch (error) {
+    return handleAppointmentError(res, error, "Failed to update appointment serial");
   }
 }
 
@@ -300,7 +394,11 @@ export async function cancelAppointment(req: Request, res: Response) {
   try {
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status: AppointmentStatus.CANCEL },
+      data: {
+        status: AppointmentStatus.CANCEL,
+        updatedById: null,
+      },
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     return res.status(200).json({
@@ -320,39 +418,144 @@ export async function rescheduleAppointment(req: Request, res: Response) {
   }
 
   try {
+    const existing = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+
+    if (
+      existing.status === AppointmentStatus.CANCEL ||
+      existing.status === AppointmentStatus.RESCHEDULED
+    ) {
+      throw new AppointmentValidationError(
+        "Cannot reschedule a cancelled or rescheduled appointment.",
+      );
+    }
+
     const selectedDate = parseFutureAppointmentDate(
       req.body.appointmentDate,
       "appointmentDate",
     );
 
-    const appointment = await prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        status: AppointmentStatus.RESCHEDULED,
+    // Slot change requires explicit preferredTime; otherwise keep current slot.
+    const slotCode =
+      req.body.preferredTime != null && String(req.body.preferredTime).trim()
+        ? parseSlotCodeString(req.body.preferredTime)
+        : existing.preferredTime;
+
+    const previousMetadata = {
+      originalSerialNumber: existing.serialNumber,
+      previousModifiedSerialNumber: existing.modifiedSerialNumber,
+      previousEffectiveSerialNumber: getEffectiveSerialNumber(existing),
+      previousAppointmentDate: existing.appointmentDate.toISOString(),
+      previousPreferredTime: existing.preferredTime,
+      previousSlotId: existing.slotId,
+    };
+
+    const appointment = await runSerializableTransaction(async (tx) => {
+      const slotAvailability = await validateAppointmentSlotAvailability({
         appointmentDate: selectedDate,
-      },
+        preferredTime: slotCode,
+        siteRef: existing.siteRef,
+        excludeAppointmentId: existing.id,
+        tx,
+      });
+
+      const newSerialNumber = await assignNextSerialNumber({
+        tx,
+        appointmentDate: selectedDate,
+        siteRef: existing.siteRef,
+        preferredTime: slotCode,
+        slotId: slotAvailability.slotId,
+        excludeId: existing.id,
+      });
+
+      return tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          appointmentDate: selectedDate,
+          preferredTime: slotCode,
+          serialNumber: newSerialNumber,
+          modifiedSerialNumber: null,
+          scheduleId: slotAvailability.scheduleId,
+          slotId: slotAvailability.slotId,
+          updatedById: null,
+        },
+        include: APPOINTMENT_ACTOR_INCLUDE,
+      });
     });
 
     return res.status(200).json({
       success: true,
       message: "Appointment rescheduled successfully",
       appointment: toPublicAppointment(appointment),
+      reschedule: {
+        ...previousMetadata,
+        newSerialNumber: appointment.serialNumber,
+        newAppointmentDate: appointment.appointmentDate.toISOString(),
+        newPreferredTime: appointment.preferredTime,
+        newSlotId: appointment.slotId,
+        changeType: "RESCHEDULE",
+      },
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Internal server error");
   }
 }
 
-export async function getAllAppointments(_req: Request, res: Response) {
+async function getAdminAppointmentListContext(req: Request) {
+  const admin = req.admin;
+  if (!admin) {
+    throw new AppointmentValidationError("Authentication required.", 401);
+  }
+
+  const pendingDeleteMap = await getPendingDeleteEntityMap(
+    DeleteRequestEntityType.APPOINTMENT,
+  );
+  const hidePendingDeletes = shouldHidePendingDeletesFromLists(admin.role);
+
+  return {
+    pendingDeleteMap,
+    hidePendingDeletes,
+    pendingDeleteWhere: buildPendingDeleteListWhere(
+      hidePendingDeletes,
+      pendingDeleteMap,
+    ),
+  };
+}
+
+function mapAdminAppointments<T extends { id: string; preferredTime: string; serialNumber: number; modifiedSerialNumber?: number | null }>(
+  appointments: T[],
+  pendingDeleteMap: Map<string, string>,
+  hidePendingDeletes: boolean,
+) {
+  const mapped = toAdminAppointments(appointments);
+  return hidePendingDeletes
+    ? mapped
+    : annotatePendingDeleteMeta(mapped, pendingDeleteMap);
+}
+
+export async function getAllAppointments(req: Request, res: Response) {
   try {
+    const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
+      await getAdminAppointmentListContext(req);
     const appointments = await prisma.appointment.findMany({
+      where: pendingDeleteWhere,
       orderBy: ALL_APPOINTMENTS_ORDER,
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     return res.status(200).json({
       success: true,
       message: "Appointments fetched successfully",
-      appointments: toPublicAppointments(appointments),
+      appointments: mapAdminAppointments(
+        appointments,
+        pendingDeleteMap,
+        hidePendingDeletes,
+      ),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Failed to get appointments");
@@ -372,17 +575,25 @@ export async function getAppointmentsByDay(req: Request, res: Response) {
     }
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
+    const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
+      await getAdminAppointmentListContext(req);
     const appointments = await prisma.appointment.findMany({
       where: {
+        ...pendingDeleteWhere,
         appointmentDate: { gte: dayStart, lte: dayEnd },
       },
       orderBy: DAY_APPOINTMENT_ORDER,
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     return res.status(200).json({
       success: true,
       message: "Appointments fetched successfully",
-      appointments: toPublicAppointments(appointments),
+      appointments: mapAdminAppointments(
+        appointments,
+        pendingDeleteMap,
+        hidePendingDeletes,
+      ),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Failed to get appointments");
@@ -399,17 +610,25 @@ export async function getAppointmentsByMonth(req: Request, res: Response) {
       return res.status(400).json({ success: false, message: "Invalid month or year" });
     }
 
+    const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
+      await getAdminAppointmentListContext(req);
     const appointments = await prisma.appointment.findMany({
       where: {
+        ...pendingDeleteWhere,
         appointmentDate: { gte: range.startDate, lte: range.endDate },
       },
       orderBy: { appointmentDate: "asc" },
+      include: APPOINTMENT_ACTOR_INCLUDE,
     });
 
     return res.status(200).json({
       success: true,
       message: "Appointments fetched successfully",
-      appointments: toPublicAppointments(appointments),
+      appointments: mapAdminAppointments(
+        appointments,
+        pendingDeleteMap,
+        hidePendingDeletes,
+      ),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Failed to get appointments");
@@ -426,8 +645,11 @@ export async function getAppointmentsByMonthForCalendar(req: Request, res: Respo
       return res.status(400).json({ success: false, message: "Invalid month or year" });
     }
 
+    const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
+      await getAdminAppointmentListContext(req);
     const appointments = await prisma.appointment.findMany({
       where: {
+        ...pendingDeleteWhere,
         appointmentDate: { gte: range.startDate, lte: range.endDate },
       },
       orderBy: { appointmentDate: "asc" },
@@ -439,12 +661,24 @@ export async function getAppointmentsByMonthForCalendar(req: Request, res: Respo
       },
     });
 
-    const formattedAppointments = appointments.map((appointment) => ({
-      id: appointment.id,
-      name: appointment.name,
-      appointmentDate: appointment.appointmentDate,
-      preferredTime: toPublicAppointment(appointment).preferredTime,
-    }));
+    const formattedAppointments = appointments.map((appointment) => {
+      const mapped = {
+        id: appointment.id,
+        name: appointment.name,
+        appointmentDate: appointment.appointmentDate,
+        preferredTime: toPublicAppointment(appointment).preferredTime,
+      };
+      const deleteRequestId = pendingDeleteMap.get(appointment.id);
+      if (!deleteRequestId || hidePendingDeletes) {
+        return mapped;
+      }
+
+      return {
+        ...mapped,
+        pendingDelete: true as const,
+        deleteRequestId,
+      };
+    });
 
     return res.status(200).json({
       success: true,
@@ -474,7 +708,9 @@ export async function getAppointmentsById(req: Request, res: Response) {
         problem: true,
         preferredTime: true,
         serialNumber: true,
+        modifiedSerialNumber: true,
         gender: true,
+        age: true,
         status: true,
         transactionId: true,
       },
@@ -507,6 +743,26 @@ export async function getAppointmentsByPhone(req: Request, res: Response) {
     const appointments = await prisma.appointment.findMany({
       where: { phone },
       orderBy: { appointmentDate: "desc" },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        homeAddress: true,
+        problem: true,
+        preferredTime: true,
+        appointmentDate: true,
+        serialNumber: true,
+        modifiedSerialNumber: true,
+        gender: true,
+        age: true,
+        status: true,
+        paymentStatus: true,
+        siteRef: true,
+        transactionId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return res.status(200).json({

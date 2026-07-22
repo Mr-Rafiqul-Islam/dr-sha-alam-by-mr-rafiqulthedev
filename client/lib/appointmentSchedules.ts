@@ -14,6 +14,16 @@ export function formatScheduleDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function getTodayDate(): string {
+  return formatScheduleDate(new Date());
+}
+
+export function getTomorrowDate(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return formatScheduleDate(tomorrow);
+}
+
 export function getClosedDates(
   schedules: AppointmentSchedule[],
   siteRef: typeof DEFAULT_SITE_REF = DEFAULT_SITE_REF,

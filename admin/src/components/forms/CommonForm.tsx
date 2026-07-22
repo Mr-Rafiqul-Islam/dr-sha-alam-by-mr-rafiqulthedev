@@ -2,6 +2,8 @@ import {
   useForm,
   Controller,
   type Control,
+  type FieldValues,
+  type Path,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -11,7 +13,7 @@ import type { ZodTypeAny } from "zod";
 import { Button } from "../common/Button";
 import { Icon } from "../common/Icon";
 import { cn } from "../../lib/cn";
-import { getTomorrowYmd } from "../../utils/appointment";
+import { getTodayYmd } from "../../utils/appointment";
 import type { FormFieldConfig } from "../../types/form";
 import { AppointmentDatePicker } from "./AppointmentDatePicker";
 
@@ -84,13 +86,12 @@ function PasswordInputBlock({
   );
 }
 
-export function CommonFormFields({
+export function CommonFormFields<TFieldValues extends FieldValues>({
   control,
   fields,
   disabled = false,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: Control<any>;
+  control: Control<TFieldValues>;
   fields: FormFieldConfig[];
   disabled?: boolean;
 }) {
@@ -104,7 +105,7 @@ export function CommonFormFields({
           <Controller
             key={f.name}
             control={control}
-            name={f.name}
+            name={f.name as Path<TFieldValues>}
             render={({ field, fieldState }) => {
               const describedBy = f.description ? `${fieldId}-desc` : undefined;
 
@@ -218,7 +219,7 @@ export function CommonFormFields({
                           value={String(field.value ?? "")}
                           onChange={field.onChange}
                           onBlur={field.onBlur}
-                          minDate={getTomorrowYmd()}
+                          minDate={f.minDate ?? getTodayYmd()}
                           closedDates={f.closedDates ?? new Set()}
                           disabled={fDisabled}
                           isLoading={f.schedulesLoading}
@@ -232,7 +233,7 @@ export function CommonFormFields({
                           type="date"
                           className={controlInputClass}
                           disabled={fDisabled}
-                          min={getTomorrowYmd()}
+                          min={f.minDate ?? getTodayYmd()}
                           aria-invalid={!!fieldState.error}
                           aria-describedby={describedBy}
                           {...field}

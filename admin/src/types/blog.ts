@@ -4,7 +4,9 @@ export type BlogMeta = {
   description?: string;
 };
 
-export type Blog = {
+import type { PendingDeleteMeta } from "./pendingDelete";
+
+export type Blog = PendingDeleteMeta & {
   id: string;
   title: string;
   shortDesc: string;

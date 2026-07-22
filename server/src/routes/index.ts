@@ -12,11 +12,13 @@ import { contactClientRouter } from "./contact/client/contact.routes.js";
 import { paymentRouter } from "./payment/payment.routes.js";
 import { adminAuthRouter } from "../modules/adminAuth/adminAuth.routes.js";
 import { activityAdminRouter } from "../modules/activity/activity.routes.js";
+import { adminManagementRouter } from "../modules/adminManagement/adminManagement.routes.js";
 import { deleteRequestAdminRouter } from "./deleteRequest/admin/deleteRequest.routes.js";
 import {
   analyticsSettingsAdminRouter,
   analyticsSettingsClientRouter,
 } from "../modules/analyticsSettings/analyticsSettings.routes.js";
+import { announcementAdminRouter } from "./announcement/admin/announcement.routes.js";
 
 
 /**
@@ -25,6 +27,7 @@ import {
 export function mountRoutes(app: Express): void {
   app.use("/api/v1/admin/auth", adminAuthRouter);
   app.use("/api/v1/admin/activity", activityAdminRouter);
+  app.use("/api/v1/admin/users", adminManagementRouter);
   app.use("/api/v1/admin/delete-requests", deleteRequestAdminRouter);
   app.use("/api/v1/admin/analytics-settings", analyticsSettingsAdminRouter);
   app.use("/api/v1/client/analytics-config", analyticsSettingsClientRouter);
@@ -36,5 +39,6 @@ export function mountRoutes(app: Express): void {
   app.use("/api/v1/admin/blogs", blogsAdminRouter);
   app.use("/api/v1/client/contact-messages", contactClientRouter);
   app.use("/api/v1/admin/contact-messages", contactAdminRouter);
+  app.use("/api/v1/admin/announcements", announcementAdminRouter);
   app.use("/api/v1/payment", paymentRouter);
 }

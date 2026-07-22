@@ -2,6 +2,7 @@ export type StartPaymentPayload = {
   name: string;
   phone: string;
   homeAddress: string;
+  age?: string;
   preferredTime: string;
   appointmentDate: string;
   siteRef: string;
@@ -26,6 +27,7 @@ export type SubmitFreeAppointmentPayload = {
   preferredDate: string;
   preferredTime: string;
   email?: string;
+  age?: string;
   problem?: string;
   fbEventId?: string;
   fbc?: string;
@@ -42,4 +44,5 @@ export type PublicAppointmentSummary = {
   appointmentDate: string;
   preferredTime: string;
   serialNumber: number;
+  effectiveSerialNumber?: number;
 };

@@ -19,7 +19,7 @@ export default function PatientGuidelinesEmergency() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <a className="inline-flex items-center justify-center bg-white text-primary hover:bg-gray-100 font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 gap-2" href="tel:+8801701313001">
+              <a className="inline-flex items-center justify-center bg-white text-primary hover:bg-gray-100 font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 gap-2" href="tel:+8801701313002">
                 <span className="material-symbols-outlined">call</span>
                 Emergency Call
               </a>

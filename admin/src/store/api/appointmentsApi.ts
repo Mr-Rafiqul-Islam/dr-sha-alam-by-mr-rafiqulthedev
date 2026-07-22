@@ -33,12 +33,30 @@ export const appointmentsApi = baseApi.injectEndpoints({
     }),
     updateAppointmentStatus: builder.mutation<
       Appointment,
-      { id: string; status: AppointmentStatus }
+      { id: string; status: AppointmentStatus; note?: string | null }
     >({
-      query: ({ id, status }) => ({
+      query: ({ id, status, note }) => ({
         url: `/api/v1/admin/appointments/${id}/status`,
         method: "PATCH",
-        body: { status },
+        body: { status, ...(note !== undefined ? { note } : {}) },
+      }),
+      transformResponse: (response: AppointmentResponse) => response.appointment,
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Appointment", id },
+        { type: "Appointment", id: "LIST" },
+      ],
+    }),
+    updateAppointmentSerial: builder.mutation<
+      Appointment,
+      { id: string; modifiedSerialNumber: number | null; reason?: string }
+    >({
+      query: ({ id, modifiedSerialNumber, reason }) => ({
+        url: `/api/v1/admin/appointments/${id}/serial`,
+        method: "PATCH",
+        body: {
+          modifiedSerialNumber,
+          ...(reason ? { reason } : {}),
+        },
       }),
       transformResponse: (response: AppointmentResponse) => response.appointment,
       invalidatesTags: (_result, _error, { id }) => [
@@ -56,7 +74,10 @@ export const appointmentsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { id }) =>
         _result?.pending
-          ? [{ type: "DeleteRequest", id: "LIST" }]
+          ? [
+              { type: "DeleteRequest", id: "LIST" },
+              { type: "Appointment", id: "LIST" },
+            ]
           : [
               { type: "Appointment", id },
               { type: "Appointment", id: "LIST" },
@@ -69,5 +90,6 @@ export const {
   useGetAppointmentsQuery,
   useCreateAppointmentMutation,
   useUpdateAppointmentStatusMutation,
+  useUpdateAppointmentSerialMutation,
   useDeleteAppointmentMutation,
 } = appointmentsApi;

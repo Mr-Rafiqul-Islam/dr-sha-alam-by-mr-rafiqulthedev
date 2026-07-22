@@ -19,6 +19,23 @@ export type GetAllBlogsResult = {
   meta: BlogsListMeta;
 };
 
+function normalizeMeta(meta: BlogsListMeta): BlogsListMeta {
+  const limit = meta.limit > 0 ? meta.limit : 1;
+  const offset = meta.offset ?? 0;
+  const page = meta.page ?? Math.floor(offset / limit) + 1;
+  const totalPages =
+    meta.totalPages ?? Math.max(1, Math.ceil(meta.total / limit));
+  const hasMore = meta.hasMore ?? offset + meta.limit < meta.total;
+
+  return {
+    ...meta,
+    offset,
+    page,
+    totalPages,
+    hasMore,
+  };
+}
+
 export async function getAllBlogs(
   params?: GetAllBlogsParams,
 ): Promise<GetAllBlogsResult> {
@@ -27,18 +44,30 @@ export async function getAllBlogs(
     throw new Error("API URL is not configured");
   }
 
+  const limit = params?.limit;
+  const page = params?.page;
+  const offset = params?.offset;
+  const category = params?.category?.trim();
+  const featured = params?.featured;
+
   const searchParams = new URLSearchParams();
-  if (params?.limit != null) {
-    searchParams.set("limit", String(params.limit));
+
+  if (limit != null) {
+    searchParams.set("limit", String(limit));
   }
-  if (params?.offset != null) {
-    searchParams.set("offset", String(params.offset));
+
+  // API rejects combining page with offset — prefer page when both are present.
+  if (page != null) {
+    searchParams.set("page", String(page));
+  } else if (offset != null) {
+    searchParams.set("offset", String(offset));
   }
-  if (params?.category?.trim()) {
-    searchParams.set("category", params.category.trim());
+
+  if (category) {
+    searchParams.set("category", category);
   }
-  if (params?.featured != null) {
-    searchParams.set("featured", params.featured ? "true" : "false");
+  if (featured != null) {
+    searchParams.set("featured", featured ? "true" : "false");
   }
 
   const query = searchParams.toString();
@@ -47,9 +76,9 @@ export async function getAllBlogs(
   const response = await fetch(url, { next: { revalidate: 60 } });
   const json = (await response.json()) as GetAllBlogsResponse;
 
-  if (!response.ok || !json.success || !json.data || !json.meta) {
+  if (!response.ok || !json.success || !Array.isArray(json.data) || !json.meta) {
     throw new Error(json.message ?? "Failed to load blogs");
   }
 
-  return { blogs: json.data, meta: json.meta };
+  return { blogs: json.data, meta: normalizeMeta(json.meta) };
 }

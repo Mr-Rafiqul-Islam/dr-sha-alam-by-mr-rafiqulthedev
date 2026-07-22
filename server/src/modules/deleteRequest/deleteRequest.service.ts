@@ -8,6 +8,8 @@ import {
   canDeleteImmediately,
   DeleteRequestError,
   type DeleteRequestListItem,
+  type PendingDeleteMeta,
+  shouldHidePendingDeletesFromLists,
 } from "./deleteRequest.types.js";
 
 async function getEntitySummary(
@@ -59,6 +61,107 @@ async function assertEntityExists(
     throw new DeleteRequestError("Entity not found", 404);
   }
 }
+
+export async function getPendingDeleteEntityMap(
+  entityType: DeleteRequestEntityType,
+): Promise<Map<string, string>> {
+  const requests = await prisma.deleteRequest.findMany({
+    where: {
+      entityType,
+      status: DeleteRequestStatus.PENDING,
+    },
+    select: { id: true, entityId: true },
+  });
+
+  return new Map(requests.map((request) => [request.entityId, request.id]));
+}
+
+export async function getPendingDeleteEntityIds(
+  entityType: DeleteRequestEntityType,
+): Promise<string[]> {
+  return Array.from((await getPendingDeleteEntityMap(entityType)).keys());
+}
+
+export async function buildExcludePendingDeletesWhere(
+  entityType: DeleteRequestEntityType,
+): Promise<{ id: { notIn: string[] } } | Record<string, never>> {
+  const entityIds = await getPendingDeleteEntityIds(entityType);
+  if (entityIds.length === 0) {
+    return {};
+  }
+
+  return { id: { notIn: entityIds } };
+}
+
+export async function getPendingDeleteRequestId(
+  entityType: DeleteRequestEntityType,
+  entityId: string,
+): Promise<string | null> {
+  const pending = await prisma.deleteRequest.findFirst({
+    where: {
+      entityType,
+      entityId,
+      status: DeleteRequestStatus.PENDING,
+    },
+    select: { id: true },
+  });
+
+  return pending?.id ?? null;
+}
+
+export async function isEntityPendingDelete(
+  entityType: DeleteRequestEntityType,
+  entityId: string,
+): Promise<boolean> {
+  return (await getPendingDeleteRequestId(entityType, entityId)) != null;
+}
+
+export function annotatePendingDeleteMeta<T extends { id: string }>(
+  items: T[],
+  pendingMap: Map<string, string>,
+): Array<T & PendingDeleteMeta> {
+  return items.map((item) => {
+    const deleteRequestId = pendingMap.get(item.id);
+    if (!deleteRequestId) {
+      return item;
+    }
+
+    return {
+      ...item,
+      pendingDelete: true,
+      deleteRequestId,
+    };
+  });
+}
+
+export function buildPendingDeleteListWhere<T extends { id?: unknown }>(
+  hidePendingDeletes: boolean,
+  pendingMap: Map<string, string>,
+): { id: { notIn: string[] } } | Record<string, never> {
+  if (!hidePendingDeletes || pendingMap.size === 0) {
+    return {};
+  }
+
+  return { id: { notIn: Array.from(pendingMap.keys()) } };
+}
+
+export function withPendingDeleteMeta<T extends { id: string }>(
+  item: T,
+  pendingMap: Map<string, string>,
+): T & PendingDeleteMeta {
+  const deleteRequestId = pendingMap.get(item.id);
+  if (!deleteRequestId) {
+    return item;
+  }
+
+  return {
+    ...item,
+    pendingDelete: true,
+    deleteRequestId,
+  };
+}
+
+export { shouldHidePendingDeletesFromLists };
 
 export async function resolvePendingDeleteRequestsForEntity(
   entityType: DeleteRequestEntityType,

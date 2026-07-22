@@ -9,7 +9,9 @@ export type AppointmentPaymentStatus = "PENDING" | "SUCCESS" | "CANCEL";
 
 export type SiteRef = "DOCTOR_SHA_ALAM" | "TRUE_CARE_HELLING_CENTER";
 
-export type Appointment = {
+import type { PendingDeleteMeta } from "./pendingDelete";
+
+export type Appointment = PendingDeleteMeta & {
   id: string;
   name: string;
   phone: string;
@@ -19,11 +21,17 @@ export type Appointment = {
   preferredTime: string;
   appointmentDate: string;
   serialNumber: number;
+  modifiedSerialNumber: number | null;
+  effectiveSerialNumber: number;
   gender: string | null;
+  age: string | null;
   status: AppointmentStatus;
   paymentStatus: AppointmentPaymentStatus | null;
   siteRef: SiteRef;
   transactionId: string | null;
+  note: string | null;
+  createdBy: string;
+  updatedBy: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -42,6 +50,7 @@ export type AppointmentResponse = {
 
 export type AppointmentFormData = {
   patientName: string;
+  age?: string;
   phone: string;
   email: string;
   homeAddress: string;
@@ -55,6 +64,7 @@ export type CreateAppointmentPayload = {
   fullName: string;
   phoneNumber: string;
   email?: string;
+  age?: string;
   homeAddress: string;
   problem?: string;
   preferredDate: string;

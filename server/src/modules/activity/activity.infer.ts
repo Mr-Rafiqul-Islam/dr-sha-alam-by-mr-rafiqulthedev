@@ -64,6 +64,18 @@ export function inferActivityFromRequest(
         },
       };
     }
+    case "PATCH /api/v1/admin/appointments/:id/serial": {
+      const appointment = getNestedRecord(payload, "appointment");
+      return {
+        action: ActivityAction.APPOINTMENT_SERIAL_CHANGED,
+        entityType: ActivityEntityType.Appointment,
+        entityId: appointment?.id ? String(appointment.id) : id,
+        metadata: {
+          patientName: appointment?.name,
+          newEffectiveSerialNumber: appointment?.effectiveSerialNumber,
+        },
+      };
+    }
     case "PATCH /api/v1/admin/contact-messages/:id/status": {
       const message = getNestedRecord(payload, "data");
       return {

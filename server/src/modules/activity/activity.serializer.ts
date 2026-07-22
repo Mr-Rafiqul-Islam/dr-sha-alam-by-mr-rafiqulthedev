@@ -55,6 +55,17 @@ export function buildActivitySummary(
       const to = metadata.to ? String(metadata.to) : "unknown";
       return `${who} updated appointment status for ${patientName} from ${from} to ${to}`;
     }
+    case "APPOINTMENT_SERIAL_CHANGED": {
+      const patientName = metadata.patientName ? String(metadata.patientName) : "a patient";
+      if (metadata.isReset === true) {
+        const modified = metadata.previousModifiedSerialNumber;
+        const original = metadata.originalSerialNumber;
+        return `${who} reset appointment serial from modified serial ${modified} to original serial ${original} for ${patientName}.`;
+      }
+      const from = metadata.previousEffectiveSerialNumber ?? metadata.originalSerialNumber;
+      const to = metadata.newEffectiveSerialNumber;
+      return `${who} changed appointment serial from ${from} to ${to} for ${patientName}.`;
+    }
     case "APPOINTMENT_DELETED": {
       const patientName = metadata.patientName ? String(metadata.patientName) : "a patient";
       return `${who} deleted appointment for ${patientName}${deleteApprovalSuffix(metadata)}`;

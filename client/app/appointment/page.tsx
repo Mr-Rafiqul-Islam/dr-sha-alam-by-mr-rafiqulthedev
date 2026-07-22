@@ -1,3 +1,4 @@
+import AppointmentSteps from "@/components/appointment/AppointmentSteps";
 import BookingForm from "@/components/booking/BookingForm";
 import Image from "next/image";
 import Link from "next/link";
@@ -73,64 +74,7 @@ export default function BookAppointment() {
 
       <section className="py-12 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="flex flex-col items-center text-center space-y-3 relative group">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <span className="material-symbols-outlined text-3xl">
-                  description
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-text-main dark:text-white">
-                1. Share Your Information
-              </h3>
-              <p className="text-sm text-text-sub">
-                Tell us about your symptoms, concerns, and medical history.
-              </p>
-              <div className="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-gray-100 dark:bg-gray-700 -z-10"></div>
-            </div>
-            <div className="flex flex-col items-center text-center space-y-3 relative group">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <span className="material-symbols-outlined text-3xl">
-                  support_agent
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-text-main dark:text-white">
-                2. Our Team Contacts You
-              </h3>
-              <p className="text-sm text-text-sub">
-                We confirm your appointment details and answer any questions.
-              </p>
-              <div className="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-gray-100 dark:bg-gray-700 -z-10"></div>
-            </div>
-            <div className="flex flex-col items-center text-center space-y-3 relative group">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <span className="material-symbols-outlined text-3xl">
-                  check_circle
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-text-main dark:text-white">
-                3. Receive Confirmation
-              </h3>
-              <p className="text-sm text-text-sub">
-                Get your confirmed consultation date, time, and visit
-                instructions.
-              </p>
-              <div className="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-gray-100 dark:bg-gray-700 -z-10"></div>
-            </div>
-            <div className="flex flex-col items-center text-center space-y-3 relative group">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <span className="material-symbols-outlined text-3xl">
-                  medical_services
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-text-main dark:text-white">
-                4. Meet Dr. Shah Alam
-              </h3>
-              <p className="text-sm text-text-sub">
-                Receive a personalized evaluation and treatment guidance.
-              </p>
-            </div>
-          </div>
+          <AppointmentSteps />
         </div>
       </section>
 
@@ -235,7 +179,7 @@ export default function BookAppointment() {
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link
               className="inline-flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1"
-              href="https://wa.me/+8801789639174"
+              href="https://wa.me/+8801701313001"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -244,7 +188,7 @@ export default function BookAppointment() {
             </Link>
             <a
               className="inline-flex items-center justify-center gap-3 bg-white text-primary hover:bg-gray-50 px-8 py-4 rounded-full font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1"
-              href="tel:+8801701313001"
+              href="tel:+8801701313002"
             >
               <span className="material-symbols-outlined">call</span>
               Call Our Team

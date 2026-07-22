@@ -3,7 +3,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Button, Icon, Input, PageLoadingFallback } from "../components/common";
 import { resolvePostLoginPath } from "../constants/permissions";
-import { fetchCurrentAdmin, loginAdminRequest } from "../lib/adminAuth";
+import {
+  fetchCurrentAdmin,
+  loginAdminRequest,
+  saveAdminLoginChallenge,
+} from "../lib/adminAuth";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -55,9 +59,19 @@ export function LoginPage() {
 
     try {
       const response = await loginAdminRequest(email.trim(), password);
-      const role = response.data?.user.role ?? "ADMIN";
-      toast.success("Welcome back");
-      navigate(resolvePostLoginPath(role, requestedPath), { replace: true });
+      const challenge = response.data!;
+
+      saveAdminLoginChallenge({
+        challengeId: challenge.challengeId,
+        expiresIn: challenge.expiresIn,
+        maskedDestination: challenge.maskedDestination,
+        resendAvailableIn: challenge.resendAvailableIn,
+        requestedPath,
+        createdAt: Date.now(),
+      });
+
+      toast.success(response.message ?? "Verification code sent");
+      navigate("/verify-otp", { replace: true });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Login failed");
     } finally {

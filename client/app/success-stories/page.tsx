@@ -11,9 +11,9 @@ export default function SuccessStoriesPage() {
     <main className="flex-grow">
       <SuccessHero />
       <FeaturedTransformations />
-      <MoreStories />
-      <VisualEvidence />
       <VideoTestimonials />
+      <VisualEvidence />
+      <MoreStories />
       <SuccessStats />
       <CallToAction />
     </main>

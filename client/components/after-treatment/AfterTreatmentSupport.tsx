@@ -4,25 +4,25 @@ import Link from 'next/link';
 const supportActions = [
   {
     label: 'WhatsApp Support',
-    href: 'https://wa.me/+8801789639174',
+    href: 'https://wa.me/+8801701313001',
     external: true,
     icon: (
       <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
         <i className="fab fa-whatsapp text-xl"></i>
       </div>
     ),
-    detail: '+880 1789 639 174',
+    detail: '+880 1701 313 001',
   },
   {
     label: 'Call Our Team',
-    href: 'tel:+8801701313001',
+    href: 'tel:+8801701313002',
     external: false,
     icon: (
       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
         <span className="material-symbols-outlined">call</span>
       </div>
     ),
-    detail: '+880 1701 313 001',
+    detail: '+880 1701 313 002',
   },
 ];
 

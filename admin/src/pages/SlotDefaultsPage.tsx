@@ -154,9 +154,9 @@ export function SlotDefaultsPage() {
               className="w-full rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
             >
               <option value="DOCTOR_SHA_ALAM">DOCTOR_SHA_ALAM</option>
-              <option value="TRUE_CARE_HELLING_CENTER">
+              {/* <option value="TRUE_CARE_HELLING_CENTER">
                 TRUE_CARE_HELLING_CENTER
-              </option>
+              </option> */}
             </select>
           </label>
 

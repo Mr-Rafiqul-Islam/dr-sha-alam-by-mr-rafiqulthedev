@@ -1,5 +1,6 @@
 import type { PreferredTimeCode } from "./appointment.mapper.js";
 import { getPreferredTimeSmsLabel } from "./appointment.mapper.js";
+import { getEffectiveSerialNumber } from "./appointment.serial.js";
 
 const CHAMBER_SMS_FOOTER = `চেম্বার: TruCare Healing Centre
 সিদ্দিক টাওয়ার (৫ম তলা, লিফট এর- ৪), ৪৯ মহাখালী, ঢাকা।
@@ -11,6 +12,7 @@ type AppointmentSmsPayload = {
   name: string;
   phone: string;
   serialNumber: number;
+  modifiedSerialNumber?: number | null;
   slotCode: string;
   smsLabel?: string | null;
 };
@@ -18,6 +20,7 @@ type AppointmentSmsPayload = {
 function buildAppointmentSmsMessage({
   name,
   serialNumber,
+  modifiedSerialNumber,
   slotCode,
   smsLabel,
 }: Omit<AppointmentSmsPayload, "phone">): string {
@@ -25,10 +28,15 @@ function buildAppointmentSmsMessage({
     smsLabel ??
     getPreferredTimeSmsLabel(slotCode as PreferredTimeCode);
 
+  const effectiveSerial = getEffectiveSerialNumber({
+    serialNumber,
+    modifiedSerialNumber,
+  });
+
   return `${CHAMBER_SMS_FOOTER}
 
 রোগীর নাম: ${name}
-আপনার সিরিয়াল নং: ${serialNumber}
+আপনার সিরিয়াল নং: ${effectiveSerial}
 উপস্থিতি সময়ঃ ${resolvedLabel}
 
 ${CHAMBER_SMS_CONTACT}`;

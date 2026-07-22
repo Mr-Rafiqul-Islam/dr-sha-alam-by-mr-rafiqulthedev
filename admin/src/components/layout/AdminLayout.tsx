@@ -14,7 +14,7 @@ function LayoutContent() {
       <Sidebar />
       <div
         className={cn(
-          "flex-1 flex flex-col min-h-screen transition-[margin] duration-300 ml-0",
+          "ml-0 flex min-h-screen min-w-0 flex-1 flex-col transition-[margin] duration-300",
           isCollapsed ? "lg:ml-sidebar-collapsed" : "lg:ml-sidebar-expanded",
         )}
       >

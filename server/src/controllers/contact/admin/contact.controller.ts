@@ -17,25 +17,49 @@ import {
 } from "../../../modules/contact/contact.utils.js";
 import { routeParamString } from "../../../utils/express-params.js";
 import {
+  annotatePendingDeleteMeta,
+  buildPendingDeleteListWhere,
   canDeleteImmediately,
   createDeleteRequest,
   DeleteRequestEntityType,
+  getPendingDeleteEntityMap,
+  getPendingDeleteRequestId,
   resolvePendingDeleteRequestsForEntity,
+  shouldHidePendingDeletesFromLists,
+  withPendingDeleteMeta,
 } from "../../../modules/deleteRequest/deleteRequest.service.js";
 import { DeleteRequestError } from "../../../modules/deleteRequest/deleteRequest.types.js";
 
 export async function listContactMessages(req: Request, res: Response) {
   try {
+    const admin = req.admin;
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
+
     const status = parseOptionalContactMessageStatus(req.query.status);
+    const pendingDeleteMap = await getPendingDeleteEntityMap(
+      DeleteRequestEntityType.CONTACT_MESSAGE,
+    );
+    const hidePendingDeletes = shouldHidePendingDeletesFromLists(admin.role);
 
     const contactMessages = await prisma.contactMessage.findMany({
-      where: status ? { status } : undefined,
+      where: {
+        ...buildPendingDeleteListWhere(hidePendingDeletes, pendingDeleteMap),
+        ...(status ? { status } : {}),
+      },
       orderBy: { createdAt: "desc" },
     });
+    const data = hidePendingDeletes
+      ? contactMessages
+      : annotatePendingDeleteMeta(contactMessages, pendingDeleteMap);
 
     return res.status(200).json({
       success: true,
-      data: contactMessages,
+      data,
     });
   } catch (error) {
     return handleContactError(res, error, "Failed to fetch contact messages");
@@ -49,6 +73,14 @@ export async function getContactMessageById(req: Request, res: Response) {
   }
 
   try {
+    const admin = req.admin;
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
+
     const contactMessage = await prisma.contactMessage.findUnique({
       where: { id: contactMessageId },
     });
@@ -57,9 +89,22 @@ export async function getContactMessageById(req: Request, res: Response) {
       return res.status(404).json({ success: false, message: "Contact message not found" });
     }
 
+    const deleteRequestId = await getPendingDeleteRequestId(
+      DeleteRequestEntityType.CONTACT_MESSAGE,
+      contactMessageId,
+    );
+    if (deleteRequestId && shouldHidePendingDeletesFromLists(admin.role)) {
+      return res.status(404).json({ success: false, message: "Contact message not found" });
+    }
+
+    const pendingDeleteMap = deleteRequestId
+      ? new Map([[contactMessageId, deleteRequestId]])
+      : new Map<string, string>();
+    const data = withPendingDeleteMeta(contactMessage, pendingDeleteMap);
+
     return res.status(200).json({
       success: true,
-      data: contactMessage,
+      data,
     });
   } catch (error) {
     return handleContactError(res, error, "Failed to fetch contact message");

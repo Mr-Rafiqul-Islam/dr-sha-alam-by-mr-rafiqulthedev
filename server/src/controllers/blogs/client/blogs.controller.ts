@@ -8,36 +8,73 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../../config/db.js";
 import { routeParamString } from "../../../utils/express-params.js";
 import { decodeRouteParam } from "../../../utils/decode-route-param.js";
-import { toPublicBlog } from "../../../modules/blogs/blogs.mapper.js";
+import {
+  BLOG_LIST_SELECT,
+  toPublicBlog,
+  toPublicBlogListItem,
+} from "../../../modules/blogs/blogs.mapper.js";
 
-const DEFAULT_LIMIT = 50;
+const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 100;
+
+type BlogListPagination = {
+  limit: number;
+  offset: number;
+  page: number;
+};
+
+function parseBlogListPagination(req: Request): BlogListPagination | null {
+  const limitRaw = req.query.limit;
+  const offsetRaw = req.query.offset;
+  const pageRaw = req.query.page;
+
+  let limit = DEFAULT_LIMIT;
+  if (limitRaw != null && limitRaw !== "") {
+    const parsedLimit = parseInt(String(limitRaw), 10);
+    if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > MAX_LIMIT) {
+      return null;
+    }
+    limit = parsedLimit;
+  }
+
+  let offset = 0;
+  if (pageRaw != null && pageRaw !== "") {
+    if (offsetRaw != null && offsetRaw !== "") {
+      return null;
+    }
+
+    const parsedPage = parseInt(String(pageRaw), 10);
+    if (!Number.isInteger(parsedPage) || parsedPage < 1) {
+      return null;
+    }
+
+    offset = (parsedPage - 1) * limit;
+  } else if (offsetRaw != null && offsetRaw !== "") {
+    const parsedOffset = parseInt(String(offsetRaw), 10);
+    if (!Number.isInteger(parsedOffset) || parsedOffset < 0) {
+      return null;
+    }
+    offset = parsedOffset;
+  }
+
+  return {
+    limit,
+    offset,
+    page: Math.floor(offset / limit) + 1,
+  };
+}
 
 export async function listBlogs(req: Request, res: Response) {
   try {
-    const limitRaw = req.query.limit;
-    const offsetRaw = req.query.offset;
-    let limit =
-      limitRaw != null && limitRaw !== ""
-        ? parseInt(limitRaw as string, 10)
-        : DEFAULT_LIMIT;
-    if (limit === null) {
+    const pagination = parseBlogListPagination(req);
+    if (!pagination) {
       return res.status(400).json({
         success: false,
-        message: `limit must be an integer from 1 to ${MAX_LIMIT}`,
+        message: `Invalid pagination. Use limit (1-${MAX_LIMIT}), offset (>= 0), or page (>= 1). Do not combine page with offset.`,
       });
     }
-    let offset = 0;
-    if (offsetRaw != null && offsetRaw !== "") {
-      const o = parseInt(offsetRaw as string, 10);
-      if (isNaN(o)) {
-        return res.status(400).json({
-          success: false,
-          message: "offset must be a non‑negative integer",
-        });
-      }
-      offset = o;
-    }
+
+    const { limit, offset, page } = pagination;
 
     const rawCategory = req.query.category;
     let categoryFilter: string | null = null;
@@ -100,16 +137,26 @@ export async function listBlogs(req: Request, res: Response) {
       prisma.blog.count({ where }),
       prisma.blog.findMany({
         where,
+        select: BLOG_LIST_SELECT,
         orderBy: [{ createdAt: "desc" }],
         take: limit,
         skip: offset,
       }),
     ]);
 
+    const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
     res.json({
       success: true,
-      data: rows.map(toPublicBlog),
-      meta: { total, limit, offset },
+      data: rows.map(toPublicBlogListItem),
+      meta: {
+        total,
+        limit,
+        offset,
+        page,
+        totalPages,
+        hasMore: offset + rows.length < total,
+      },
     });
   } catch (err) {
     console.error(err);

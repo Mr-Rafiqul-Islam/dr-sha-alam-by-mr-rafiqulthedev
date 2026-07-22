@@ -15,6 +15,10 @@ function lazyNamed<T extends Record<string, ComponentType<object>>>(
 }
 
 const LoginPage = lazyNamed(() => import("./pages/LoginPage"), "LoginPage");
+const VerifyOtpPage = lazyNamed(
+  () => import("./pages/VerifyOtpPage"),
+  "VerifyOtpPage",
+);
 const DashboardPage = lazyNamed(
   () => import("./pages/DashboardPage"),
   "DashboardPage",
@@ -59,11 +63,21 @@ const PendingDeletesPage = lazyNamed(
   () => import("./pages/PendingDeletesPage"),
   "PendingDeletesPage",
 );
+const AdminsPage = lazyNamed(() => import("./pages/AdminsPage"), "AdminsPage");
+const AnnouncementsPage = lazyNamed(
+  () => import("./pages/AnnouncementsPage"),
+  "AnnouncementsPage",
+);
+const AdminFormPage = lazyNamed(
+  () => import("./pages/AdminFormPage"),
+  "AdminFormPage",
+);
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
       <Route element={<RequireAdminAuth />}>
         <Route element={<AdminLayout />}>
           <Route index element={<RoleDefaultRedirect />} />
@@ -100,11 +114,19 @@ function App() {
             />
             <Route path="contact-messages" element={<ContactMessagesPage />} />
           </Route>
+          <Route element={<RequireAdminPermission permission="announcements" />}>
+            <Route path="announcements" element={<AnnouncementsPage />} />
+          </Route>
           <Route element={<RequireAdminPermission permission="analyticsSettings" />}>
             <Route path="settings" element={<SettingsPage />} />
           </Route>
           <Route element={<RequireAdminPermission permission="deleteApprovals" />}>
             <Route path="pending-deletes" element={<PendingDeletesPage />} />
+          </Route>
+          <Route element={<RequireAdminPermission permission="adminManagement" />}>
+            <Route path="admins/new" element={<AdminFormPage />} />
+            <Route path="admins/:id/edit" element={<AdminFormPage />} />
+            <Route path="admins" element={<AdminsPage />} />
           </Route>
         </Route>
         <Route path="*" element={<RoleDefaultRedirect />} />

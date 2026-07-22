@@ -198,8 +198,8 @@ export default function MedicalDisclaimerSections() {
         <p className="text-text-sub mb-1">49, Mohakhali, Beside Square Centre, Wireless Gate, Mohakhali, Dhaka 1212, Bangladesh</p>
         <p className="text-text-sub mb-1">
           Phone:{' '}
-          <a className="text-primary hover:text-accent font-medium transition-colors" href="tel:+8801701313001">
-            +880 1701313001
+          <a className="text-primary hover:text-accent font-medium transition-colors" href="tel:+8801701313002">
+            +880 1701313002
           </a>
         </p>
         <p className="text-text-sub mb-1">

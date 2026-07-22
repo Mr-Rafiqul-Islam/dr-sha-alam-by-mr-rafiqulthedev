@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Avatar, Badge, Button, Icon } from "../common";
+import { Avatar, Badge, Button, Icon, PendingDeleteBadge } from "../common";
 import type { Blog } from "../../types/blog";
 import {
   formatBlogDate,
@@ -7,6 +7,7 @@ import {
   getBlogStatusLabel,
   getInitials,
 } from "../../utils/blog";
+import { getPendingDeleteSurfaceClass } from "../../utils/pendingDelete";
 
 type BlogCardProps = {
   blog: Blog;
@@ -19,7 +20,9 @@ export function BlogCard({ blog, onView, onDelete, onToggleFeatured }: BlogCardP
   const navigate = useNavigate();
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)]">
+    <article
+      className={`flex flex-col overflow-hidden rounded-xl border shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)] ${getPendingDeleteSurfaceClass(blog.pendingDelete)}`}
+    >
       <div className="relative aspect-16/10 overflow-hidden bg-surface-container-high">
         {blog.image ? (
           <img
@@ -45,6 +48,9 @@ export function BlogCard({ blog, onView, onDelete, onToggleFeatured }: BlogCardP
             <Badge variant="confirmed" className="backdrop-blur-sm">
               Featured
             </Badge>
+          ) : null}
+          {blog.pendingDelete ? (
+            <PendingDeleteBadge />
           ) : null}
         </div>
       </div>

@@ -55,6 +55,7 @@ export async function countBookedSeats(params: {
   appointmentDate: Date;
   preferredTime: string;
   siteRef: SiteRef;
+  excludeAppointmentId?: string;
   tx?: TransactionClient;
 }): Promise<number> {
   const { dayStart, dayEnd } = getDayRange(params.appointmentDate);
@@ -66,6 +67,9 @@ export async function countBookedSeats(params: {
       preferredTime: params.preferredTime,
       siteRef: params.siteRef,
       status: { in: SEAT_CONSUMING_STATUSES },
+      ...(params.excludeAppointmentId
+        ? { id: { not: params.excludeAppointmentId } }
+        : {}),
     },
   });
 }
@@ -97,6 +101,7 @@ export async function validateAppointmentSlotAvailability(params: {
   appointmentDate: Date;
   preferredTime: unknown;
   siteRef?: SiteRef;
+  excludeAppointmentId?: string;
   tx?: TransactionClient;
 }): Promise<SlotAvailabilityResult> {
   const slotCode = parseSlotCodeString(params.preferredTime);
@@ -142,6 +147,7 @@ export async function validateAppointmentSlotAvailability(params: {
     appointmentDate: params.appointmentDate,
     preferredTime: slotCode,
     siteRef,
+    excludeAppointmentId: params.excludeAppointmentId,
     tx: params.tx,
   });
 

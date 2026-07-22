@@ -75,7 +75,10 @@ export const blogsApi = baseApi.injectEndpoints({
         }),
         invalidatesTags: (_result, _error, id) =>
           _result?.pending
-            ? [{ type: "DeleteRequest", id: "LIST" }]
+            ? [
+                { type: "DeleteRequest", id: "LIST" },
+                { type: "Blog", id: "LIST" },
+              ]
             : [
                 { type: "Blog", id },
                 { type: "Blog", id: "LIST" },

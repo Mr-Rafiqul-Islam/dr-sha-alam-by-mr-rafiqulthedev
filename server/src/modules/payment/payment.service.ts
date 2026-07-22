@@ -15,8 +15,8 @@ import { sendAppointmentSms } from "../appointment/appointment.sms.js";
 import {
   AppointmentValidationError,
   getDayRange,
-  isPastOrToday,
   parseAppointmentDate,
+  parseAppointmentDateForSlot,
   parseEmail,
   parseOptionalString,
   parseRequiredString,
@@ -41,6 +41,7 @@ type SmsPayload = {
   name: string;
   phone: string;
   serialNumber: number;
+  modifiedSerialNumber?: number | null;
   slotCode: string;
   smsLabel?: string | null;
 };
@@ -90,13 +91,11 @@ function parsePaymentPayload(value: unknown): PaymentAppointmentPayload {
   const problem = parseOptionalString(value.problem);
   const preferredTime = parseSlotCodeString(value.preferredTime);
 
-  const selectedDate = parseAppointmentDate(value.preferredDate);
-  if (!selectedDate) {
-    throw new AppointmentValidationError("Invalid preferredDate");
-  }
-  if (isPastOrToday(selectedDate)) {
-    throw new AppointmentValidationError("Only future dates are allowed");
-  }
+  const selectedDate = parseAppointmentDateForSlot(
+    value.preferredDate,
+    preferredTime,
+    "preferredDate",
+  );
 
   return {
     fullName,
@@ -425,6 +424,7 @@ async function fulfillExistingReservedAppointment(
       name: existing.name,
       phone: existing.phone,
       serialNumber: existing.serialNumber,
+      modifiedSerialNumber: existing.modifiedSerialNumber,
       slotCode: existing.preferredTime,
       smsLabel: existing.slot?.smsLabel,
     },

@@ -22,7 +22,9 @@ export type AdminPermission =
   | "articles"
   | "settings"
   | "analyticsSettings"
-  | "deleteApprovals";
+  | "deleteApprovals"
+  | "adminManagement"
+  | "announcements";
 
 const ANALYTICS_SETTINGS_ROLES = new Set<UserRole>([
   UserRole.SUPER_ADMIN,
@@ -33,9 +35,13 @@ const SUPPORT_PERMISSIONS = new Set<AdminPermission>([
   "appointments",
   "appointmentSchedules",
   "contactMessages",
+  "announcements",
 ]);
 
-const EDITOR_PERMISSIONS = new Set<AdminPermission>(["articles"]);
+const EDITOR_PERMISSIONS = new Set<AdminPermission>([
+  "articles",
+  "announcements",
+]);
 
 const ALL_PERMISSIONS: AdminPermission[] = [
   "dashboard",
@@ -46,6 +52,8 @@ const ALL_PERMISSIONS: AdminPermission[] = [
   "settings",
   "analyticsSettings",
   "deleteApprovals",
+  "adminManagement",
+  "announcements",
 ];
 
 export function isStaffPanelRole(role: UserRole): boolean {

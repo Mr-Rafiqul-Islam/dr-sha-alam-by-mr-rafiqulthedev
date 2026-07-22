@@ -17,7 +17,7 @@ export default function FeaturedArticle({ blog }: FeaturedArticleProps) {
   return (
     <section className="py-12 bg-white dark:bg-surface-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal direction="up" className="bg-background-light dark:bg-background-dark rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col lg:flex-row hover:shadow-xl transition-all duration-300 group cursor-pointer">
+        <ScrollReveal direction="up" className="bg-background-light dark:bg-background-dark rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col lg:flex-row hover:shadow-xl transition-all duration-300 group">
           <div className="lg:w-3/5 h-64 lg:min-h-[280px] relative overflow-hidden lg:self-stretch">
             <Image alt={blog.title} className="object-cover transform group-hover:scale-105 transition-transform duration-700" src={blog.image} fill sizes="(max-width: 1024px) 100vw, 60vw" />
             <div className="absolute top-6 left-6 bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md uppercase tracking-wide">
