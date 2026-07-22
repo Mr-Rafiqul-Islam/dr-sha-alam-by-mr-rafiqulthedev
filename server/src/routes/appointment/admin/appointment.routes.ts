@@ -23,4 +23,8 @@ appointmentAdminRouter.patch(
   "/:id/status",
   appointmentController.updateAppointmentStatus,
 );
+appointmentAdminRouter.patch(
+  "/:id/serial",
+  appointmentController.updateAppointmentSerial,
+);
 appointmentAdminRouter.delete("/:id", appointmentController.deleteAppointment);

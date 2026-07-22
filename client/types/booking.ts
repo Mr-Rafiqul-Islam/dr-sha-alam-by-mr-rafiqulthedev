@@ -44,4 +44,5 @@ export type PublicAppointmentSummary = {
   appointmentDate: string;
   preferredTime: string;
   serialNumber: number;
+  effectiveSerialNumber?: number;
 };

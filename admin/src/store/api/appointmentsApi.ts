@@ -46,6 +46,24 @@ export const appointmentsApi = baseApi.injectEndpoints({
         { type: "Appointment", id: "LIST" },
       ],
     }),
+    updateAppointmentSerial: builder.mutation<
+      Appointment,
+      { id: string; modifiedSerialNumber: number | null; reason?: string }
+    >({
+      query: ({ id, modifiedSerialNumber, reason }) => ({
+        url: `/api/v1/admin/appointments/${id}/serial`,
+        method: "PATCH",
+        body: {
+          modifiedSerialNumber,
+          ...(reason ? { reason } : {}),
+        },
+      }),
+      transformResponse: (response: AppointmentResponse) => response.appointment,
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Appointment", id },
+        { type: "Appointment", id: "LIST" },
+      ],
+    }),
     deleteAppointment: builder.mutation<
       DeleteMutationResponse,
       { id: string }
@@ -72,5 +90,6 @@ export const {
   useGetAppointmentsQuery,
   useCreateAppointmentMutation,
   useUpdateAppointmentStatusMutation,
+  useUpdateAppointmentSerialMutation,
   useDeleteAppointmentMutation,
 } = appointmentsApi;

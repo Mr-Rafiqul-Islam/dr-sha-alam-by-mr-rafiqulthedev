@@ -7,6 +7,10 @@ import ScrollReveal from "@/components/ScrollReveal";
 import { trackMetaEvent } from "@/lib/metaAnalytics";
 import { getAppointmentById } from "@/server-actions/getAppointmentById";
 import type { PublicAppointmentSummary } from "@/types/booking";
+import {
+  formatSerialDisplay,
+  getEffectiveSerialNumber,
+} from "@/lib/appointmentSerial";
 import Image from "next/image";
 
 type AppointmentSummary = PublicAppointmentSummary;
@@ -110,7 +114,7 @@ function ThankYouContent() {
               <div>
                 <p className="text-xs text-text-sub mb-1">Serial Number</p>
                 <p className="text-lg font-bold text-text-main dark:text-white">
-                  #{appointment.serialNumber}
+                  {formatSerialDisplay(getEffectiveSerialNumber(appointment))}
                 </p>
               </div>
               <div>

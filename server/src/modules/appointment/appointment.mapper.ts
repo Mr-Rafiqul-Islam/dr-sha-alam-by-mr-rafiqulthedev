@@ -2,6 +2,10 @@ import type { SiteRef } from "@prisma/client";
 import {
   BOOTSTRAP_SLOT_DEFAULTS,
 } from "../appointmentSchedule/slotDefaults.bootstrap.js";
+import {
+  toAppointmentSerialFields,
+  withPublicAppointmentSerialFields,
+} from "./appointment.serial.js";
 
 const SITE_REF_WEBSITE_LABELS: Record<SiteRef, string> = {
   DOCTOR_SHA_ALAM: "https://doctorshahalam.com ",
@@ -95,18 +99,24 @@ type AppointmentWithOptionalActors = {
 
 export function toPublicAppointment<T extends { preferredTime: string }>(
   appointment: T,
-): Omit<T, "preferredTime" | "attendTime" | "createdBy" | "updatedBy"> & {
+): Omit<T, "preferredTime" | "attendTime" | "createdBy" | "updatedBy" | "modifiedSerialNumber"> & {
   preferredTime: string;
   createdBy?: string;
   updatedBy?: string;
+  serialNumber: number;
+  effectiveSerialNumber: number;
 } {
   const {
     attendTime: _attendTime,
     preferredTime,
     createdBy,
     updatedBy,
+    modifiedSerialNumber: _modifiedSerialNumber,
     ...rest
-  } = appointment as T & AppointmentWithOptionalActors;
+  } = appointment as T & AppointmentWithOptionalActors & {
+    serialNumber?: number;
+    modifiedSerialNumber?: number | null;
+  };
 
   const hasActorRelations =
     "createdBy" in (appointment as object) ||
@@ -114,39 +124,79 @@ export function toPublicAppointment<T extends { preferredTime: string }>(
 
   const siteRef = (appointment as AppointmentWithOptionalActors).siteRef;
 
+  const serialFields =
+    "serialNumber" in (appointment as object)
+      ? withPublicAppointmentSerialFields(
+          appointment as T & {
+            serialNumber: number;
+            modifiedSerialNumber?: number | null;
+          },
+        )
+      : null;
+
+  const baseRest = serialFields
+    ? { ...rest, serialNumber: serialFields.serialNumber, effectiveSerialNumber: serialFields.effectiveSerialNumber }
+    : rest;
+
   if (hasActorRelations && siteRef) {
     return {
-      ...rest,
+      ...baseRest,
       preferredTime: getPreferredTimeLabel(preferredTime),
       createdBy: formatAppointmentActorLabel(createdBy, siteRef),
       updatedBy: formatAppointmentActorLabel(updatedBy, siteRef),
-    } as Omit<T, "preferredTime" | "attendTime" | "createdBy" | "updatedBy"> & {
+    } as Omit<T, "preferredTime" | "attendTime" | "createdBy" | "updatedBy" | "modifiedSerialNumber"> & {
       preferredTime: string;
       createdBy?: string;
       updatedBy?: string;
+      serialNumber: number;
+      effectiveSerialNumber: number;
     };
   }
 
   return {
-    ...rest,
+    ...baseRest,
     preferredTime: getPreferredTimeLabel(preferredTime),
-  } as Omit<T, "preferredTime" | "attendTime" | "createdBy" | "updatedBy"> & {
+  } as Omit<T, "preferredTime" | "attendTime" | "createdBy" | "updatedBy" | "modifiedSerialNumber"> & {
     preferredTime: string;
     createdBy?: string;
     updatedBy?: string;
+    serialNumber: number;
+    effectiveSerialNumber: number;
   };
 }
 
 export function toPublicAppointments<T extends { preferredTime: string }>(
   appointments: T[],
 ): Array<
-  Omit<T, "preferredTime" | "attendTime" | "createdBy" | "updatedBy"> & {
+  Omit<T, "preferredTime" | "attendTime" | "createdBy" | "updatedBy" | "modifiedSerialNumber"> & {
     preferredTime: string;
     createdBy?: string;
     updatedBy?: string;
+    serialNumber: number;
+    effectiveSerialNumber: number;
   }
 > {
   return appointments.map(toPublicAppointment);
+}
+
+export function toAdminAppointment<T extends { preferredTime: string; serialNumber: number; modifiedSerialNumber?: number | null }>(
+  appointment: T,
+): ReturnType<typeof toPublicAppointment<T>> & ReturnType<typeof toAppointmentSerialFields> {
+  const publicAppointment = toPublicAppointment(appointment);
+  const serialFields = toAppointmentSerialFields(appointment);
+
+  return {
+    ...publicAppointment,
+    serialNumber: serialFields.serialNumber,
+    modifiedSerialNumber: serialFields.modifiedSerialNumber,
+    effectiveSerialNumber: serialFields.effectiveSerialNumber,
+  };
+}
+
+export function toAdminAppointments<
+  T extends { preferredTime: string; serialNumber: number; modifiedSerialNumber?: number | null },
+>(appointments: T[]) {
+  return appointments.map(toAdminAppointment);
 }
 
 export const APPOINTMENT_ACTOR_INCLUDE = {

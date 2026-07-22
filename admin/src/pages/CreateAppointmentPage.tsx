@@ -7,6 +7,7 @@ import { Button, Icon, PageHeader } from "../components/common";
 import { useCreateAppointmentMutation } from "../store/api/appointmentsApi";
 import type { AppointmentFormData } from "../types/appointment";
 import { toCreateAppointmentPayload } from "../utils/appointment";
+import { formatSerialDisplay } from "../utils/appointmentSerial";
 
 function getApiErrorMessage(error: unknown): string {
   if (
@@ -35,7 +36,9 @@ export function CreateAppointmentPage() {
       ).unwrap();
 
       toast.success(
-        `Appointment created for ${appointment.name} (Serial #${appointment.serialNumber})`,
+        `Appointment created for ${appointment.name} (${formatSerialDisplay(
+          appointment.effectiveSerialNumber ?? appointment.serialNumber,
+        )})`,
       );
       navigate("/appointments");
     } catch (error) {

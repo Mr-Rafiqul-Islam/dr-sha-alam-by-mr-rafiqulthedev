@@ -7,6 +7,9 @@ import type {
   SiteRef,
 } from "../types/appointment";
 import type { BadgeVariant } from "../components/common/Badge";
+import {
+  getEffectiveSerialNumber,
+} from "./appointmentSerial";
 
 export function formatNullable(value: string | null | undefined): string {
   if (value == null || value.trim() === "") {
@@ -330,7 +333,9 @@ export function exportAppointmentsCsv(appointments: Appointment[]): void {
     "Status",
     "Payment Status",
     "Home Address",
-    "Serial Number",
+    "Original Serial",
+    "Modified Serial",
+    "Current Serial",
     "Site",
     "Admin Note",
     "Created At",
@@ -347,6 +352,10 @@ export function exportAppointmentsCsv(appointments: Appointment[]): void {
     getPaymentStatusLabel(appointment.paymentStatus),
     appointment.homeAddress,
     String(appointment.serialNumber),
+    appointment.modifiedSerialNumber != null
+      ? String(appointment.modifiedSerialNumber)
+      : "",
+    String(getEffectiveSerialNumber(appointment)),
     getSiteRefLabel(appointment.siteRef),
     appointment.note ?? "",
     formatTimestamp(appointment.createdAt),

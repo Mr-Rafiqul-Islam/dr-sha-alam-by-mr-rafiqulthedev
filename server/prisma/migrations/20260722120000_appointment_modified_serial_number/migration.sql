@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Appointment" ADD COLUMN IF NOT EXISTS "modifiedSerialNumber" INTEGER;
+
+-- AlterEnum
+ALTER TYPE "ActivityAction" ADD VALUE IF NOT EXISTS 'APPOINTMENT_SERIAL_CHANGED';

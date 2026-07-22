@@ -41,6 +41,7 @@ type SmsPayload = {
   name: string;
   phone: string;
   serialNumber: number;
+  modifiedSerialNumber?: number | null;
   slotCode: string;
   smsLabel?: string | null;
 };
@@ -423,6 +424,7 @@ async function fulfillExistingReservedAppointment(
       name: existing.name,
       phone: existing.phone,
       serialNumber: existing.serialNumber,
+      modifiedSerialNumber: existing.modifiedSerialNumber,
       slotCode: existing.preferredTime,
       smsLabel: existing.slot?.smsLabel,
     },

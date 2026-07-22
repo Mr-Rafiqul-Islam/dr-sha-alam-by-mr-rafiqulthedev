@@ -21,6 +21,8 @@ export type Appointment = PendingDeleteMeta & {
   preferredTime: string;
   appointmentDate: string;
   serialNumber: number;
+  modifiedSerialNumber: number | null;
+  effectiveSerialNumber: number;
   gender: string | null;
   age: string | null;
   status: AppointmentStatus;

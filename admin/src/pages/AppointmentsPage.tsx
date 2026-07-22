@@ -22,9 +22,11 @@ import { AppointmentFilters } from "../components/appointments/AppointmentFilter
 import { AnnouncementBannerList } from "../components/announcements/AnnouncementBannerList";
 import { AppointmentStats } from "../components/appointments/AppointmentStats";
 import { AppointmentViewModal } from "../components/appointments/AppointmentViewModal";
+import { AppointmentSerialModal } from "../components/appointments/AppointmentSerialModal";
 import {
   useDeleteAppointmentMutation,
   useGetAppointmentsQuery,
+  useUpdateAppointmentSerialMutation,
   useUpdateAppointmentStatusMutation,
 } from "../store/api/appointmentsApi";
 import type { Appointment, AppointmentStatus } from "../types/appointment";
@@ -41,6 +43,12 @@ import {
   getStatusBadgeVariant,
   getStatusLabel,
 } from "../utils/appointment";
+import {
+  canModifySerial,
+  formatSerialDisplay,
+  getEffectiveSerialNumber,
+  isSerialModified,
+} from "../utils/appointmentSerial";
 import {
   getPendingDeleteRowClass,
   getPendingDeleteSurfaceClass,
@@ -62,6 +70,7 @@ type AppointmentActionsProps = {
   onEdit: (appointment: Appointment) => void;
   onDelete: (appointment: Appointment) => void;
   onPrint: (appointment: Appointment) => void;
+  onModifySerial: (appointment: Appointment) => void;
 };
 
 function AppointmentActions({
@@ -70,6 +79,7 @@ function AppointmentActions({
   onEdit,
   onDelete,
   onPrint,
+  onModifySerial,
 }: AppointmentActionsProps) {
   return (
     <div className="flex shrink-0 items-center gap-2">
@@ -81,6 +91,16 @@ function AppointmentActions({
       >
         <Icon name="visibility" size={20} />
       </Button>
+      {canModifySerial(appointment.status) ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Modify appointment serial"
+          onClick={() => onModifySerial(appointment)}
+        >
+          <Icon name="format_list_numbered" size={20} />
+        </Button>
+      ) : null}
       <Button
         variant="ghost"
         size="sm"
@@ -116,6 +136,7 @@ function AppointmentCard({
   onEdit,
   onDelete,
   onPrint,
+  onModifySerial,
 }: AppointmentActionsProps) {
   return (
     <article
@@ -139,6 +160,7 @@ function AppointmentCard({
           onEdit={onEdit}
           onDelete={onDelete}
           onPrint={onPrint}
+          onModifySerial={onModifySerial}
         />
       </div>
 
@@ -201,6 +223,10 @@ export function AppointmentsPage() {
     useState<Appointment | null>(null);
   const [viewingAppointment, setViewingAppointment] =
     useState<Appointment | null>(null);
+  const [editingSerialAppointment, setEditingSerialAppointment] =
+    useState<Appointment | null>(null);
+  const [resettingSerialAppointment, setResettingSerialAppointment] =
+    useState<Appointment | null>(null);
   const [printingAppointment, setPrintingAppointment] =
     useState<Appointment | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus | "">(
@@ -220,6 +246,8 @@ export function AppointmentsPage() {
     useUpdateAppointmentStatusMutation();
   const [deleteAppointment, { isLoading: isDeleting }] =
     useDeleteAppointmentMutation();
+  const [updateSerial, { isLoading: isResettingSerial }] =
+    useUpdateAppointmentSerialMutation();
 
   const effectiveDate = todayOnly ? getTodayYmd() : date;
   const filteredAppointments = filterAppointments(appointments, {
@@ -271,6 +299,39 @@ export function AppointmentsPage() {
 
   const closePrintModal = () => {
     setPrintingAppointment(null);
+  };
+
+  const openSerialModal = (appointment: Appointment) => {
+    setEditingSerialAppointment(appointment);
+  };
+
+  const closeSerialModal = () => {
+    setEditingSerialAppointment(null);
+  };
+
+  const handleSerialSuccess = (appointment: Appointment) => {
+    if (viewingAppointment?.id === appointment.id) {
+      setViewingAppointment(appointment);
+    }
+  };
+
+  const handleResetSerial = async () => {
+    if (!resettingSerialAppointment) return;
+
+    try {
+      const updated = await updateSerial({
+        id: resettingSerialAppointment.id,
+        modifiedSerialNumber: null,
+        reason: "Reset to original serial",
+      }).unwrap();
+      toast.success("Appointment serial reset to original successfully");
+      if (viewingAppointment?.id === updated.id) {
+        setViewingAppointment(updated);
+      }
+      setResettingSerialAppointment(null);
+    } catch {
+      toast.error("Failed to reset appointment serial");
+    }
   };
 
   const handleStatusUpdate = async () => {
@@ -468,6 +529,36 @@ export function AppointmentsPage() {
         appointment={viewingAppointment}
         onClose={closeViewModal}
         onPrint={openPrintModal}
+        onModifySerial={(appointment) => {
+          closeViewModal();
+          openSerialModal(appointment);
+        }}
+        onResetSerial={setResettingSerialAppointment}
+      />
+
+      <AppointmentSerialModal
+        appointment={editingSerialAppointment}
+        onClose={closeSerialModal}
+        onSuccess={handleSerialSuccess}
+      />
+
+      <DeleteConfirmationModal
+        open={resettingSerialAppointment !== null}
+        onClose={() => setResettingSerialAppointment(null)}
+        onConfirm={handleResetSerial}
+        title="Reset to Original Serial"
+        description={
+          resettingSerialAppointment
+            ? `Reset ${resettingSerialAppointment.name}'s serial from modified ${formatSerialDisplay(
+                resettingSerialAppointment.modifiedSerialNumber!,
+              )} back to original ${formatSerialDisplay(
+                resettingSerialAppointment.serialNumber,
+              )}?`
+            : undefined
+        }
+        confirmLabel="Reset Serial"
+        confirmLoadingLabel="Resetting..."
+        isLoading={isResettingSerial}
       />
 
       <Suspense fallback={null}>
@@ -509,6 +600,7 @@ export function AppointmentsPage() {
                       onEdit={openStatusModal}
                       onDelete={setDeletingAppointment}
                       onPrint={openPrintModal}
+                      onModifySerial={openSerialModal}
                     />
                   ))}
                 </div>
@@ -520,6 +612,7 @@ export function AppointmentsPage() {
                 <TableHeader>
                   <TableRow className="border-b border-outline-variant/50 bg-surface/50 hover:bg-surface/50">
                     <TableHead>Patient Name</TableHead>
+                    <TableHead>Serial</TableHead>
                     <TableHead>Contact Info</TableHead>
                     <TableHead>Date &amp; Time</TableHead>
                     <TableHead>Status</TableHead>
@@ -533,7 +626,7 @@ export function AppointmentsPage() {
                   {paginatedAppointments.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={8}
+                        colSpan={9}
                         className="py-12 text-center text-on-surface-variant"
                       >
                         No appointments found.
@@ -552,6 +645,20 @@ export function AppointmentsPage() {
                             </span>
                             {appointment.pendingDelete ? (
                               <PendingDeleteBadge />
+                            ) : null}
+                          </div>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-on-surface">
+                              {formatSerialDisplay(
+                                getEffectiveSerialNumber(appointment),
+                              )}
+                            </span>
+                            {isSerialModified(appointment) ? (
+                              <span className="text-label-sm text-on-surface-variant">
+                                Modified from {appointment.serialNumber}
+                              </span>
                             ) : null}
                           </div>
                         </TableCell>
@@ -624,6 +731,7 @@ export function AppointmentsPage() {
                             onEdit={openStatusModal}
                             onDelete={setDeletingAppointment}
                             onPrint={openPrintModal}
+                            onModifySerial={openSerialModal}
                           />
                         </TableCell>
                       </TableRow>

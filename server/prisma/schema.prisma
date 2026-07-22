@@ -117,6 +117,7 @@ enum AnnouncementStatus {
 enum ActivityAction {
   APPOINTMENT_CREATED
   APPOINTMENT_STATUS_CHANGED
+  APPOINTMENT_SERIAL_CHANGED
   APPOINTMENT_DELETED
   CONTACT_MESSAGE_STATUS_CHANGED
   CONTACT_MESSAGE_DELETED
@@ -260,6 +261,7 @@ model Appointment {
   preferredTime   String
   appointmentDate DateTime
   serialNumber    Int
+  modifiedSerialNumber Int? // for rescheduling, cancellation, etc.
   gender          String?
   age             String?
   status          AppointmentStatus @default(PENDING)

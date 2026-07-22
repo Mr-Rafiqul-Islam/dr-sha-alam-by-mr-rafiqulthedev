@@ -10,11 +10,19 @@ import {
   getStatusBadgeVariant,
   getStatusLabel,
 } from "../../utils/appointment";
+import {
+  canModifySerial,
+  formatSerialDisplay,
+  getEffectiveSerialNumber,
+  isSerialModified,
+} from "../../utils/appointmentSerial";
 
 type AppointmentViewModalProps = {
   appointment: Appointment | null;
   onClose: () => void;
   onPrint?: (appointment: Appointment) => void;
+  onModifySerial?: (appointment: Appointment) => void;
+  onResetSerial?: (appointment: Appointment) => void;
 };
 
 type DetailRowProps = {
@@ -62,7 +70,13 @@ export function AppointmentViewModal({
   appointment,
   onClose,
   onPrint,
+  onModifySerial,
+  onResetSerial,
 }: AppointmentViewModalProps) {
+  const effectiveSerial = appointment
+    ? getEffectiveSerialNumber(appointment)
+    : null;
+
   return (
     <Modal
       open={appointment !== null}
@@ -70,12 +84,21 @@ export function AppointmentViewModal({
       title="Appointment Details"
       className="min-w-4xl"
     >
-      {appointment ? (
+      {appointment && effectiveSerial !== null ? (
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap items-center gap-5 rounded-lg border border-outline-variant/30 bg-surface-container-low px-4 py-3">
-            <div className="flex items-center gap-3">
-              <p className="text-label-lg text-on-surface-variant">Serial No:</p>
-              <p className="text-body-md font-semibold text-on-surface">#0{appointment.serialNumber}</p>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-3">
+                <p className="text-label-lg text-on-surface-variant">Current Serial:</p>
+                <p className="text-body-md font-semibold text-on-surface">
+                  {formatSerialDisplay(effectiveSerial)}
+                </p>
+              </div>
+              {isSerialModified(appointment) ? (
+                <p className="text-label-sm text-on-surface-variant">
+                  Modified from {formatSerialDisplay(appointment.serialNumber)}
+                </p>
+              ) : null}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-body-lg font-semibold text-on-surface">
@@ -86,6 +109,25 @@ export function AppointmentViewModal({
               {getStatusLabel(appointment.status)}
             </Badge>
           </div>
+
+          <DetailSection title="Serial Information">
+            <DetailRow
+              label="Original Serial"
+              value={formatSerialDisplay(appointment.serialNumber)}
+            />
+            <DetailRow
+              label="Modified Serial"
+              value={
+                isSerialModified(appointment)
+                  ? formatSerialDisplay(appointment.modifiedSerialNumber!)
+                  : "Not modified"
+              }
+            />
+            <DetailRow
+              label="Current Serial"
+              value={formatSerialDisplay(effectiveSerial)}
+            />
+          </DetailSection>
 
           <DetailSection title="Patient Information">
             <DetailRow label="Phone" value={appointment.phone} />
@@ -157,20 +199,39 @@ export function AppointmentViewModal({
             />
           </DetailSection>
 
-          <div className="flex justify-end gap-5 border-t border-outline-variant/30 pt-4">
-            <Button
-              variant="primary"
-              onClick={() => {
-                if (appointment) {
+          <div className="flex flex-wrap justify-between gap-3 border-t border-outline-variant/30 pt-4">
+            <div className="flex flex-wrap gap-2">
+              {canModifySerial(appointment.status) ? (
+                <Button
+                  variant="ghost"
+                  onClick={() => onModifySerial?.(appointment)}
+                >
+                  Modify Serial
+                </Button>
+              ) : null}
+              {isSerialModified(appointment) && canModifySerial(appointment.status) ? (
+                <Button
+                  variant="ghost"
+                  className="text-error hover:bg-error-container/30"
+                  onClick={() => onResetSerial?.(appointment)}
+                >
+                  Reset to Original Serial
+                </Button>
+              ) : null}
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="primary"
+                onClick={() => {
                   onPrint?.(appointment);
-                }
-              }}
-            >
-              Print
-            </Button>
-            <Button variant="ghost" onClick={onClose}>
-              Close
-            </Button>
+                }}
+              >
+                Print
+              </Button>
+              <Button variant="ghost" onClick={onClose}>
+                Close
+              </Button>
+            </div>
           </div>
         </div>
       ) : null}

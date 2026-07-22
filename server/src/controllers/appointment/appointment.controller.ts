@@ -10,9 +10,18 @@ import { recordActivity } from "../../modules/activity/activity.middleware.js";
 import { sendCapiEvent } from "../../lib/metaCapi.js";
 import {
   APPOINTMENT_ACTOR_INCLUDE,
+  toAdminAppointment,
+  toAdminAppointments,
   toPublicAppointment,
   toPublicAppointments,
 } from "../../modules/appointment/appointment.mapper.js";
+import {
+  assignNextSerialNumber,
+  getEffectiveSerialNumber,
+  modifyAppointmentSerial,
+  parseModifiedSerialNumberFromBody,
+  parseSerialModificationReason,
+} from "../../modules/appointment/appointment.serial.js";
 import {
   parseSlotCodeString,
   runSerializableTransaction,
@@ -149,6 +158,7 @@ export async function createAppointment(req: Request, res: Response) {
       name,
       phone,
       serialNumber: newAppointment.serialNumber,
+      modifiedSerialNumber: newAppointment.modifiedSerialNumber,
       slotCode,
       smsLabel,
     }).catch((smsError) => {
@@ -252,10 +262,56 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
     return res.status(200).json({
       success: true,
       message: "Appointment updated successfully",
-      appointment: toPublicAppointment(appointment),
+      appointment: toAdminAppointment(appointment),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Internal server error");
+  }
+}
+
+export async function updateAppointmentSerial(req: Request, res: Response) {
+  const appointmentId = routeParamString(req.params.id);
+  if (!appointmentId) {
+    return res.status(400).json({ success: false, message: "Invalid appointment id" });
+  }
+
+  const admin = req.admin;
+  if (!admin) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication required.",
+    });
+  }
+
+  try {
+    const modifiedSerialNumber = parseModifiedSerialNumberFromBody(req.body);
+    const reason = parseSerialModificationReason(req.body.reason);
+
+    const result = await modifyAppointmentSerial({
+      appointmentId,
+      modifiedSerialNumber,
+      reason,
+      adminId: admin.id,
+    });
+
+    recordActivity(res, {
+      action: ActivityAction.APPOINTMENT_SERIAL_CHANGED,
+      entityType: ActivityEntityType.Appointment,
+      entityId: result.appointment.id,
+      metadata: result.metadata,
+    });
+
+    const message = result.metadata.isReset
+      ? "Appointment serial reset to original successfully"
+      : "Appointment serial updated successfully";
+
+    return res.status(200).json({
+      success: true,
+      message,
+      appointment: toAdminAppointment(result.appointment),
+    });
+  } catch (error) {
+    return handleAppointmentError(res, error, "Failed to update appointment serial");
   }
 }
 
@@ -362,25 +418,88 @@ export async function rescheduleAppointment(req: Request, res: Response) {
   }
 
   try {
+    const existing = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+
+    if (
+      existing.status === AppointmentStatus.CANCEL ||
+      existing.status === AppointmentStatus.RESCHEDULED
+    ) {
+      throw new AppointmentValidationError(
+        "Cannot reschedule a cancelled or rescheduled appointment.",
+      );
+    }
+
     const selectedDate = parseFutureAppointmentDate(
       req.body.appointmentDate,
       "appointmentDate",
     );
 
-    const appointment = await prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        status: AppointmentStatus.RESCHEDULED,
+    // Slot change requires explicit preferredTime; otherwise keep current slot.
+    const slotCode =
+      req.body.preferredTime != null && String(req.body.preferredTime).trim()
+        ? parseSlotCodeString(req.body.preferredTime)
+        : existing.preferredTime;
+
+    const previousMetadata = {
+      originalSerialNumber: existing.serialNumber,
+      previousModifiedSerialNumber: existing.modifiedSerialNumber,
+      previousEffectiveSerialNumber: getEffectiveSerialNumber(existing),
+      previousAppointmentDate: existing.appointmentDate.toISOString(),
+      previousPreferredTime: existing.preferredTime,
+      previousSlotId: existing.slotId,
+    };
+
+    const appointment = await runSerializableTransaction(async (tx) => {
+      const slotAvailability = await validateAppointmentSlotAvailability({
         appointmentDate: selectedDate,
-        updatedById: null,
-      },
-      include: APPOINTMENT_ACTOR_INCLUDE,
+        preferredTime: slotCode,
+        siteRef: existing.siteRef,
+        excludeAppointmentId: existing.id,
+        tx,
+      });
+
+      const newSerialNumber = await assignNextSerialNumber({
+        tx,
+        appointmentDate: selectedDate,
+        siteRef: existing.siteRef,
+        preferredTime: slotCode,
+        slotId: slotAvailability.slotId,
+        excludeId: existing.id,
+      });
+
+      return tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          appointmentDate: selectedDate,
+          preferredTime: slotCode,
+          serialNumber: newSerialNumber,
+          modifiedSerialNumber: null,
+          scheduleId: slotAvailability.scheduleId,
+          slotId: slotAvailability.slotId,
+          updatedById: null,
+        },
+        include: APPOINTMENT_ACTOR_INCLUDE,
+      });
     });
 
     return res.status(200).json({
       success: true,
       message: "Appointment rescheduled successfully",
       appointment: toPublicAppointment(appointment),
+      reschedule: {
+        ...previousMetadata,
+        newSerialNumber: appointment.serialNumber,
+        newAppointmentDate: appointment.appointmentDate.toISOString(),
+        newPreferredTime: appointment.preferredTime,
+        newSlotId: appointment.slotId,
+        changeType: "RESCHEDULE",
+      },
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Internal server error");
@@ -408,12 +527,12 @@ async function getAdminAppointmentListContext(req: Request) {
   };
 }
 
-function mapAdminAppointments<T extends { id: string; preferredTime: string }>(
+function mapAdminAppointments<T extends { id: string; preferredTime: string; serialNumber: number; modifiedSerialNumber?: number | null }>(
   appointments: T[],
   pendingDeleteMap: Map<string, string>,
   hidePendingDeletes: boolean,
 ) {
-  const mapped = toPublicAppointments(appointments);
+  const mapped = toAdminAppointments(appointments);
   return hidePendingDeletes
     ? mapped
     : annotatePendingDeleteMeta(mapped, pendingDeleteMap);
@@ -589,6 +708,7 @@ export async function getAppointmentsById(req: Request, res: Response) {
         problem: true,
         preferredTime: true,
         serialNumber: true,
+        modifiedSerialNumber: true,
         gender: true,
         age: true,
         status: true,
@@ -633,6 +753,7 @@ export async function getAppointmentsByPhone(req: Request, res: Response) {
         preferredTime: true,
         appointmentDate: true,
         serialNumber: true,
+        modifiedSerialNumber: true,
         gender: true,
         age: true,
         status: true,
