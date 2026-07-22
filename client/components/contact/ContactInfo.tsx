@@ -72,11 +72,11 @@ export default function ContactInfo() {
           </div>
         </div>
       </div>
-      <div className="w-full h-[400px] rounded-3xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 relative group">
+      <div className="w-full h-[500px] rounded-3xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 relative group">
         <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800">
           <Image
             alt="Map Location Placeholder"
-            className="object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+            className="object-cover  opacity-80 group-hover:opacity-100 transition-opacity duration-500"
             src="/chamber-view.jpeg"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"

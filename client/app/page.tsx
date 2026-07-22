@@ -4,6 +4,7 @@ import HomeBlogSection from '@/components/HomeBlogSection';
 import HomeContactSection from '@/components/HomeContactSection';
 import HomeHeroSection from '@/components/HomeHeroSection';
 import HomePatientStoriesSection from '@/components/HomePatientStoriesSection';
+import VideoTestimonials from '@/components/success-stories/VideoTestimonials';
 import { getAllBlogs } from '@/server-actions/getAllBlogs';
 import type { PublicBlog } from '@/types/blog';
 
@@ -22,6 +23,7 @@ export default async function Home() {
       <ExpertiseSection />
       <HomePatientStoriesSection />
       <AboutSection />
+      <VideoTestimonials />
       <HomeBlogSection blogs={blogs} />
       <HomeContactSection />
     </>

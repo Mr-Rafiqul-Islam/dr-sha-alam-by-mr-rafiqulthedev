@@ -24,7 +24,7 @@ export default function HomeBlogSection({ blogs }: HomeBlogSectionProps) {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {blogs.slice(0, 3).map((blog) => (
-              <article key={blog.id} className="flex flex-col bg-white dark:bg-surface-dark rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group">
+              <Link key={blog.id} href={getBlogPath(blog.slug)} className="flex flex-col bg-white dark:bg-surface-dark rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group">
                 <div className="h-56 overflow-hidden relative">
                   <Image alt={blog.title} className="object-cover transition-transform duration-700 group-hover:scale-110" src={blog.image} fill sizes="(max-width: 768px) 100vw, 33vw" />
                   <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-bold text-primary shadow-sm uppercase tracking-wide">
@@ -37,11 +37,11 @@ export default function HomeBlogSection({ blogs }: HomeBlogSectionProps) {
                   </div>
                   <h4 className="text-xl font-bold text-text-main dark:text-white mb-3 group-hover:text-primary transition-colors leading-tight">{blog.title}</h4>
                   <p className="text-text-sub text-sm mb-6 line-clamp-3 leading-relaxed">{blog.shortDesc}</p>
-                  <Link className="mt-auto inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors gap-1" href={getBlogPath(blog.slug)}>
+                  <span className="mt-auto inline-flex items-center text-primary font-bold text-sm hover:text-accent transition-colors gap-1">
                     Read Article <span className="material-symbols-outlined text-sm">arrow_outward</span>
-                  </Link>
+                  </span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </div>

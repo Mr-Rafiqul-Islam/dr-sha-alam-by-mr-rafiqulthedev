@@ -69,6 +69,12 @@ const guidelineSections: GuidelineSection[] = [
     blocks: [
       {
         type: 'detail',
+        title: 'Do not arrive alone',
+        description:
+          'Bring someone with you to help you navigate the clinic and answer any questions you may have. Only one person is allowed in the consultation room.',
+      },
+      {
+        type: 'detail',
         title: 'Arrive Early',
         description:
           'Please arrive at least 15 minutes before your scheduled appointment to complete registration and administrative procedures.',

@@ -11,10 +11,12 @@ export default function BlogSearch() {
   const queryFromUrl = searchParams.get("q") ?? "";
   const categoryFromUrl = searchParams.get("category");
   const [query, setQuery] = useState(queryFromUrl);
+  const [prevQueryFromUrl, setPrevQueryFromUrl] = useState(queryFromUrl);
 
-  useEffect(() => {
+  if (queryFromUrl !== prevQueryFromUrl) {
+    setPrevQueryFromUrl(queryFromUrl);
     setQuery(queryFromUrl);
-  }, [queryFromUrl]);
+  }
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {

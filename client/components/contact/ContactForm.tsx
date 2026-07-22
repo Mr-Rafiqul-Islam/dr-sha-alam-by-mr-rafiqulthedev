@@ -8,7 +8,7 @@ const SUBJECT_OPTIONS = [
   { value: "plid-consultation", label: "PLID Consultation" },
   { value: "general-consultation", label: "General Consultation" },
   { value: "online-consultation", label: "Online Consultation" },
-  { value: "yoga-program", label: "Yoga Program" },
+  { value: "feedback", label: "Feedback" },
   { value: "technical-support", label: "Technical Support" },
   { value: "collaboration", label: "Collaboration" },
 ] as const;

@@ -26,15 +26,23 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.11",
-    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "9.39.1",
     "eslint-config-next": "16.0.8",
-    "firebase-tools": "^15.0.0",
     "tailwindcss": "4.1.11",
     "tw-animate-css": "^1.4.0",
     "typescript": "5.9.3"
+  },
+  "overrides": {
+    "hono": "4.12.31",
+    "body-parser": "2.3.0",
+    "protobufjs": "7.6.5",
+    "tar": "7.5.20",
+    "next": {
+      "postcss": "8.5.15"
+    }
   }
 }

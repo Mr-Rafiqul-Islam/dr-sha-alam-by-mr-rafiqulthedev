@@ -51,6 +51,10 @@ export async function startPayment(
     body.problem = problem;
   }
 
+  const age = payload.age?.trim();
+  if (age) {
+    body.age = age;
+  }
   const fbc = payload.fbc ?? metaCookies.fbc;
   const fbp = payload.fbp ?? metaCookies.fbp;
 

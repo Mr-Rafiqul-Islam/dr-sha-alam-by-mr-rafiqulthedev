@@ -29,6 +29,7 @@ type FormState = {
   email: string;
   gender: string;
   homeAddress: string;
+  age: string;
   problem: string;
   preferredDate: string;
   preferredTime: string;
@@ -40,6 +41,7 @@ const initialFormState: FormState = {
   email: "",
   gender: "",
   homeAddress: "",
+  age: "",
   problem: "",
   preferredDate: "",
   preferredTime: "",
@@ -176,9 +178,7 @@ export default function BookingForm() {
         }
 
         setSlotsError(
-          error instanceof Error
-            ? error.message
-            : "Could not load time slots",
+          error instanceof Error ? error.message : "Could not load time slots",
         );
       })
       .finally(() => {
@@ -207,7 +207,6 @@ export default function BookingForm() {
       return next;
     });
   };
-
   const setBookingError = (message: string) => {
     if (bookingMode === "free") {
       setFreeError(message);
@@ -215,7 +214,6 @@ export default function BookingForm() {
       setPaidError(message);
     }
   };
-
   const handleModeChange = (mode: BookingMode) => {
     setBookingMode(mode);
     setFreeError(null);
@@ -231,6 +229,7 @@ export default function BookingForm() {
       phoneNumber: form.phoneNumber,
       email: form.email || undefined,
       homeAddress: form.homeAddress,
+      age: form.age || undefined,
       problem: form.problem || undefined,
       preferredDate: form.preferredDate,
       preferredTime: form.preferredTime,
@@ -252,13 +251,15 @@ export default function BookingForm() {
       name: form.fullName,
       phone: form.phoneNumber,
       homeAddress: form.homeAddress,
+      age: form.age || undefined,
       preferredTime: form.preferredTime,
       appointmentDate: form.preferredDate,
       siteRef: "DOCTOR_SHA_ALAM",
       email: form.email || undefined,
       gender: form.gender || undefined,
       problem: form.problem || undefined,
-      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+      userAgent:
+        typeof navigator !== "undefined" ? navigator.userAgent : undefined,
       ...metaCookies,
     });
 
@@ -411,7 +412,9 @@ export default function BookingForm() {
                   required
                   type="text"
                   value={form.fullName}
-                  onChange={(event) => updateField("fullName", event.target.value)}
+                  onChange={(event) =>
+                    updateField("fullName", event.target.value)
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -449,7 +452,9 @@ export default function BookingForm() {
                   <select
                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all appearance-none"
                     value={form.gender}
-                    onChange={(event) => updateField("gender", event.target.value)}
+                    onChange={(event) =>
+                      updateField("gender", event.target.value)
+                    }
                   >
                     <option value="">Select gender (optional)</option>
                     <option value="Male">Male</option>
@@ -461,7 +466,7 @@ export default function BookingForm() {
                   </span>
                 </div>
               </div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2">
                 <label className="block text-sm font-bold text-text-main dark:text-gray-300">
                   Home Address <span className="text-red-500">*</span>
                 </label>
@@ -473,6 +478,20 @@ export default function BookingForm() {
                   value={form.homeAddress}
                   onChange={(event) =>
                     updateField("homeAddress", event.target.value)
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-text-main dark:text-gray-300">
+                  Patient's Age 
+                </label>
+                <input
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-background-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all"
+                  placeholder="Enter your age"
+                  type="text"
+                  value={form.age}
+                  onChange={(event) =>
+                    updateField("age", event.target.value)
                   }
                 />
               </div>
@@ -490,21 +509,6 @@ export default function BookingForm() {
               ></textarea>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-text-main dark:text-gray-300">
-                  Preferred Date <span className="text-red-500">*</span>
-                </label>
-                <PreferredDatePicker
-                  closedDates={closedDates}
-                  isLoading={schedulesLoading}
-                  minDate={minPreferredDate}
-                  required
-                  schedulesError={schedulesError}
-                  value={form.preferredDate}
-                  onChange={(value) => updateField("preferredDate", value)}
-                  onOpen={() => void loadSchedules(false)}
-                />
-              </div>
               <div className="space-y-2">
                 <label className="block text-sm font-bold text-text-main dark:text-gray-300">
                   Preferred Time <span className="text-red-500">*</span>
@@ -534,6 +538,21 @@ export default function BookingForm() {
                     expand_more
                   </span>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-text-main dark:text-gray-300">
+                  Preferred Date <span className="text-red-500">*</span>
+                </label>
+                <PreferredDatePicker
+                  closedDates={closedDates}
+                  isLoading={schedulesLoading}
+                  minDate={minPreferredDate}
+                  required
+                  schedulesError={schedulesError}
+                  value={form.preferredDate}
+                  onChange={(value) => updateField("preferredDate", value)}
+                  onOpen={() => void loadSchedules(false)}
+                />
               </div>
             </div>
 
