@@ -81,19 +81,35 @@ function NavGroup({
 
   return (
     <li>
-      <div
-        className={cn(
-          "flex items-center gap-3 py-2 rounded-lg text-label-md font-medium",
-          collapsed ? "px-4 lg:justify-center lg:px-2" : "px-4",
-          isGroupActive
-            ? "text-primary font-bold"
-            : "text-primary/70",
-        )}
-        title={collapsed ? item.label : undefined}
-      >
-        <Icon name={item.icon} size={24} filled={isGroupActive} />
-        <span className={cn(collapsed && "lg:sr-only")}>{item.label}</span>
-      </div>
+      {collapsed ? (
+        <NavLink
+          to={item.path}
+          title={item.label}
+          onClick={onNavigate}
+          className={cn(
+            "flex items-center gap-3 py-2 rounded-lg transition-all duration-150 text-label-md font-medium",
+            "px-4 lg:justify-center lg:px-2",
+            isGroupActive
+              ? "bg-primary text-on-primary shadow-[0_0_20px_rgba(0,119,155,0.1)] font-bold"
+              : "text-primary/70 hover:text-primary hover:bg-surface-container-high",
+          )}
+        >
+          <Icon name={item.icon} size={24} filled={isGroupActive} />
+          <span className="lg:sr-only">{item.label}</span>
+        </NavLink>
+      ) : (
+        <div
+          className={cn(
+            "flex items-center gap-3 py-2 rounded-lg text-label-md font-medium px-4",
+            isGroupActive
+              ? "text-primary font-bold"
+              : "text-primary/70",
+          )}
+        >
+          <Icon name={item.icon} size={24} filled={isGroupActive} />
+          <span>{item.label}</span>
+        </div>
+      )}
       <ul
         className={cn(
           "mt-1 flex flex-col gap-1",

@@ -240,18 +240,54 @@ export function CommonFormFields<TFieldValues extends FieldValues>({
                           value={String(field.value ?? "")}
                         />
                       ) : f.type === "text" ? (
-                        <input
-                          id={fieldId}
-                          type="text"
-                          autoComplete="off"
-                          placeholder={f.placeholder}
-                          className={controlInputClass}
-                          disabled={fDisabled}
-                          aria-invalid={!!fieldState.error}
-                          aria-describedby={describedBy}
-                          {...field}
-                          value={String(field.value ?? "")}
-                        />
+                        <>
+                          <input
+                            id={fieldId}
+                            type="text"
+                            autoComplete="off"
+                            placeholder={f.placeholder}
+                            className={controlInputClass}
+                            disabled={fDisabled}
+                            aria-invalid={!!fieldState.error}
+                            aria-describedby={describedBy}
+                            list={
+                              f.suggestions?.length
+                                ? `${fieldId}-suggestions`
+                                : undefined
+                            }
+                            {...field}
+                            value={String(field.value ?? "")}
+                          />
+                          {f.suggestions?.length ? (
+                            <datalist id={`${fieldId}-suggestions`}>
+                              {f.suggestions.map((suggestion) => (
+                                <option key={suggestion} value={suggestion} />
+                              ))}
+                            </datalist>
+                          ) : null}
+                          {/* {f.suggestions?.length ? (
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {f.suggestions.map((suggestion) => (
+                                <button
+                                  key={suggestion}
+                                  type="button"
+                                  disabled={fDisabled}
+                                  onClick={() => field.onChange(suggestion)}
+                                  className={cn(
+                                    "rounded-full border border-outline-variant/40 bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant transition-colors",
+                                    "hover:border-primary-container hover:bg-primary-fixed/30 hover:text-on-surface",
+                                    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-container",
+                                    "disabled:cursor-not-allowed disabled:opacity-50",
+                                    field.value === suggestion &&
+                                      "border-primary-container bg-primary-fixed/30 text-on-surface",
+                                  )}
+                                >
+                                  {suggestion}
+                                </button>
+                              ))}
+                            </div>
+                          ) : null} */}
+                        </>
                       ) : f.type === "number" ? (
                         <input
                           id={fieldId}
