@@ -22,6 +22,7 @@ import {
   parseRequiredString,
 } from "../appointment/appointment.utils.js";
 import { validateSSLPayment } from "../../lib/sslPayment.js";
+import { submitAppointmentToTrucare } from "../../services/trucareClient.service.js";
 import {
   isPaymentAppointmentPayload,
   type PaymentAppointmentPayload,
@@ -624,6 +625,20 @@ export async function fulfillSuccessfulPayment(
       console.error("Failed to send appointment SMS after payment:", smsError);
     });
   }
+
+  // if (result.appointmentId && !result.alreadyProcessed) {
+  //   try {
+  //     const appointment = await prisma.appointment.findUnique({
+  //       where: { id: result.appointmentId },
+  //     });
+
+  //     if (appointment) {
+  //       await submitAppointmentToTrucare(appointment);
+  //     }
+  //   } catch (err) {
+  //     console.error("[trucare.client] Failed to submit appointment after payment:", err);
+  //   }
+  // }
 
   return {
     appointmentId: result.appointmentId,

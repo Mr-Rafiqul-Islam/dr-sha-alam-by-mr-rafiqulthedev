@@ -8,6 +8,7 @@ import {
 } from "../../modules/activity/activity.service.js";
 import { recordActivity } from "../../modules/activity/activity.middleware.js";
 import { sendCapiEvent } from "../../lib/metaCapi.js";
+import { submitAppointmentToTrucare } from "../../services/trucareClient.service.js";
 import {
   APPOINTMENT_ACTOR_INCLUDE,
   toAdminAppointment,
@@ -196,6 +197,13 @@ export async function createAppointment(req: Request, res: Response) {
       entityId: newAppointment.id,
       metadata: { patientName: newAppointment.name },
     });
+
+    console.log("Submitting appointment to Trucare:", newAppointment);
+    try {
+      await submitAppointmentToTrucare(newAppointment);
+    } catch (err) {
+      console.error("[trucare.client] Failed to submit appointment:", err);
+    }
 
     return res.status(201).json({
       success: true,
