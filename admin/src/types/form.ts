@@ -21,6 +21,7 @@ type BaseField = {
 export type FormFieldConfig =
   | (BaseField & {
       type: "text" | "email" | "textarea" | "number" | "tel";
+      suggestions?: readonly string[];
     })
   | (BaseField & {
       type: "date";

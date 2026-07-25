@@ -5,6 +5,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "../common/Button";
+import { HOME_ADDRESS_SUGGESTIONS } from "../../constants/addressSuggestions";
 import { CommonFormFields } from "../forms/CommonForm";
 import { getClosedDates } from "../../lib/appointmentSchedules";
 import { useGetAppointmentSchedulesQuery } from "../../store/api/appointmentSchedulesApi";
@@ -211,7 +212,8 @@ function AppointmentFormFields({
         name: "homeAddress",
         label: "Home Address *",
         type: "text",
-        placeholder: "Dhaka, Bangladesh",
+        placeholder: "e.g. Mohakhali, Dhaka",
+        suggestions: HOME_ADDRESS_SUGGESTIONS,
       },
       {
         name: "email",
