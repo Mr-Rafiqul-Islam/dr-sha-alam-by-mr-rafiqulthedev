@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, SiteRef, UserRole } from "@prisma/client";
+import { PrismaClient, SiteRef, UserRole, AppointmentRevenueCategory } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import pg from "pg";
 
@@ -143,6 +143,46 @@ async function seedSlotDefaults(siteRef) {
   console.log(`Seeded slot defaults: ${siteRef}`);
 }
 
+const REVENUE_FEE_ENV_KEYS = {
+  [AppointmentRevenueCategory.NEW_PLID]: "NEW_PLID_APPOINTMENT_FEE",
+  [AppointmentRevenueCategory.OLD_PLID]: "OLD_PLID_APPOINTMENT_FEE",
+  [AppointmentRevenueCategory.GENERAL]: "GENERAL_APPOINTMENT_FEE",
+};
+
+function parseSeedFee(value) {
+  if (value === undefined || value === null || String(value).trim() === "") {
+    return 0;
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+  return Math.round(parsed * 100) / 100;
+}
+
+async function seedAppointmentRevenueFees(siteRef) {
+  for (const category of Object.values(AppointmentRevenueCategory)) {
+    const envKey = REVENUE_FEE_ENV_KEYS[category];
+    const fee = parseSeedFee(process.env[envKey]);
+    await prisma.appointmentRevenueFee.upsert({
+      where: {
+        siteRef_category: { siteRef, category },
+      },
+      create: {
+        siteRef,
+        category,
+        fee,
+        isActive: true,
+      },
+      update: {
+        fee,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`Seeded appointment revenue fees: ${siteRef}`);
+}
+
 const DEFAULT_DOCTOR = {
   name: "Dr. Md Shah Alam",
   specialization: "Orthopedic & Physiotherapy",
@@ -213,6 +253,8 @@ async function main() {
   for (const siteRef of [SiteRef.DOCTOR_SHA_ALAM, SiteRef.TRUE_CARE_HELLING_CENTER]) {
     await seedSlotDefaults(siteRef);
   }
+
+  await seedAppointmentRevenueFees(SiteRef.DOCTOR_SHA_ALAM);
 }
 
 main()

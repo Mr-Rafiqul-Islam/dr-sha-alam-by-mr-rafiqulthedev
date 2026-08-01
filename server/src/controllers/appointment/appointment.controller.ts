@@ -28,15 +28,13 @@ import {
   runSerializableTransaction,
   validateAppointmentSlotAvailability,
 } from "../../modules/appointment/appointment.slot-availability.js";
+import { getAdminAppointmentListContext } from "../../modules/appointment/appointmentAdminContext.js";
 import {
   annotatePendingDeleteMeta,
-  buildPendingDeleteListWhere,
   canDeleteImmediately,
   createDeleteRequest,
   DeleteRequestEntityType,
-  getPendingDeleteEntityMap,
   resolvePendingDeleteRequestsForEntity,
-  shouldHidePendingDeletesFromLists,
 } from "../../modules/deleteRequest/deleteRequest.service.js";
 import { DeleteRequestError } from "../../modules/deleteRequest/deleteRequest.types.js";
 import {
@@ -512,27 +510,6 @@ export async function rescheduleAppointment(req: Request, res: Response) {
   } catch (error) {
     return handleAppointmentError(res, error, "Internal server error");
   }
-}
-
-async function getAdminAppointmentListContext(req: Request) {
-  const admin = req.admin;
-  if (!admin) {
-    throw new AppointmentValidationError("Authentication required.", 401);
-  }
-
-  const pendingDeleteMap = await getPendingDeleteEntityMap(
-    DeleteRequestEntityType.APPOINTMENT,
-  );
-  const hidePendingDeletes = shouldHidePendingDeletesFromLists(admin.role);
-
-  return {
-    pendingDeleteMap,
-    hidePendingDeletes,
-    pendingDeleteWhere: buildPendingDeleteListWhere(
-      hidePendingDeletes,
-      pendingDeleteMap,
-    ),
-  };
 }
 
 function mapAdminAppointments<T extends { id: string; preferredTime: string; serialNumber: number; modifiedSerialNumber?: number | null }>(

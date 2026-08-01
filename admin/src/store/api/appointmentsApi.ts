@@ -29,7 +29,7 @@ export const appointmentsApi = baseApi.injectEndpoints({
         body,
       }),
       transformResponse: (response: AppointmentResponse) => response.appointment,
-      invalidatesTags: [{ type: "Appointment", id: "LIST" }],
+      invalidatesTags: [{ type: "Appointment", id: "LIST" }, { type: "AppointmentRevenue", id: "SUMMARY" }],
     }),
     updateAppointmentStatus: builder.mutation<
       Appointment,
@@ -44,6 +44,7 @@ export const appointmentsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         { type: "Appointment", id },
         { type: "Appointment", id: "LIST" },
+        { type: "AppointmentRevenue", id: "SUMMARY" },
       ],
     }),
     updateAppointmentSerial: builder.mutation<
@@ -77,10 +78,12 @@ export const appointmentsApi = baseApi.injectEndpoints({
           ? [
               { type: "DeleteRequest", id: "LIST" },
               { type: "Appointment", id: "LIST" },
+              { type: "AppointmentRevenue", id: "SUMMARY" },
             ]
           : [
               { type: "Appointment", id },
               { type: "Appointment", id: "LIST" },
+              { type: "AppointmentRevenue", id: "SUMMARY" },
             ],
     }),
   }),
