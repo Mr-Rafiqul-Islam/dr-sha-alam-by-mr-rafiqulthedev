@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, SiteRef, UserRole, AppointmentRevenueCategory } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import pg from "pg";
+import { seedAnalyticsAppointments } from "./seed-appointments.js";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -255,6 +256,10 @@ async function main() {
   }
 
   await seedAppointmentRevenueFees(SiteRef.DOCTOR_SHA_ALAM);
+
+  if (process.env.SEED_APPOINTMENTS === "true") {
+    await seedAnalyticsAppointments(prisma);
+  }
 }
 
 main()
