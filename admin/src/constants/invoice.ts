@@ -1,18 +1,20 @@
 export const CONSULTATION_FEE_BDT = 500;
 
 export const INVOICE_COLORS = {
-  primary: "#006D5B",
-  mint: "#ACCBC5",
+  primary: "#1A7567",
+  header: "#0C7564",
+  mint: "#A0C9C1",
+  accent: "#81C67D",
   white: "#FFFFFF",
-  border: "#006D5B",
+  border: "#1A7567",
 } as const;
 
 export const TRUCARE_INVOICE = {
   brandName: "TruCare",
   brandSubtitle: "DIAGNOSTIC CENTRE",
-  phone: { 
-    icon: "📞", 
-    value: "+880 9613668866"
+  phone: {
+    icon: "📞",
+    value: "09613668866",
   },
   website: {
     icon: "🌐",

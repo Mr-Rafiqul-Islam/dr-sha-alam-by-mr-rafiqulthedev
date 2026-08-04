@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Image,
 } from "@react-pdf/renderer";
 import {
   INVOICE_COLORS,
@@ -16,63 +15,28 @@ import {
   formatInvoiceDate,
   formatInvoicePatientName,
 } from "../../../utils/invoice";
+import {
+  InvoiceFooterSwoosh,
+  InvoiceHeaderBand,
+} from "./InvoiceGraphics";
 
 type InvoiceDocumentProps = {
   appointment: Appointment;
 };
-
-import logo from '../../../assets/01-01.svg';
-import footerSwoosh from '../../../assets/02-01.svg';
 
 const styles = StyleSheet.create({
   page: {
     fontFamily: "Helvetica",
     fontSize: 10,
     color: "#1A1A1A",
-    paddingBottom: 72,
+    paddingBottom: 80,
   },
   header: {
-    backgroundColor: "#0F7B70",
-    height: 95,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 50,
-  },
-  brandBlock: {
-    flexDirection: "column",
-    gap: 6,
-  },
-  brandName: {
-    color: INVOICE_COLORS.white,
-    fontSize: 28,
-    fontFamily: "Helvetica-Bold",
-  },
-  brandPill: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: INVOICE_COLORS.white,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-  },
-  brandSubtitle: {
-    color: INVOICE_COLORS.white,
-    fontSize: 8,
-    letterSpacing: 1.2,
-  },
-  contactBlock: {
-    alignItems: "flex-start",
-    gap: 4,
-  },
-  contactLine: {
-    color: INVOICE_COLORS.white,
-    fontSize: 8.5,
-    textAlign: "left",
+    width: "100%",
   },
   body: {
-    paddingHorizontal: 28,
-    paddingTop: 22,
+    paddingHorizontal: 36,
+    paddingTop: 24,
     flex: 1,
   },
   title: {
@@ -80,13 +44,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: "Helvetica-Bold",
     textAlign: "center",
-    marginBottom: 18,
-    letterSpacing: 1,
+    marginBottom: 20,
+    letterSpacing: 1.5,
   },
   metaRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: 18,
     gap: 24,
   },
   metaField: {
@@ -98,6 +62,7 @@ const styles = StyleSheet.create({
   metaLabel: {
     fontFamily: "Helvetica-Bold",
     fontSize: 10,
+    color: INVOICE_COLORS.primary,
   },
   metaValue: {
     flex: 1,
@@ -123,6 +88,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     borderRightWidth: 1,
     borderRightColor: INVOICE_COLORS.white,
+    textTransform: "uppercase",
   },
   tableRow: {
     flexDirection: "row",
@@ -177,20 +143,21 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: 72,
+    height: 90,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-    paddingHorizontal: 28,
     paddingBottom: 16,
   },
-  footerGraphic: {
-    width: 140,
-    height: 56,
+  footerGraphicWrap: {
+    width: 170,
+    height: 85,
+    marginLeft: 0,
   },
   signatureBlock: {
     alignItems: "center",
     width: 140,
+    marginRight: 36,
   },
   signatureLine: {
     width: "100%",
@@ -213,23 +180,7 @@ export function InvoiceDocument({ appointment }: InvoiceDocumentProps) {
     <Document title={`Invoice - ${appointment.name}`}>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Image src={logo} />
-
-          <View style={styles.contactBlock}>
-            <Text style={styles.contactLine}>
-              {TRUCARE_INVOICE.phone.value}
-            </Text>
-            <Text style={styles.contactLine}>
-              {TRUCARE_INVOICE.website.value}
-            </Text>
-            <Text style={styles.contactLine}>
-              {TRUCARE_INVOICE.email.value}
-            </Text>
-            <Text style={styles.contactLine}>
-              {TRUCARE_INVOICE.address.value}
-            </Text>
-       
-          </View>
+          <InvoiceHeaderBand />
         </View>
 
         <View style={styles.body}>
@@ -283,9 +234,9 @@ export function InvoiceDocument({ appointment }: InvoiceDocumentProps) {
         </View>
 
         <View style={styles.footer} fixed>
-          <Image src={footerSwoosh} style={{
-            zIndex: 100,
-          }} />
+          <View style={styles.footerGraphicWrap}>
+            <InvoiceFooterSwoosh />
+          </View>
           <View style={styles.signatureBlock}>
             <View style={styles.signatureLine} />
             <Text style={styles.signatureLabel}>
