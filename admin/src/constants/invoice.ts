@@ -10,10 +10,22 @@ export const INVOICE_COLORS = {
 export const TRUCARE_INVOICE = {
   brandName: "TruCare",
   brandSubtitle: "DIAGNOSTIC CENTRE",
-  phone: "09613668866",
-  website: "trucarediagnosticcentre.com",
-  email: "help@trucarediagnosticcentre.com",
-  address: "Siddique Tower, 49 Mohakhali, Dhaka.",
+  phone: { 
+    icon: "📞", 
+    value: "+880 9613668866"
+  },
+  website: {
+    icon: "🌐",
+    value: "trucarediagnosticcentre.com"
+  },
+  email: {
+    icon: "✉️",
+    value: "help@trucarediagnosticcentre.com"
+  },
+  address: {
+    icon: "📍",
+    value: "Siddique Tower, 49 Mohakhali, Dhaka."
+  },
   signatureLabel: "Trucare",
 } as const;
 

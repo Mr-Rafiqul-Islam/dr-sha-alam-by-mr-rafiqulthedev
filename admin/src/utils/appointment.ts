@@ -7,9 +7,6 @@ import type {
   SiteRef,
 } from "../types/appointment";
 import type { BadgeVariant } from "../components/common/Badge";
-import {
-  getEffectiveSerialNumber,
-} from "./appointmentSerial";
 
 export function formatNullable(value: string | null | undefined): string {
   if (value == null || value.trim() === "") {
@@ -124,12 +121,12 @@ export const APPOINTMENT_STATUS_OPTIONS: Array<{
   value: AppointmentStatus;
   label: string;
 }> = [
-  { value: "PENDING", label: "Pending" },
-  { value: "CONFIRMED", label: "Confirmed" },
-  { value: "ATTEND", label: "Attended" },
-  { value: "RESCHEDULED", label: "Rescheduled" },
-  { value: "CANCEL", label: "Cancelled" },
-];
+    { value: "PENDING", label: "Pending" },
+    { value: "CONFIRMED", label: "Confirmed" },
+    { value: "ATTEND", label: "Attended" },
+    { value: "RESCHEDULED", label: "Rescheduled" },
+    { value: "CANCEL", label: "Cancelled" },
+  ];
 
 export function toCreateAppointmentPayload(
   data: AppointmentFormData,
@@ -243,8 +240,8 @@ export function computeAppointmentStats(
   const referenceYmd = options?.dateYmd ?? getTodayYmd();
   const scopedAppointments = options?.dateYmd
     ? appointments.filter((appointment) =>
-        isSameCalendarDay(appointment.appointmentDate, options.dateYmd!),
-      )
+      isSameCalendarDay(appointment.appointmentDate, options.dateYmd!),
+    )
     : appointments;
 
   return scopedAppointments.reduce<AppointmentStats>(
@@ -324,41 +321,25 @@ function escapeCsvValue(value: string): string {
 
 export function exportAppointmentsCsv(appointments: Appointment[]): void {
   const headers = [
+    "ID",
     "Patient Name",
-    "Age",
     "Phone",
     "Email",
-    "Date & Time",
+    "Address",
+    "Appointment Date",
+    "Serial",
     "Problems",
-    "Status",
-    "Payment Status",
-    "Home Address",
-    "Original Serial",
-    "Modified Serial",
-    "Current Serial",
-    "Site",
-    "Admin Note",
-    "Created At",
   ];
 
   const rows = appointments.map((appointment) => [
+    appointment.id,
     appointment.name,
-    appointment.age ?? "",
     appointment.phone,
     appointment.email ?? "",
-    formatAppointmentDateTime(appointment),
-    appointment.problem ?? "",
-    getStatusLabel(appointment.status),
-    getPaymentStatusLabel(appointment.paymentStatus),
     appointment.homeAddress,
+    appointment.appointmentDate,
     String(appointment.serialNumber),
-    appointment.modifiedSerialNumber != null
-      ? String(appointment.modifiedSerialNumber)
-      : "",
-    String(getEffectiveSerialNumber(appointment)),
-    getSiteRefLabel(appointment.siteRef),
-    appointment.note ?? "",
-    formatTimestamp(appointment.createdAt),
+    appointment.problem ?? "",
   ]);
 
   const csv = [headers, ...rows]
