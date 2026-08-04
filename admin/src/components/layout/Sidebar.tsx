@@ -226,8 +226,8 @@ export function Sidebar() {
           >
             Dr.
           </div>
-          <div className={cn(isCollapsed && "lg:hidden")}>
-           <img src={logo} alt="Dr. Shah Alam"/>
+          <div className={cn(isCollapsed && "lg:hidden")} onClick={() => window.location.href = "/"}>
+           <img src={logo} alt="Dr. Shah Alam" className="cursor-pointer"/>
           </div>
         </div>
 
