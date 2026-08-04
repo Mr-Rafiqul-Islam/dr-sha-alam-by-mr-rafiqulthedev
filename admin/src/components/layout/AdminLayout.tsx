@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 import { PageLoadingFallback } from "../common";
 import { SidebarProvider, useSidebar } from "../../contexts/SidebarContext";
 import { cn } from "../../lib/cn";

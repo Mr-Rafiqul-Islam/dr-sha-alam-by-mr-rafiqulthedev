@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router";
 import { Avatar, Button, Icon } from "../common";
 import { useAdminAuth } from "../../contexts/AdminAuthContext";
 import { getAdminInitials } from "../../lib/adminAuth";
