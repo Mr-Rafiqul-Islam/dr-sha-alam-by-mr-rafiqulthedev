@@ -64,15 +64,27 @@ export function buildInvoiceLineItems(appointment: Appointment): {
       amount: "",
     },
     {
+      serial: 2,
+      label: "Phone No.",
+      value: appointment.phone,
+      amount: "",
+    },
+    {
       serial: 3,
       label: "Attend Date",
       value: formatInvoiceDate(appointment.appointmentDate),
       amount: "",
     },
     {
-      serial: 2,
-      label: "Phone No.",
-      value: appointment.phone,
+      serial: 4,
+      label: "Transaction ID",
+      value: appointment.transactionId ?? "",
+      amount: "",
+    },
+    {
+      serial: 5,
+      label: "Payment Status",
+      value: getPaymentStatusLabel(appointment.paymentStatus),
       amount: "",
     },
     {
@@ -83,18 +95,6 @@ export function buildInvoiceLineItems(appointment: Appointment): {
     },
     {
       serial: 7,
-      label: "Payment Status",
-      value: getPaymentStatusLabel(appointment.paymentStatus),
-      amount: "",
-    },
-    {
-      serial: 5,
-      label: "Transaction ID",
-      value: appointment.transactionId ?? "",
-      amount: "",
-    },
-    {
-      serial: 8,
       label: "Consultation Fee",
       value: "",
       amount: feeDisplay,

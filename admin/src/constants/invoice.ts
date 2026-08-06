@@ -7,6 +7,10 @@ export const INVOICE_COLORS = {
   accent: "#81C67D",
   white: "#FFFFFF",
   border: "#1A7567",
+  borderMuted: "#e9fffb",
+  watermarkGreen: "#81c98a",
+  watermarkTeal: "#0c7564",
+  watermarkTealOpacity: 0.10,
 } as const;
 
 export const TRUCARE_INVOICE = {
@@ -28,7 +32,8 @@ export const TRUCARE_INVOICE = {
     icon: "📍",
     value: "Siddique Tower, 49 Mohakhali, Dhaka."
   },
-  signatureLabel: "Trucare",
+  paidSealLabel: "PAID",
+  signatureLabel: "Trucare Diagnostic Center",
 } as const;
 
 export const INVOICE_TABLE_ROW_COUNT = 10;
