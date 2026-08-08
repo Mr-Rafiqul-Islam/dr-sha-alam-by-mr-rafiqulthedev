@@ -234,6 +234,8 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       status: typeof status;
       updatedById: string | null;
       note?: string | null;
+      injectionName?: string | null;
+      injectionAmount?: number | null;
     } = {
       status,
       updatedById: req.admin?.id ?? null,
@@ -241,6 +243,23 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
 
     if (Object.prototype.hasOwnProperty.call(req.body, "note")) {
       updateData.note = parseAdminNote(req.body.note);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, "injectionName")) {
+      updateData.injectionName = parseOptionalString(req.body.injectionName);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, "injectionAmount")) {
+      const raw = req.body.injectionAmount;
+      if (raw === null || raw === "") {
+        updateData.injectionAmount = null;
+      } else {
+        const num = Number(raw);
+        if (Number.isNaN(num) || num < 0) {
+          throw new AppointmentValidationError("Invalid injection amount");
+        }
+        updateData.injectionAmount = num;
+      }
     }
 
     const appointment = await prisma.appointment.update({
@@ -262,6 +281,8 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
         to: appointment.status,
         patientName: appointment.name,
         ...(noteChanged ? { noteChanged: true } : {}),
+        ...(Object.prototype.hasOwnProperty.call(req.body, "injectionName") ? { injectionName: appointment.injectionName } : {}),
+        ...(Object.prototype.hasOwnProperty.call(req.body, "injectionAmount") ? { injectionAmount: appointment.injectionAmount } : {}),
       },
     });
 
