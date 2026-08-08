@@ -156,7 +156,8 @@ const styles = StyleSheet.create({
     width: 180,
   },
   paidSealLabel: {
-    color: "red",
+    // color: "#0F766E",
+    color: "#166534",  // Darker green for better visibility
     fontFamily: "Times-Roman",
     fontWeight: "bold" as const,
     fontSize: 26,

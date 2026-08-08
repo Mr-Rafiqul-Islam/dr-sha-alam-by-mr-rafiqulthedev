@@ -137,7 +137,7 @@ const WATERMARK_VIEWBOX = "550 450 1900 2000";
 
 export function InvoiceWatermark() {
   return (
-    <Svg viewBox={WATERMARK_VIEWBOX} width={360} height={400}>
+    <Svg viewBox={WATERMARK_VIEWBOX} width={360} height={400} opacity={0.3}>
       <Path
         d="M2432,702.92V1153c-97.22-45.87-254-68.48-347.75-67.46-277.49,2.94-521.88,144.11-668.29,358.49,3.84-14.18,8.94-29.39,13.8-43.44C1578.59,972.49,1980.9,692.83,2432,702.92Z"
         fill={INVOICE_COLORS.watermarkGreen}
