@@ -43,19 +43,20 @@ export function formatInvoicePatientName(appointment: Appointment): string {
   return appointment.name;
 }
 
-function hasPaidConsultation(appointment: Appointment): boolean {
-  return (
-    appointment.paymentStatus === "SUCCESS" && appointment.transactionId != null
-  );
-}
+// function hasPaidConsultation(appointment: Appointment): boolean {
+//   return (
+//     appointment.paymentStatus === "SUCCESS" && appointment.transactionId != null
+//   );
+// }
 
 export function buildInvoiceLineItems(appointment: Appointment): {
   lineItems: InvoiceLineItem[];
   totalAmount: string;
 } {
   const fee = CONSULTATION_FEE_BDT;
-  const paid = hasPaidConsultation(appointment);
-  const feeDisplay = paid ? String(fee) : "-";
+  // const paid = hasPaidConsultation(appointment);
+  // Always show consultation fee on printed invoice (even if not paid)
+  const feeDisplay = String(fee);
   const lineItems: InvoiceLineItem[] = [
     {
       serial: 1,
