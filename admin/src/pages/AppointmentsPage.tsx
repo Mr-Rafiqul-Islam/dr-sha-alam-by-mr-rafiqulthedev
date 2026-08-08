@@ -43,6 +43,7 @@ import {
   getStatusBadgeVariant,
   getStatusLabel,
 } from "../utils/appointment";
+import { ToggleSwitch } from "../components/articles/ToggleSwitch";
 import {
   canModifySerial,
   formatSerialDisplay,
@@ -55,9 +56,11 @@ import {
 } from "../utils/pendingDelete";
 
 const InvoicePrintModal = lazy(() =>
-  import("../components/appointments/invoice/InvoicePrintModal").then((module) => ({
-    default: module.InvoicePrintModal,
-  })),
+  import("../components/appointments/invoice/InvoicePrintModal").then(
+    (module) => ({
+      default: module.InvoicePrintModal,
+    }),
+  ),
 );
 
 const PAGE_SIZE_OPTIONS = [30, 50, 100] as const;
@@ -166,17 +169,16 @@ function AppointmentCard({
 
       <div className="mt-3 flex flex-wrap gap-2">
         {appointment.pendingDelete ? <PendingDeleteBadge /> : null}
-        <Badge
-          variant="neutral"
-          className="gap-2 rounded-md px-3 py-1.5"
-        >
+        <Badge variant="neutral" className="gap-2 rounded-md px-3 py-1.5">
           <Icon name="event" size={16} className="text-primary" />
           {formatAppointmentDateTime(appointment)}
         </Badge>
         <Badge variant={getStatusBadgeVariant(appointment.status)}>
           {getStatusLabel(appointment.status)}
         </Badge>
-        <Badge variant={getPaymentStatusBadgeVariant(appointment.paymentStatus)}>
+        <Badge
+          variant={getPaymentStatusBadgeVariant(appointment.paymentStatus)}
+        >
           {getPaymentStatusLabel(appointment.paymentStatus)}
         </Badge>
       </div>
@@ -196,7 +198,9 @@ function AppointmentCard({
         </div>
         {appointment.note ? (
           <div className="col-span-2">
-            <dt className="text-label-sm text-on-surface-variant">Admin Note</dt>
+            <dt className="text-label-sm text-on-surface-variant">
+              Admin Note
+            </dt>
             <dd
               className="mt-0.5 line-clamp-2 wrap-break-word text-body-sm text-on-surface-variant"
               title={appointment.note}
@@ -233,6 +237,13 @@ export function AppointmentsPage() {
     "",
   );
   const [selectedNote, setSelectedNote] = useState("");
+  const [selectedInjectionName, setSelectedInjectionName] = useState<
+    string | null
+  >(null);
+  const [selectedInjectionAmount, setSelectedInjectionAmount] = useState<
+    number | null
+  >(null);
+  const [isInjectionEnabled, setIsInjectionEnabled] = useState(false);
 
   const {
     data: appointments = [],
@@ -272,12 +283,16 @@ export function AppointmentsPage() {
     setEditingAppointment(appointment);
     setSelectedStatus(appointment.status);
     setSelectedNote(appointment.note ?? "");
+    setSelectedInjectionName(appointment.injectionName ?? null);
+    setSelectedInjectionAmount(appointment.injectionAmount ?? null);
   };
 
   const closeStatusModal = () => {
     setEditingAppointment(null);
     setSelectedStatus("");
     setSelectedNote("");
+    setSelectedInjectionName(null);
+    setSelectedInjectionAmount(null);
   };
 
   const closeDeleteModal = () => {
@@ -342,6 +357,8 @@ export function AppointmentsPage() {
         id: editingAppointment.id,
         status: selectedStatus,
         note: selectedNote.trim() || null,
+        injectionName: selectedInjectionName ?? undefined,
+        injectionAmount: selectedInjectionAmount ?? undefined,
       }).unwrap();
       toast.success("Appointment updated successfully");
       closeStatusModal();
@@ -354,7 +371,9 @@ export function AppointmentsPage() {
     if (!deletingAppointment) return;
 
     try {
-      const result = await deleteAppointment({ id: deletingAppointment.id }).unwrap();
+      const result = await deleteAppointment({
+        id: deletingAppointment.id,
+      }).unwrap();
       if (result.pending) {
         toast.info(
           "Delete request submitted and is pending confirmation from an admin.",
@@ -459,6 +478,7 @@ export function AppointmentsPage() {
         open={editingAppointment !== null}
         onClose={closeStatusModal}
         title="Update Appointment"
+        className="min-w-3xl"
         subtitle={
           editingAppointment
             ? `Change status for ${editingAppointment.name}`
@@ -501,6 +521,77 @@ export function AppointmentsPage() {
             <span className="text-label-sm text-on-surface-variant">
               {selectedNote.length}/{ADMIN_NOTE_MAX_LENGTH}
             </span>
+          </label>
+          {/* separator */}
+          <span className="h-px w-full bg-outline-variant/30" />
+          <label className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-label-2xl font-medium text-on-surface">
+                Injection
+              </span>
+
+              <ToggleSwitch
+                id={`injection-switch-${editingAppointment?.id ?? "none"}`}
+                label=""
+                checked={isInjectionEnabled}
+                onChange={(checked) => {
+                  setIsInjectionEnabled(checked);
+
+                  if (!checked) {
+                    setSelectedInjectionName(null);
+                    setSelectedInjectionAmount(null);
+                  } else {
+                    setSelectedInjectionName("");
+                    setSelectedInjectionAmount(0);
+                  }
+                }}
+              />
+            </div>
+
+            {isInjectionEnabled && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <input
+                  type="text"
+                  placeholder="Injection name"
+                  value={selectedInjectionName ?? ""}
+                  onChange={(e) => setSelectedInjectionName(e.target.value)}
+                  className="rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0"
+                  value={selectedInjectionAmount ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    if (value === "") {
+                      setSelectedInjectionAmount(null);
+                      return;
+                    }
+
+                    const numberValue = Number(value);
+
+                    if (Number.isFinite(numberValue) && numberValue >= 0) {
+                      setSelectedInjectionAmount(numberValue);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (
+                      e.key === "e" ||
+                      e.key === "E" ||
+                      e.key === "-" ||
+                      e.key === "+"
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
+                  className="rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            )}
           </label>
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="ghost" onClick={closeStatusModal}>
@@ -550,10 +641,10 @@ export function AppointmentsPage() {
         description={
           resettingSerialAppointment
             ? `Reset ${resettingSerialAppointment.name}'s serial from modified ${formatSerialDisplay(
-              resettingSerialAppointment.modifiedSerialNumber!,
-            )} back to original ${formatSerialDisplay(
-              resettingSerialAppointment.serialNumber,
-            )}?`
+                resettingSerialAppointment.modifiedSerialNumber!,
+              )} back to original ${formatSerialDisplay(
+                resettingSerialAppointment.serialNumber,
+              )}?`
             : undefined
         }
         confirmLabel="Reset Serial"
@@ -612,7 +703,9 @@ export function AppointmentsPage() {
                 <TableHeader>
                   <TableRow className="border-b border-outline-variant/50 bg-surface/50 hover:bg-surface/50">
                     <TableHead>Serial</TableHead>
-                    <TableHead className="whitespace-nowrap">Patient Name</TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      Patient Name
+                    </TableHead>
                     <TableHead>Contact Info</TableHead>
                     <TableHead>Date &amp; Time</TableHead>
                     <TableHead>Status</TableHead>
@@ -636,7 +729,9 @@ export function AppointmentsPage() {
                     paginatedAppointments.map((appointment) => (
                       <TableRow
                         key={appointment.id}
-                        className={getPendingDeleteRowClass(appointment.pendingDelete)}
+                        className={getPendingDeleteRowClass(
+                          appointment.pendingDelete,
+                        )}
                       >
                         <TableCell className="whitespace-nowrap">
                           <div className="flex flex-col">
@@ -684,13 +779,17 @@ export function AppointmentsPage() {
                                 size={16}
                                 className="text-primary"
                               />
-                              {new Date(appointment.appointmentDate as string).toLocaleDateString("en-US", {
+                              {new Date(
+                                appointment.appointmentDate as string,
+                              ).toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
                               })}
                             </span>
-                            <span className="text-label-sm text-on-surface-variant">{appointment.preferredTime}</span>
+                            <span className="text-label-sm text-on-surface-variant">
+                              {appointment.preferredTime}
+                            </span>
                           </Badge>
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
