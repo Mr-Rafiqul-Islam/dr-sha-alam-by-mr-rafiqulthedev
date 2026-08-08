@@ -116,14 +116,16 @@ const styles = StyleSheet.create({
   totalLabelBox: {
     backgroundColor: INVOICE_COLORS.primary,
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    // paddingHorizontal: 12,
     minWidth: 120,
+    justifyContent: "center",
+    alignItems: "center",
   },
   totalLabel: {
     color: INVOICE_COLORS.white,
     fontFamily: "Helvetica-Bold",
     fontSize: 9,
-    textAlign: "right",
+    textAlign: "center",
   },
   totalValueBox: {
     borderWidth: 1,
@@ -234,7 +236,7 @@ export function InvoiceDocument({ appointment }: InvoiceDocumentProps) {
 
           <View style={styles.totalRow}>
             <View style={styles.totalLabelBox}>
-              <Text style={styles.totalLabel}>TOTAL AMOUNT:</Text>
+              <Text style={styles.totalLabel}>TOTAL AMOUNT :</Text>
             </View>
             <View style={styles.totalValueBox}>
               <Text style={styles.totalValue}>{totalAmount}</Text>
