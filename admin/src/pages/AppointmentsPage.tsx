@@ -66,6 +66,23 @@ const InvoicePrintModal = lazy(() =>
 const PAGE_SIZE_OPTIONS = [30, 50, 100] as const;
 const DEFAULT_PAGE_SIZE = 30;
 const ADMIN_NOTE_MAX_LENGTH = 200;
+const INJECTION_OPTIONS = [
+  "ESI . Epidural Steroid Injection",
+  "SIJ . Sacro-illiac Joint",
+  "Knee Injection",
+  "Shoulder Injection",
+  "Tennis Elbow Injection",
+  "Golfer,s Elbow Injection",
+  "AC Joint Injection",
+  "Tendoachillis Injection",
+  "Biceps Tendinitis Injection",
+  "Wrist Ganglia Injection",
+  "Subscapular Injection",
+  "Midscapular Injection",
+  "Midlumber Injection",
+  "Mid-Cervical Injection",
+  "Coccydynia Injection",
+] as const;
 
 type AppointmentActionsProps = {
   appointment: Appointment;
@@ -285,6 +302,7 @@ export function AppointmentsPage() {
     setSelectedNote(appointment.note ?? "");
     setSelectedInjectionName(appointment.injectionName ?? null);
     setSelectedInjectionAmount(appointment.injectionAmount ?? null);
+    setIsInjectionEnabled(Boolean(appointment.injectionName));
   };
 
   const closeStatusModal = () => {
@@ -293,6 +311,7 @@ export function AppointmentsPage() {
     setSelectedNote("");
     setSelectedInjectionName(null);
     setSelectedInjectionAmount(null);
+    setIsInjectionEnabled(false);
   };
 
   const closeDeleteModal = () => {
@@ -550,13 +569,22 @@ export function AppointmentsPage() {
 
             {isInjectionEnabled && (
               <div className="grid gap-2 sm:grid-cols-2">
-                <input
-                  type="text"
-                  placeholder="Injection name"
+                <select
                   value={selectedInjectionName ?? ""}
-                  onChange={(e) => setSelectedInjectionName(e.target.value)}
+                  onChange={(e) =>
+                    setSelectedInjectionName(e.target.value || null)
+                  }
                   className="rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
+                >
+                  <option value="" disabled>
+                    Select injection
+                  </option>
+                  {INJECTION_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
 
                 <input
                   type="number"
