@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { Avatar, Badge, Icon } from "../components/common";

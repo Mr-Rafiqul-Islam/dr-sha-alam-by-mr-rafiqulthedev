@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router";
 import { Avatar, Button, Icon } from "../common";
 import { useAdminAuth } from "../../contexts/AdminAuthContext";
 import { getAdminInitials } from "../../lib/adminAuth";
@@ -226,8 +226,8 @@ export function Sidebar() {
           >
             Dr.
           </div>
-          <div className={cn(isCollapsed && "lg:hidden")}>
-           <img src={logo} alt="Dr. Shah Alam"/>
+          <div className={cn(isCollapsed && "lg:hidden")} onClick={() => window.location.href = "/"}>
+           <img src={logo} alt="Dr. Shah Alam" className="cursor-pointer"/>
           </div>
         </div>
 

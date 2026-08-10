@@ -29,21 +29,27 @@ export const appointmentsApi = baseApi.injectEndpoints({
         body,
       }),
       transformResponse: (response: AppointmentResponse) => response.appointment,
-      invalidatesTags: [{ type: "Appointment", id: "LIST" }],
+      invalidatesTags: [{ type: "Appointment", id: "LIST" }, { type: "AppointmentRevenue", id: "SUMMARY" }],
     }),
     updateAppointmentStatus: builder.mutation<
       Appointment,
-      { id: string; status: AppointmentStatus; note?: string | null }
+      { id: string; status: AppointmentStatus; note?: string | null; injectionName?: string | null; injectionAmount?: number | null }
     >({
-      query: ({ id, status, note }) => ({
+      query: ({ id, status, note, injectionName, injectionAmount }) => ({
         url: `/api/v1/admin/appointments/${id}/status`,
         method: "PATCH",
-        body: { status, ...(note !== undefined ? { note } : {}) },
+        body: {
+          status,
+          ...(note !== undefined ? { note } : {}),
+          ...(Object.prototype.hasOwnProperty.call({ injectionName }, 'injectionName') ? { injectionName } : {}),
+          ...(Object.prototype.hasOwnProperty.call({ injectionAmount }, 'injectionAmount') ? { injectionAmount } : {}),
+        },
       }),
       transformResponse: (response: AppointmentResponse) => response.appointment,
       invalidatesTags: (_result, _error, { id }) => [
         { type: "Appointment", id },
         { type: "Appointment", id: "LIST" },
+        { type: "AppointmentRevenue", id: "SUMMARY" },
       ],
     }),
     updateAppointmentSerial: builder.mutation<
@@ -77,10 +83,12 @@ export const appointmentsApi = baseApi.injectEndpoints({
           ? [
               { type: "DeleteRequest", id: "LIST" },
               { type: "Appointment", id: "LIST" },
+              { type: "AppointmentRevenue", id: "SUMMARY" },
             ]
           : [
               { type: "Appointment", id },
               { type: "Appointment", id: "LIST" },
+              { type: "AppointmentRevenue", id: "SUMMARY" },
             ],
     }),
   }),

@@ -13,14 +13,16 @@ export type ActivityAction =
   | "SCHEDULE_CREATED"
   | "SCHEDULE_UPDATED"
   | "SCHEDULE_DELETED"
-  | "SLOT_DEFAULTS_UPDATED";
+  | "SLOT_DEFAULTS_UPDATED"
+  | "APPOINTMENT_REVENUE_FEES_UPDATED";
 
 export type ActivityEntityType =
   | "Appointment"
   | "ContactMessage"
   | "Blog"
   | "AppointmentSchedule"
-  | "AppointmentSlotDefaultConfig";
+  | "AppointmentSlotDefaultConfig"
+  | "AppointmentRevenueFee";
 
 export type TraceableStaffRole = "SUPPORT" | "EDITOR";
 

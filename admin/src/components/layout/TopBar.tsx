@@ -32,7 +32,6 @@ export function TopBar() {
             size={20}
           />
         </Button>
-
       </div>
 
       <div className="flex min-w-0 items-center gap-4 shrink-0">
@@ -41,7 +40,16 @@ export function TopBar() {
           className="hidden md:flex"
         />
         <AnnouncementNotificationPanel />
-        <img src={logo} alt="Dr. Shah Alam" className="w-12 h-12 object-contain" />
+        <button
+          className="cursor-pointer"
+          onClick={() => (window.location.href = "/")}
+        >
+          <img
+            src={logo}
+            alt="Dr. Shah Alam"
+            className="w-12 h-12 object-contain"
+          />
+        </button>
       </div>
     </header>
   );

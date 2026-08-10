@@ -164,6 +164,14 @@ export function AppointmentViewModal({
               value={formatNullable(appointment.problem)}
               multiline
             />
+            <DetailRow
+              label="Injection"
+              value={
+                appointment.injectionName
+                  ? `${appointment.injectionName} — ${appointment.injectionAmount ?? ""}`
+                  : "—"
+              }
+            />
           </DetailSection>
 
           <DetailSection title="Reference">

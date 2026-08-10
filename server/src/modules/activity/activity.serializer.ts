@@ -116,6 +116,8 @@ export function buildActivitySummary(
     }
     case "SLOT_DEFAULTS_UPDATED":
       return `${who} updated appointment slot defaults`;
+    case "APPOINTMENT_REVENUE_FEES_UPDATED":
+      return `${who} updated appointment revenue fees`;
     default:
       return `${who} performed ${action}`;
   }
