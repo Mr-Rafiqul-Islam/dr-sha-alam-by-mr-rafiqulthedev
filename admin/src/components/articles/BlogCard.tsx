@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Avatar, Badge, Button, Icon, PendingDeleteBadge } from "../common";
 import type { Blog } from "../../types/blog";
 import {

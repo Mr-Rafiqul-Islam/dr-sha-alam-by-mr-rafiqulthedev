@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router";
 import { AdminAuthProvider } from "../../contexts/AdminAuthContext";
 import { fetchCurrentAdmin } from "../../lib/adminAuth";
 import { PageLoadingFallback } from "../common";

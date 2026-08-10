@@ -1,73 +1,52 @@
-# React + TypeScript + Vite
+# Admin panel (Vite + React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Local development
 
-Currently, two official plugins are available:
+1. **Start the API server** (from `server/`):
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Note the server port in `server/.env` (`PORT`, commonly `5002`).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. **Configure the admin app**:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd admin
+cp .env.example .env
+```
+
+Recommended dev settings in `admin/.env`:
+
+```env
+VITE_API_URL=
+VITE_DEV_API_PROXY=http://localhost:5002
+```
+
+Leave `VITE_API_URL` **empty** so the admin calls `/api/...` on the Vite dev server, which proxies to the backend. This avoids wrong-port errors (e.g. `:5001`) and CORS issues.
+
+If your server uses a different port, update `VITE_DEV_API_PROXY` only.
+
+3. **Start the admin dev server**:
+
+```bash
+npm run dev
+```
+
+Open http://localhost:5173/
+
+## Troubleshooting
+
+- **`ERR_CONNECTION_REFUSED` on `/api/...`**: backend is not running, or `VITE_DEV_API_PROXY` points to the wrong port.
+- **Vite HMR websocket failed**: restart `npm run dev` after pulling config changes; use http://localhost:5173 (not 127.0.0.1 vs localhost mismatch).
+- **Invalid hook call / `useContext` is null**: usually a stale HMR session or duplicate React; restart the dev server. This repo dedupes `react` / `react-dom` in `vite.config.ts`.
+
+## Production build
+
+Set `VITE_API_URL` to your public API origin before building:
+
+```bash
+VITE_API_URL=https://your-api.example.com npm run build
 ```

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import { AdminForm } from "../components/admins/AdminForm";
 import { Button, Icon, PageHeader } from "../components/common";

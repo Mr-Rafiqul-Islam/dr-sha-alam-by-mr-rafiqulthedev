@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityFeedList } from "../components/dashboard/ActivityFeedList";
+import { DailyAppointmentRevenueSection } from "../components/dashboard/DailyAppointmentRevenueSection";
 import { StaffActivityPicker } from "../components/dashboard/StaffActivityPicker";
 import { AnnouncementBannerList } from "../components/announcements/AnnouncementBannerList";
 import { Icon, PageHeader, StatCard } from "../components/common";
@@ -345,6 +346,8 @@ export function DashboardPage() {
           />
         </div>
       </section>
+
+      <DailyAppointmentRevenueSection />
 
       <section className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-4 shadow-[0_4px_24px_-8px_rgba(0,119,155,0.05)] md:p-6">
         <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-start">

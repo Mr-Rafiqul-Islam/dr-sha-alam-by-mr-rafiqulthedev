@@ -18,7 +18,7 @@
     "lucide-react": "^0.553.0",
     "motion": "^12.23.24",
     "next": "^16.2.7",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.25",
     "react": "^19.2.1",
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.1",
@@ -40,9 +40,10 @@
     "hono": "4.12.31",
     "body-parser": "2.3.0",
     "protobufjs": "7.6.5",
-    "tar": "7.5.20",
+    "tar": "7.5.22",
     "next": {
-      "postcss": "8.5.15"
+      "postcss": "8.5.25",
+      "sharp": "0.35.3"
     }
   }
 }

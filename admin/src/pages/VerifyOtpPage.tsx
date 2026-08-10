@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useSyncExternalStore, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { Button, Icon, Input } from "../components/common";
 import { resolvePostLoginPath } from "../constants/permissions";

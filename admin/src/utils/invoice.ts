@@ -43,24 +43,31 @@ export function formatInvoicePatientName(appointment: Appointment): string {
   return appointment.name;
 }
 
-function hasPaidConsultation(appointment: Appointment): boolean {
-  return (
-    appointment.paymentStatus === "SUCCESS" && appointment.transactionId != null
-  );
-}
+// function hasPaidConsultation(appointment: Appointment): boolean {
+//   return (
+//     appointment.paymentStatus === "SUCCESS" && appointment.transactionId != null
+//   );
+// }
 
 export function buildInvoiceLineItems(appointment: Appointment): {
   lineItems: InvoiceLineItem[];
   totalAmount: string;
 } {
   const fee = CONSULTATION_FEE_BDT;
-  const paid = hasPaidConsultation(appointment);
-  const feeDisplay = paid ? String(fee) : "-";
+  // const paid = hasPaidConsultation(appointment);
+  // Always show consultation fee on printed invoice (even if not paid)
+  const feeDisplay = String(fee);
   const lineItems: InvoiceLineItem[] = [
     {
       serial: 1,
       label: "Serial No.",
       value: `${formatSerialDisplay(getEffectiveSerialNumber(appointment))} - ${appointment.preferredTime}`,
+      amount: "",
+    },
+    {
+      serial: 2,
+      label: "Phone No.",
+      value: appointment.phone,
       amount: "",
     },
     {
@@ -70,9 +77,15 @@ export function buildInvoiceLineItems(appointment: Appointment): {
       amount: "",
     },
     {
-      serial: 2,
-      label: "Phone No.",
-      value: appointment.phone,
+      serial: 4,
+      label: "Transaction ID",
+      value: appointment.transactionId ?? "",
+      amount: "",
+    },
+    {
+      serial: 5,
+      label: "Payment Status",
+      value: getPaymentStatusLabel(appointment.paymentStatus),
       amount: "",
     },
     {
@@ -83,23 +96,23 @@ export function buildInvoiceLineItems(appointment: Appointment): {
     },
     {
       serial: 7,
-      label: "Payment Status",
-      value: getPaymentStatusLabel(appointment.paymentStatus),
-      amount: "",
-    },
-    {
-      serial: 5,
-      label: "Transaction ID",
-      value: appointment.transactionId ?? "",
-      amount: "",
-    },
-    {
-      serial: 8,
       label: "Consultation Fee",
       value: "",
       amount: feeDisplay,
     },
   ];
+
+  // Add injection line item if present
+  const injectionAmount = appointment.injectionAmount ?? null;
+  if (appointment.injectionName) {
+    const injectionDisplay = injectionAmount != null ? String(injectionAmount) : "";
+    lineItems.push({
+      serial: lineItems.length + 1,
+      label: "Injection",
+      value: appointment.injectionName,
+      amount: injectionDisplay,
+    });
+  }
 
   for (let serial = lineItems.length + 1; serial <= INVOICE_TABLE_ROW_COUNT; serial += 1) {
     lineItems.push({
@@ -110,5 +123,9 @@ export function buildInvoiceLineItems(appointment: Appointment): {
     });
   }
 
-  return { lineItems, totalAmount: feeDisplay };
+  // Calculate total amount: always sum consultation fee + injection (if any)
+  const totalNumeric = Number(fee) + (appointment.injectionAmount ?? 0);
+  const totalAmount = String(totalNumeric);
+
+  return { lineItems, totalAmount };
 }

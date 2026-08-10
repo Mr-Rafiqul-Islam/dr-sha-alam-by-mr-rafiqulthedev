@@ -131,6 +131,7 @@ enum ActivityAction {
   SCHEDULE_UPDATED
   SCHEDULE_DELETED
   SLOT_DEFAULTS_UPDATED
+  APPOINTMENT_REVENUE_FEES_UPDATED
 }
 
 enum ActivityEntityType {
@@ -139,6 +140,13 @@ enum ActivityEntityType {
   Blog
   AppointmentSchedule
   AppointmentSlotDefaultConfig
+  AppointmentRevenueFee
+}
+
+enum AppointmentRevenueCategory {
+  NEW_PLID
+  OLD_PLID
+  GENERAL
 }
 
 model User {
@@ -159,10 +167,10 @@ model User {
   payments                Payment[]
   patientReviews          PatientReview[]
   activityLogs            ActivityLog[]
-  deleteRequestsRequested DeleteRequest[] @relation("DeleteRequestsRequested")
-  deleteRequestsReviewed  DeleteRequest[] @relation("DeleteRequestsReviewed")
-  appointmentsCreated     Appointment[]   @relation("AppointmentCreatedBy")
-  appointmentsUpdated     Appointment[]   @relation("AppointmentUpdatedBy")
+  deleteRequestsRequested DeleteRequest[]     @relation("DeleteRequestsRequested")
+  deleteRequestsReviewed  DeleteRequest[]     @relation("DeleteRequestsReviewed")
+  appointmentsCreated     Appointment[]       @relation("AppointmentCreatedBy")
+  appointmentsUpdated     Appointment[]       @relation("AppointmentUpdatedBy")
   adminOtpChallenges      AdminOtpChallenge[]
   doctorId                String?
   announcementsCreated    Announcement[]
@@ -175,16 +183,16 @@ model AdminOtpChallenge {
   id String @id @default(uuid())
 
   userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   purpose AdminOtpPurpose @default(LOGIN)
 
   otpHash String
 
-  expiresAt   DateTime
-  verifiedAt  DateTime?
-  consumedAt  DateTime?
-  lastSentAt  DateTime @default(now())
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  consumedAt DateTime?
+  lastSentAt DateTime  @default(now())
 
   attempts    Int @default(0)
   resendCount Int @default(0)
@@ -252,27 +260,29 @@ model Doctor {
 }
 
 model Appointment {
-  id              String            @id @default(uuid())
-  name            String
-  phone           String
-  email           String?
-  homeAddress     String
-  problem         String?
-  preferredTime   String
-  appointmentDate DateTime
-  serialNumber    Int
+  id                   String                    @id @default(uuid())
+  name                 String
+  phone                String
+  email                String?
+  homeAddress          String
+  problem              String?
+  preferredTime        String
+  appointmentDate      DateTime
+  serialNumber         Int
   modifiedSerialNumber Int? // for rescheduling, cancellation, etc.
-  gender          String?
-  age             String?
-  status          AppointmentStatus @default(PENDING)
-  paymentStatus   AppointmentPaymentStatus?
-  siteRef         SiteRef           @default(DOCTOR_SHA_ALAM)
-  transactionId   String?           @unique
-  scheduleId      String?
-  slotId          String?
-  createdById     String?
-  updatedById     String?
-  note            String?
+  gender               String?
+  age                  String?
+  status               AppointmentStatus         @default(PENDING)
+  paymentStatus        AppointmentPaymentStatus?
+  siteRef              SiteRef                   @default(DOCTOR_SHA_ALAM)
+  transactionId        String?                   @unique
+  scheduleId           String?
+  slotId               String?
+  createdById          String?
+  updatedById          String?
+  note                 String?
+  injectionName        String?
+  injectionAmount      Float?
 
   schedule  AppointmentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
   slot      AppointmentSlot?     @relation(fields: [slotId], references: [id], onDelete: SetNull)
@@ -289,6 +299,7 @@ model Appointment {
   @@index([updatedById])
   @@index([appointmentDate, preferredTime, siteRef, status])
 }
+
 
 model AppointmentSchedule {
   id       String         @id @default(uuid())
@@ -361,6 +372,19 @@ model AppointmentSlotDefault {
 
   @@unique([configId, code])
   @@index([configId, isActive])
+}
+
+model AppointmentRevenueFee {
+  id        String                     @id @default(uuid())
+  siteRef   SiteRef
+  category  AppointmentRevenueCategory
+  fee       Decimal                    @db.Decimal(10, 2)
+  isActive  Boolean                    @default(true)
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+
+  @@unique([siteRef, category])
+  @@index([siteRef, isActive])
 }
 
 model Payment {
