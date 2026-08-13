@@ -7,6 +7,14 @@ import AfterTreatmentFAQ from '@/components/after-treatment/AfterTreatmentFAQ';
 import AfterTreatmentRecoverySuccess from '@/components/after-treatment/AfterTreatmentRecoverySuccess';
 import AfterTreatmentFinalMessage from '@/components/after-treatment/AfterTreatmentFinalMessage';
 import AfterTreatmentSupport from '@/components/after-treatment/AfterTreatmentSupport';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "After Treatment Instructions | Dr. Shah Alam",
+  alternates: {
+    canonical: "/after-treatment-instructions",
+  },
+};
 
 export default function AfterTreatmentInstructionsPage() {
   return (

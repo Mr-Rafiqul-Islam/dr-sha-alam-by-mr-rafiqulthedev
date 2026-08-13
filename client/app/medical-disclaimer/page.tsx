@@ -1,6 +1,14 @@
 import MedicalDisclaimerHeader from '@/components/medical-disclaimer/MedicalDisclaimerHeader';
 import MedicalDisclaimerNotice from '@/components/medical-disclaimer/MedicalDisclaimerNotice';
 import MedicalDisclaimerSections from '@/components/medical-disclaimer/MedicalDisclaimerSections';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Medical Disclaimer | Dr. Shah Alam",
+  alternates: {
+    canonical: "/medical-disclaimer",
+  },
+};
 
 export default function MedicalDisclaimerPage() {
   return (

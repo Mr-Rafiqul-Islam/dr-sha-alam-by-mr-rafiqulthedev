@@ -15,12 +15,22 @@ import {
 } from "@/lib/blog";
 import { getAllBlogs } from "@/server-actions/getAllBlogs";
 import type { BlogsListMeta, PublicBlog } from "@/types/blog";
+import { Metadata } from "next";
 
 const BLOG_PAGE_SIZE = 9;
-
+export const metadata: Metadata = {
+  title: "Blog | Dr. Shah Alam",
+  alternates: {
+    canonical: "/blog",
+  },
+  openGraph: {
+    title: "Blog | Dr. Shah Alam",
+  },
+};
 type BlogPageProps = {
   searchParams: Promise<{ q?: string; category?: string; page?: string }>;
 };
+
 
 function BlogFiltersFallback() {
   return (

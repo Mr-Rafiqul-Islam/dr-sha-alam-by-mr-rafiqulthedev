@@ -12,7 +12,6 @@ import {
   getEffectiveSerialNumber,
 } from "@/lib/appointmentSerial";
 import Image from "next/image";
-
 type AppointmentSummary = PublicAppointmentSummary;
 
 function formatDate(value: string): string {
@@ -26,6 +25,8 @@ function formatDate(value: string): string {
     day: "numeric",
   });
 }
+
+
 
 function ThankYouContent() {
   const searchParams = useSearchParams();

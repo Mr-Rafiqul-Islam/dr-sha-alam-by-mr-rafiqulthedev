@@ -5,6 +5,14 @@ import PatientGuidelinesPostTreatment from '@/components/patient-guidelines/Pati
 import PatientGuidelinesExercise from '@/components/patient-guidelines/PatientGuidelinesExercise';
 import PatientGuidelinesEmergency from '@/components/patient-guidelines/PatientGuidelinesEmergency';
 import PatientGuidelinesContact from '@/components/patient-guidelines/PatientGuidelinesContact';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Patient Guidelines | Dr. Shah Alam",
+  alternates: {
+    canonical: "/patient-guidelines",
+  },
+};
 
 export default function PatientGuidelinesPage() {
   return (
