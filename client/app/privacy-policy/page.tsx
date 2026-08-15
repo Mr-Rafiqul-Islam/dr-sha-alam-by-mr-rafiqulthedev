@@ -1,5 +1,13 @@
 import PrivacyPolicyHeader from '@/components/privacy-policy/PrivacyPolicyHeader';
 import PrivacyPolicySections from '@/components/privacy-policy/PrivacyPolicySections';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | Dr. Shah Alam",
+  alternates: {
+    canonical: "/privacy-policy",
+  },
+};
 
 export default function PrivacyPolicyPage() {
   return (

@@ -36,11 +36,31 @@ export async function generateMetadata({
   try {
     const { slug: rawSlug } = await params;
     const blog = await loadBlog(normalizeBlogSlug(rawSlug));
-
     return {
       title: blog.meta?.title ?? blog.title,
       description: blog.meta?.description ?? blog.shortDesc,
       keywords: blog.meta?.keywords,
+      alternates: {
+        canonical: `/blog/${blog.slug}`,
+      },
+      robots: {
+        index: true,
+        follow: true,
+      },
+      openGraph: {
+        title: blog.meta?.title ?? blog.title,
+        description: blog.meta?.description ?? blog.shortDesc,
+        url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/blog/${blog.slug}`,
+        siteName: "Dr. Shah Alam",
+        type: "website",
+        images: [
+          {
+            url: blog.image,
+            width: 1200,
+            height: 630,
+          },
+        ],
+      },
     };
   } catch {
     return {

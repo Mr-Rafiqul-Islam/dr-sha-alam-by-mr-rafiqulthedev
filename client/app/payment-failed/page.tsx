@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import ScrollReveal from "@/components/ScrollReveal";
 
+
+
 const ERROR_MESSAGES: Record<string, string> = {
   no_tranId: "Invalid payment session. Please start booking again.",
   invalid_transaction: "Transaction not found. Please try booking again.",
