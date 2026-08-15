@@ -1,5 +1,13 @@
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Payment Cancelled | Dr. Shah Alam",
+  alternates: {
+    canonical: "/payment-cancelled",
+  },
+};
 
 export default function PaymentCancelledPage() {
   return (

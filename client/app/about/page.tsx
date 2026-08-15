@@ -4,6 +4,14 @@ import EducationAndAwards from '@/components/about/EducationAndAwards';
 import PhilosophySection from '@/components/about/PhilosophySection';
 import VisitChamber from '@/components/about/VisitChamber';
 import PersonalNote from '@/components/about/PersonalNote';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "About | Dr. Shah Alam",
+  alternates: {
+    canonical: "/about",
+  },
+};
 
 export default function AboutPage() {
   return (

@@ -17,8 +17,45 @@ const anekBangla = Anek_Bangla({
   weight: ['400', '500', '600', '700'],
 });
 export const metadata: Metadata = {
+  metadataBase: process.env.NEXT_PUBLIC_FRONTEND_URL ? new URL(process.env.NEXT_PUBLIC_FRONTEND_URL) : new URL("https://doctorshahalalam.com"),
   title: 'Dr. Shah Alam - ORTHOPEDIC SPECIALIST & CERTIFIED YOGA INSTRUCTOR',
   description: 'Dr. Shah Alam is an Orthopedic Spine Specialist and Certified Yoga Instructor dedicated to helping people make better treatment decisions and achieve lasting recovery. For more than a decade, he has worked with patients suffering from PLID, sciatica, back pain, neck pain, and musculoskeletal disorders.',
+
+  keywords: [
+    "Dr. Shah Alam",
+    "পিএলআইডি ডাক্তার",
+    "Orthopedic Spine Specialist",
+    "Spine Specialist",
+    "Back Pain Specialist",
+    "Spine Treatment",
+    "Yoga Instructor",
+  ],
+
+  authors: [
+    {
+      name: "Dr. Shah Alam",
+    },
+  ],
+
+  publisher: "Dr. Shah Alam",
+
+  alternates: {
+    canonical: "/",
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  openGraph: {
+    title: "Dr. Shah Alam | Orthopedic Spine Specialist",
+    description:
+      "Dr. Shah Alam, Orthopedic Spine Specialist & Yoga Instructor. Decade+ experience helping PLID, sciatica, neck/back pain patients recover.",
+    url: "https://doctorshahalalam.com",
+    siteName: "Dr. Shah Alam",
+    type: "website",
+  },
 };
 
 async function getAnalyticsConfig() {

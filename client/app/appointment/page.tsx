@@ -2,6 +2,14 @@ import AppointmentSteps from "@/components/appointment/AppointmentSteps";
 import BookingForm from "@/components/booking/BookingForm";
 import Image from "next/image";
 import Link from "next/link";
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Book Appointment | Dr. Shah Alam",
+  alternates: {
+    canonical: "/appointment",
+  },
+};
 
 export default function BookAppointment() {
   const beforeConsultationList = [

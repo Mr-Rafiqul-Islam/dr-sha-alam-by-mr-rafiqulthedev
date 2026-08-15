@@ -3,6 +3,14 @@ import ContactForm from '@/components/contact/ContactForm';
 import ContactInfo from '@/components/contact/ContactInfo';
 import ContactFAQ from '@/components/contact/ContactFAQ';
 import ScrollReveal from '@/components/ScrollReveal';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Contact | Dr. Shah Alam",
+  alternates: {
+    canonical: "/contact",
+  },
+};
 
 export default function ContactPage() {
   return (
