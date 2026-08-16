@@ -24,6 +24,10 @@ import {
   parseSerialModificationReason,
 } from "../../modules/appointment/appointment.serial.js";
 import {
+  buildCategoryWhereClause,
+  parseCategoryQuery,
+} from "../../modules/appointment/appointment.categoryFilter.js";
+import {
   parseSlotCodeString,
   runSerializableTransaction,
   validateAppointmentSlotAvailability,
@@ -52,6 +56,11 @@ import {
   parseRequiredString,
 } from "../../modules/appointment/appointment.utils.js";
 import { routeParamString } from "../../utils/express-params.js";
+import {
+  hasFeesDiscountBodyKey,
+  parseFeesDiscountInput,
+  replaceAppointmentFeesDiscounts,
+} from "../../modules/appointment/appointment.discount.js";
 
 function parseBodyString(value: unknown): string | undefined {
   if (typeof value === "string" && value.trim()) {
@@ -92,6 +101,15 @@ export async function createAppointment(req: Request, res: Response) {
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
     const adminId = req.admin?.id ?? null;
+    const isAdmin = Boolean(req.admin);
+
+    if (hasFeesDiscountBodyKey(req.body) && !isAdmin) {
+      throw new AppointmentValidationError(
+        "Discounts are only available for admin appointments",
+      );
+    }
+
+    const feesDiscountInput = parseFeesDiscountInput(req.body, { isAdmin });
 
     let smsLabel: string | null | undefined;
 
@@ -148,6 +166,20 @@ export async function createAppointment(req: Request, res: Response) {
           slotId: slotAvailability.slotId,
           createdById: adminId,
           updatedById: adminId,
+          ...(feesDiscountInput && feesDiscountInput.length > 0
+            ? {
+                feesDiscount: {
+                  create: feesDiscountInput.map((discount) => ({
+                    name: discount.name,
+                    description: discount.description,
+                    discountType: discount.discountType,
+                    discountAmount: discount.discountAmount,
+                    discountPercentage: discount.discountPercentage,
+                    discountCode: discount.discountCode,
+                  })),
+                },
+              }
+            : {}),
         },
         include: APPOINTMENT_ACTOR_INCLUDE,
       });
@@ -236,6 +268,8 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       note?: string | null;
       injectionName?: string | null;
       injectionAmount?: number | null;
+      operationName?: string | null;
+      operationAmount?: number | null;
     } = {
       status,
       updatedById: req.admin?.id ?? null,
@@ -262,10 +296,47 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       }
     }
 
-    const appointment = await prisma.appointment.update({
-      where: { id: appointmentId },
-      data: updateData,
-      include: APPOINTMENT_ACTOR_INCLUDE,
+    if (Object.prototype.hasOwnProperty.call(req.body, "operationName")) {
+      updateData.operationName = parseOptionalString(req.body.operationName);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, "operationAmount")) {
+      const raw = req.body.operationAmount;
+      if (raw === null || raw === "") {
+        updateData.operationAmount = null;
+      } else {
+        const num = Number(raw);
+        if (!Number.isFinite(num) || num < 0) {
+          throw new AppointmentValidationError("Invalid operation amount");
+        }
+        updateData.operationAmount = num;
+      }
+    }
+
+    const feesDiscountInput = parseFeesDiscountInput(req.body, {
+      isAdmin: Boolean(req.admin),
+    });
+
+    const appointment = await prisma.$transaction(async (tx) => {
+      await tx.appointment.update({
+        where: { id: appointmentId },
+        data: updateData,
+      });
+
+      if (feesDiscountInput !== undefined) {
+        await replaceAppointmentFeesDiscounts(
+          tx,
+          appointmentId,
+          feesDiscountInput,
+        );
+      }
+
+      const updated = await tx.appointment.findUniqueOrThrow({
+        where: { id: appointmentId },
+        include: APPOINTMENT_ACTOR_INCLUDE,
+      });
+
+      return updated;
     });
 
     const noteChanged =
@@ -283,6 +354,11 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
         ...(noteChanged ? { noteChanged: true } : {}),
         ...(Object.prototype.hasOwnProperty.call(req.body, "injectionName") ? { injectionName: appointment.injectionName } : {}),
         ...(Object.prototype.hasOwnProperty.call(req.body, "injectionAmount") ? { injectionAmount: appointment.injectionAmount } : {}),
+        ...(Object.prototype.hasOwnProperty.call(req.body, "operationName") ? { operationName: appointment.operationName } : {}),
+        ...(Object.prototype.hasOwnProperty.call(req.body, "operationAmount") ? { operationAmount: appointment.operationAmount } : {}),
+        ...(feesDiscountInput !== undefined
+          ? { feesDiscountUpdated: true, feesDiscountCount: appointment.feesDiscount.length }
+          : {}),
       },
     });
 
@@ -546,10 +622,24 @@ function mapAdminAppointments<T extends { id: string; preferredTime: string; ser
 
 export async function getAllAppointments(req: Request, res: Response) {
   try {
+    const categoryResult = parseCategoryQuery(req.query.category);
+    if (!categoryResult.ok) {
+      return res.status(400).json({
+        success: false,
+        message: categoryResult.message,
+      });
+    }
+
     const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
       await getAdminAppointmentListContext(req);
+    const categoryWhere = categoryResult.categories
+      ? buildCategoryWhereClause(categoryResult.categories)
+      : undefined;
     const appointments = await prisma.appointment.findMany({
-      where: pendingDeleteWhere,
+      where: {
+        ...pendingDeleteWhere,
+        ...(categoryWhere ?? {}),
+      },
       orderBy: ALL_APPOINTMENTS_ORDER,
       include: APPOINTMENT_ACTOR_INCLUDE,
     });

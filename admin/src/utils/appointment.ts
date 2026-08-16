@@ -7,6 +7,9 @@ import type {
   SiteRef,
 } from "../types/appointment";
 import type { BadgeVariant } from "../components/common/Badge";
+import {
+  toAppointmentFeeDiscountInput,
+} from "./discount";
 
 export function formatNullable(value: string | null | undefined): string {
   if (value == null || value.trim() === "") {
@@ -131,6 +134,8 @@ export const APPOINTMENT_STATUS_OPTIONS: Array<{
 export function toCreateAppointmentPayload(
   data: AppointmentFormData,
 ): CreateAppointmentPayload {
+  const discountInput = toAppointmentFeeDiscountInput(data.discount);
+
   return {
     fullName: data.patientName.trim(),
     phoneNumber: data.phone.trim(),
@@ -140,6 +145,7 @@ export function toCreateAppointmentPayload(
     ...(data.email.trim() ? { email: data.email.trim() } : {}),
     ...(data.age?.trim() ? { age: data.age.trim() } : {}),
     ...(data.symptoms?.trim() ? { problem: data.symptoms.trim() } : {}),
+    ...(discountInput ? { feesDiscount: [discountInput] } : {}),
   };
 }
 
