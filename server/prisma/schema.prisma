@@ -284,6 +284,9 @@ model Appointment {
   injectionName        String?
   injectionAmount      Float?
 
+  operationName   String?
+  operationAmount Float?
+
   schedule  AppointmentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
   slot      AppointmentSlot?     @relation(fields: [slotId], references: [id], onDelete: SetNull)
   createdBy User?                @relation("AppointmentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
@@ -299,7 +302,6 @@ model Appointment {
   @@index([updatedById])
   @@index([appointmentDate, preferredTime, siteRef, status])
 }
-
 
 model AppointmentSchedule {
   id       String         @id @default(uuid())
