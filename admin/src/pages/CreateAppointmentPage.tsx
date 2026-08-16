@@ -7,6 +7,7 @@ import { Button, Icon, PageHeader } from "../components/common";
 import { useCreateAppointmentMutation } from "../store/api/appointmentsApi";
 import type { AppointmentFormData } from "../types/appointment";
 import { toCreateAppointmentPayload } from "../utils/appointment";
+import { validateDiscountFormState } from "../utils/discount";
 import { formatSerialDisplay } from "../utils/appointmentSerial";
 
 function getApiErrorMessage(error: unknown): string {
@@ -30,6 +31,12 @@ export function CreateAppointmentPage() {
   const [createAppointment, { isLoading }] = useCreateAppointmentMutation();
 
   const handleSubmit = async (data: AppointmentFormData) => {
+    const discountError = validateDiscountFormState(data.discount);
+    if (discountError) {
+      toast.error(discountError);
+      return;
+    }
+
     try {
       const appointment = await createAppointment(
         toCreateAppointmentPayload(data),

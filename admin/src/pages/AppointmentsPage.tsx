@@ -23,13 +23,18 @@ import { AnnouncementBannerList } from "../components/announcements/Announcement
 import { AppointmentStats } from "../components/appointments/AppointmentStats";
 import { AppointmentViewModal } from "../components/appointments/AppointmentViewModal";
 import { AppointmentSerialModal } from "../components/appointments/AppointmentSerialModal";
+import { AppointmentDiscountFields } from "../components/appointments/AppointmentDiscountFields";
 import {
   useDeleteAppointmentMutation,
   useGetAppointmentsQuery,
   useUpdateAppointmentSerialMutation,
   useUpdateAppointmentStatusMutation,
 } from "../store/api/appointmentsApi";
-import type { Appointment, AppointmentStatus } from "../types/appointment";
+import type {
+  Appointment,
+  AppointmentCategoryFilter,
+  AppointmentStatus,
+} from "../types/appointment";
 import {
   APPOINTMENT_STATUS_OPTIONS,
   exportAppointmentsCsv,
@@ -54,6 +59,13 @@ import {
   getPendingDeleteRowClass,
   getPendingDeleteSurfaceClass,
 } from "../utils/pendingDelete";
+import {
+  DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE,
+  discountFromAppointment,
+  toAppointmentFeeDiscountInput,
+  validateDiscountFormState,
+  type AppointmentDiscountFormState,
+} from "../utils/discount";
 
 const InvoicePrintModal = lazy(() =>
   import("../components/appointments/invoice/InvoicePrintModal").then(
@@ -238,6 +250,7 @@ export function AppointmentsPage() {
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
   const [todayOnly, setTodayOnly] = useState(false);
+  const [categories, setCategories] = useState<AppointmentCategoryFilter[]>([]);
   const [editingAppointment, setEditingAppointment] =
     useState<Appointment | null>(null);
   const [deletingAppointment, setDeletingAppointment] =
@@ -268,6 +281,10 @@ export function AppointmentsPage() {
     number | null
   >(null);
   const [isOperationEnabled, setIsOperationEnabled] = useState(false);
+  const [selectedDiscount, setSelectedDiscount] =
+    useState<AppointmentDiscountFormState>({
+      ...DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE,
+    });
 
   const {
     data: appointments = [],
@@ -276,7 +293,11 @@ export function AppointmentsPage() {
     error,
     refetch,
     isFetching,
-  } = useGetAppointmentsQuery();
+  } = useGetAppointmentsQuery(
+    categories.length > 0
+      ? { categories: [...categories].sort() }
+      : undefined,
+  );
   const [updateStatus, { isLoading: isUpdating }] =
     useUpdateAppointmentStatusMutation();
   const [deleteAppointment, { isLoading: isDeleting }] =
@@ -313,6 +334,9 @@ export function AppointmentsPage() {
     setSelectedOperationName(appointment.operationName ?? null);
     setSelectedOperationAmount(appointment.operationAmount ?? null);
     setIsOperationEnabled(Boolean(appointment.operationName));
+    setSelectedDiscount(
+      discountFromAppointment(appointment.feesDiscount?.[0] ?? null),
+    );
   };
 
   const closeStatusModal = () => {
@@ -325,6 +349,7 @@ export function AppointmentsPage() {
     setSelectedOperationName(null);
     setSelectedOperationAmount(null);
     setIsOperationEnabled(false);
+    setSelectedDiscount({ ...DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE });
   };
 
   const closeDeleteModal = () => {
@@ -389,7 +414,15 @@ export function AppointmentsPage() {
       return;
     }
 
+    const discountError = validateDiscountFormState(selectedDiscount);
+    if (discountError) {
+      toast.error(discountError);
+      return;
+    }
+
     try {
+      const discountInput = toAppointmentFeeDiscountInput(selectedDiscount);
+
       await updateStatus({
         id: editingAppointment.id,
         status: selectedStatus,
@@ -398,6 +431,7 @@ export function AppointmentsPage() {
         injectionAmount: isInjectionEnabled ? selectedInjectionAmount : null,
         operationName: isOperationEnabled ? selectedOperationName?.trim() || null : null,
         operationAmount: isOperationEnabled ? selectedOperationAmount : null,
+        feesDiscount: discountInput ? [discountInput] : null,
       }).unwrap();
       toast.success("Appointment updated successfully");
       closeStatusModal();
@@ -432,10 +466,20 @@ export function AppointmentsPage() {
     setCurrentPage(1);
   };
 
+  const handleCategoryToggle = (category: AppointmentCategoryFilter) => {
+    setCategories((current) =>
+      current.includes(category)
+        ? current.filter((value) => value !== category)
+        : [...current, category],
+    );
+    setCurrentPage(1);
+  };
+
   const handleClearFilters = () => {
     setSearch("");
     setDate("");
     setTodayOnly(false);
+    setCategories([]);
     setCurrentPage(1);
   };
 
@@ -497,6 +541,7 @@ export function AppointmentsPage() {
           search={search}
           date={date}
           todayOnly={todayOnly}
+          categories={categories}
           onSearchChange={(value) => {
             setSearch(value);
             setCurrentPage(1);
@@ -506,6 +551,7 @@ export function AppointmentsPage() {
             setTodayOnly(false);
             setCurrentPage(1);
           }}
+          onCategoryToggle={handleCategoryToggle}
           onTodayToggle={handleTodayToggle}
           onClear={handleClearFilters}
           onRefresh={handleRefresh}
@@ -705,6 +751,11 @@ export function AppointmentsPage() {
               </div>
             )}
           </label>
+          <AppointmentDiscountFields
+            idPrefix={`status-${editingAppointment?.id ?? "none"}`}
+            value={selectedDiscount}
+            onChange={setSelectedDiscount}
+          />
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="ghost" onClick={closeStatusModal}>
               Cancel

@@ -7,9 +7,27 @@ export type AppointmentStatus =
 
 export type AppointmentPaymentStatus = "PENDING" | "SUCCESS" | "CANCEL";
 
+export type AppointmentCategoryFilter = "GENERAL" | "NEW_PLID" | "OLD_PLID";
+
+export const APPOINTMENT_CATEGORY_OPTIONS: ReadonlyArray<{
+  key: AppointmentCategoryFilter;
+  label: string;
+}> = [
+  { key: "GENERAL", label: "General" },
+  { key: "NEW_PLID", label: "PLID New" },
+  { key: "OLD_PLID", label: "PLID Old" },
+] as const;
+
 export type SiteRef = "DOCTOR_SHA_ALAM" | "TRUE_CARE_HELLING_CENTER";
 
 import type { PendingDeleteMeta } from "./pendingDelete";
+import type {
+  AppointmentFeeDiscount,
+  AppointmentFeeDiscountInput,
+  AppointmentDiscountFormState,
+} from "../utils/discount";
+
+export type { AppointmentFeeDiscount, AppointmentFeeDiscountInput, AppointmentDiscountFormState };
 
 export type Appointment = PendingDeleteMeta & {
   id: string;
@@ -34,6 +52,7 @@ export type Appointment = PendingDeleteMeta & {
   injectionAmount?: number | null;
   operationName?: string | null;
   operationAmount?: number | null;
+  feesDiscount?: AppointmentFeeDiscount[];
   createdBy: string;
   updatedBy: string;
   createdAt: string;
@@ -61,6 +80,7 @@ export type AppointmentFormData = {
   symptoms?: string;
   preferredDate: string;
   preferredTime: string;
+  discount: AppointmentDiscountFormState;
 };
 
 /** Payload shape for POST /api/v1/client/appointments */
@@ -73,4 +93,5 @@ export type CreateAppointmentPayload = {
   problem?: string;
   preferredDate: string;
   preferredTime: string;
+  feesDiscount?: AppointmentFeeDiscountInput[];
 };

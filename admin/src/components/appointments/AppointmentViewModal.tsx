@@ -16,6 +16,8 @@ import {
   getEffectiveSerialNumber,
   isSerialModified,
 } from "../../utils/appointmentSerial";
+import { CONSULTATION_FEE_BDT } from "../../constants/invoice";
+import { formatDiscountSummary } from "../../utils/discount";
 
 type AppointmentViewModalProps = {
   appointment: Appointment | null;
@@ -176,8 +178,20 @@ export function AppointmentViewModal({
               label="Operation"
               value={
                 appointment.operationName
-                  ? `${appointment.operationName} â€” ${appointment.operationAmount ?? ""}`
-                  : "â€”"
+                  ? `${appointment.operationName} — ${appointment.operationAmount ?? ""}`
+                  : "—"
+              }
+            />
+            <DetailRow
+              label="Fee Discount"
+              value={
+                appointment.feesDiscount?.length
+                  ? appointment.feesDiscount
+                      .map((discount) =>
+                        formatDiscountSummary(discount, CONSULTATION_FEE_BDT),
+                      )
+                      .join("; ")
+                  : "—"
               }
             />
           </DetailSection>
