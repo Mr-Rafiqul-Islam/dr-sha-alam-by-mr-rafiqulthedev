@@ -172,6 +172,14 @@ export function AppointmentViewModal({
                   : "—"
               }
             />
+            <DetailRow
+              label="Operation"
+              value={
+                appointment.operationName
+                  ? `${appointment.operationName} â€” ${appointment.operationAmount ?? ""}`
+                  : "â€”"
+              }
+            />
           </DetailSection>
 
           <DetailSection title="Reference">

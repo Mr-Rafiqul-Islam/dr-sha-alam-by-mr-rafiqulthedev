@@ -261,6 +261,13 @@ export function AppointmentsPage() {
     number | null
   >(null);
   const [isInjectionEnabled, setIsInjectionEnabled] = useState(false);
+  const [selectedOperationName, setSelectedOperationName] = useState<
+    string | null
+  >(null);
+  const [selectedOperationAmount, setSelectedOperationAmount] = useState<
+    number | null
+  >(null);
+  const [isOperationEnabled, setIsOperationEnabled] = useState(false);
 
   const {
     data: appointments = [],
@@ -303,6 +310,9 @@ export function AppointmentsPage() {
     setSelectedInjectionName(appointment.injectionName ?? null);
     setSelectedInjectionAmount(appointment.injectionAmount ?? null);
     setIsInjectionEnabled(Boolean(appointment.injectionName));
+    setSelectedOperationName(appointment.operationName ?? null);
+    setSelectedOperationAmount(appointment.operationAmount ?? null);
+    setIsOperationEnabled(Boolean(appointment.operationName));
   };
 
   const closeStatusModal = () => {
@@ -312,6 +322,9 @@ export function AppointmentsPage() {
     setSelectedInjectionName(null);
     setSelectedInjectionAmount(null);
     setIsInjectionEnabled(false);
+    setSelectedOperationName(null);
+    setSelectedOperationAmount(null);
+    setIsOperationEnabled(false);
   };
 
   const closeDeleteModal = () => {
@@ -371,13 +384,20 @@ export function AppointmentsPage() {
   const handleStatusUpdate = async () => {
     if (!editingAppointment || !selectedStatus) return;
 
+    if (isOperationEnabled && !selectedOperationName?.trim()) {
+      toast.error("Operation name is required when operation is enabled");
+      return;
+    }
+
     try {
       await updateStatus({
         id: editingAppointment.id,
         status: selectedStatus,
         note: selectedNote.trim() || null,
-        injectionName: selectedInjectionName ?? undefined,
-        injectionAmount: selectedInjectionAmount ?? undefined,
+        injectionName: isInjectionEnabled ? selectedInjectionName : null,
+        injectionAmount: isInjectionEnabled ? selectedInjectionAmount : null,
+        operationName: isOperationEnabled ? selectedOperationName?.trim() || null : null,
+        operationAmount: isOperationEnabled ? selectedOperationAmount : null,
       }).unwrap();
       toast.success("Appointment updated successfully");
       closeStatusModal();
@@ -613,6 +633,70 @@ export function AppointmentsPage() {
                       e.key === "-" ||
                       e.key === "+"
                     ) {
+                      e.preventDefault();
+                    }
+                  }}
+                  className="rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            )}
+          </label>
+          <span className="h-px w-full bg-outline-variant/30" />
+          <label className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-label-2xl font-medium text-on-surface">
+                Operation
+              </span>
+
+              <ToggleSwitch
+                id={`operation-switch-${editingAppointment?.id ?? "none"}`}
+                label=""
+                checked={isOperationEnabled}
+                onChange={(checked) => {
+                  setIsOperationEnabled(checked);
+
+                  if (!checked) {
+                    setSelectedOperationName(null);
+                    setSelectedOperationAmount(null);
+                  } else {
+                    setSelectedOperationName("");
+                    setSelectedOperationAmount(0);
+                  }
+                }}
+              />
+            </div>
+
+            {isOperationEnabled && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <input
+                  type="text"
+                  placeholder="Operation name"
+                  value={selectedOperationName ?? ""}
+                  onChange={(e) => setSelectedOperationName(e.target.value || null)}
+                  className="rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0"
+                  value={selectedOperationAmount ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    if (value === "") {
+                      setSelectedOperationAmount(null);
+                      return;
+                    }
+
+                    const numberValue = Number(value);
+                    if (Number.isFinite(numberValue) && numberValue >= 0) {
+                      setSelectedOperationAmount(numberValue);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "e" || e.key === "E" || e.key === "-" || e.key === "+") {
                       e.preventDefault();
                     }
                   }}

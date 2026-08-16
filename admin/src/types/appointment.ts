@@ -32,6 +32,8 @@ export type Appointment = PendingDeleteMeta & {
   note: string | null;
   injectionName?: string | null;
   injectionAmount?: number | null;
+  operationName?: string | null;
+  operationAmount?: number | null;
   createdBy: string;
   updatedBy: string;
   createdAt: string;
