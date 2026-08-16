@@ -30,7 +30,11 @@ import {
   useUpdateAppointmentSerialMutation,
   useUpdateAppointmentStatusMutation,
 } from "../store/api/appointmentsApi";
-import type { Appointment, AppointmentStatus } from "../types/appointment";
+import type {
+  Appointment,
+  AppointmentCategoryFilter,
+  AppointmentStatus,
+} from "../types/appointment";
 import {
   APPOINTMENT_STATUS_OPTIONS,
   exportAppointmentsCsv,
@@ -246,6 +250,7 @@ export function AppointmentsPage() {
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
   const [todayOnly, setTodayOnly] = useState(false);
+  const [categories, setCategories] = useState<AppointmentCategoryFilter[]>([]);
   const [editingAppointment, setEditingAppointment] =
     useState<Appointment | null>(null);
   const [deletingAppointment, setDeletingAppointment] =
@@ -281,7 +286,11 @@ export function AppointmentsPage() {
     error,
     refetch,
     isFetching,
-  } = useGetAppointmentsQuery();
+  } = useGetAppointmentsQuery(
+    categories.length > 0
+      ? { categories: [...categories].sort() }
+      : undefined,
+  );
   const [updateStatus, { isLoading: isUpdating }] =
     useUpdateAppointmentStatusMutation();
   const [deleteAppointment, { isLoading: isDeleting }] =
@@ -437,10 +446,20 @@ export function AppointmentsPage() {
     setCurrentPage(1);
   };
 
+  const handleCategoryToggle = (category: AppointmentCategoryFilter) => {
+    setCategories((current) =>
+      current.includes(category)
+        ? current.filter((value) => value !== category)
+        : [...current, category],
+    );
+    setCurrentPage(1);
+  };
+
   const handleClearFilters = () => {
     setSearch("");
     setDate("");
     setTodayOnly(false);
+    setCategories([]);
     setCurrentPage(1);
   };
 
@@ -502,6 +521,7 @@ export function AppointmentsPage() {
           search={search}
           date={date}
           todayOnly={todayOnly}
+          categories={categories}
           onSearchChange={(value) => {
             setSearch(value);
             setCurrentPage(1);
@@ -511,6 +531,7 @@ export function AppointmentsPage() {
             setTodayOnly(false);
             setCurrentPage(1);
           }}
+          onCategoryToggle={handleCategoryToggle}
           onTodayToggle={handleTodayToggle}
           onClear={handleClearFilters}
           onRefresh={handleRefresh}

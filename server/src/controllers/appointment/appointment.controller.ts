@@ -24,6 +24,10 @@ import {
   parseSerialModificationReason,
 } from "../../modules/appointment/appointment.serial.js";
 import {
+  buildCategoryWhereClause,
+  parseCategoryQuery,
+} from "../../modules/appointment/appointment.categoryFilter.js";
+import {
   parseSlotCodeString,
   runSerializableTransaction,
   validateAppointmentSlotAvailability,
@@ -597,10 +601,24 @@ function mapAdminAppointments<T extends { id: string; preferredTime: string; ser
 
 export async function getAllAppointments(req: Request, res: Response) {
   try {
+    const categoryResult = parseCategoryQuery(req.query.category);
+    if (!categoryResult.ok) {
+      return res.status(400).json({
+        success: false,
+        message: categoryResult.message,
+      });
+    }
+
     const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
       await getAdminAppointmentListContext(req);
+    const categoryWhere = categoryResult.categories
+      ? buildCategoryWhereClause(categoryResult.categories)
+      : undefined;
     const appointments = await prisma.appointment.findMany({
-      where: pendingDeleteWhere,
+      where: {
+        ...pendingDeleteWhere,
+        ...(categoryWhere ?? {}),
+      },
       orderBy: ALL_APPOINTMENTS_ORDER,
       include: APPOINTMENT_ACTOR_INCLUDE,
     });

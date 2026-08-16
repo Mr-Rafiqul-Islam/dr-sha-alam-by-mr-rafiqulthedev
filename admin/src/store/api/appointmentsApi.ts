@@ -1,5 +1,6 @@
 import type {
   Appointment,
+  AppointmentCategoryFilter,
   AppointmentResponse,
   AppointmentsListResponse,
   AppointmentStatus,
@@ -9,10 +10,33 @@ import type {
 import type { DeleteMutationResponse } from "../../types/deleteRequest";
 import { baseApi } from "./baseApi";
 
+export type GetAppointmentsArgs = {
+  categories?: AppointmentCategoryFilter[];
+};
+
+function buildAppointmentsListUrl(categories?: AppointmentCategoryFilter[]): string {
+  if (!categories?.length) {
+    return "/api/v1/admin/appointments";
+  }
+
+  const params = new URLSearchParams();
+  [...categories].sort().forEach((category) => {
+    params.append("category", category);
+  });
+
+  return `/api/v1/admin/appointments?${params.toString()}`;
+}
+
 export const appointmentsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAppointments: builder.query<Appointment[], void>({
-      query: () => "/api/v1/admin/appointments",
+    getAppointments: builder.query<Appointment[], GetAppointmentsArgs | void>({
+      query: (args) => {
+        const categories = args?.categories?.length
+          ? [...args.categories].sort()
+          : undefined;
+
+        return buildAppointmentsListUrl(categories);
+      },
       transformResponse: (response: AppointmentsListResponse) =>
         response.appointments,
       providesTags: (result) =>

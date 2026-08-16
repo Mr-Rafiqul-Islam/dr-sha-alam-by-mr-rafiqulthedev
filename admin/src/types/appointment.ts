@@ -7,6 +7,17 @@ export type AppointmentStatus =
 
 export type AppointmentPaymentStatus = "PENDING" | "SUCCESS" | "CANCEL";
 
+export type AppointmentCategoryFilter = "GENERAL" | "NEW_PLID" | "OLD_PLID";
+
+export const APPOINTMENT_CATEGORY_OPTIONS: ReadonlyArray<{
+  key: AppointmentCategoryFilter;
+  label: string;
+}> = [
+  { key: "GENERAL", label: "General" },
+  { key: "NEW_PLID", label: "PLID New" },
+  { key: "OLD_PLID", label: "PLID Old" },
+] as const;
+
 export type SiteRef = "DOCTOR_SHA_ALAM" | "TRUE_CARE_HELLING_CENTER";
 
 import type { PendingDeleteMeta } from "./pendingDelete";
