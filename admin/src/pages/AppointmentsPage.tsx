@@ -23,6 +23,7 @@ import { AnnouncementBannerList } from "../components/announcements/Announcement
 import { AppointmentStats } from "../components/appointments/AppointmentStats";
 import { AppointmentViewModal } from "../components/appointments/AppointmentViewModal";
 import { AppointmentSerialModal } from "../components/appointments/AppointmentSerialModal";
+import { AppointmentDiscountFields } from "../components/appointments/AppointmentDiscountFields";
 import {
   useDeleteAppointmentMutation,
   useGetAppointmentsQuery,
@@ -54,6 +55,13 @@ import {
   getPendingDeleteRowClass,
   getPendingDeleteSurfaceClass,
 } from "../utils/pendingDelete";
+import {
+  DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE,
+  discountFromAppointment,
+  toAppointmentFeeDiscountInput,
+  validateDiscountFormState,
+  type AppointmentDiscountFormState,
+} from "../utils/discount";
 
 const InvoicePrintModal = lazy(() =>
   import("../components/appointments/invoice/InvoicePrintModal").then(
@@ -261,6 +269,10 @@ export function AppointmentsPage() {
     number | null
   >(null);
   const [isInjectionEnabled, setIsInjectionEnabled] = useState(false);
+  const [selectedDiscount, setSelectedDiscount] =
+    useState<AppointmentDiscountFormState>({
+      ...DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE,
+    });
 
   const {
     data: appointments = [],
@@ -303,6 +315,9 @@ export function AppointmentsPage() {
     setSelectedInjectionName(appointment.injectionName ?? null);
     setSelectedInjectionAmount(appointment.injectionAmount ?? null);
     setIsInjectionEnabled(Boolean(appointment.injectionName));
+    setSelectedDiscount(
+      discountFromAppointment(appointment.feesDiscount?.[0] ?? null),
+    );
   };
 
   const closeStatusModal = () => {
@@ -312,6 +327,7 @@ export function AppointmentsPage() {
     setSelectedInjectionName(null);
     setSelectedInjectionAmount(null);
     setIsInjectionEnabled(false);
+    setSelectedDiscount({ ...DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE });
   };
 
   const closeDeleteModal = () => {
@@ -371,13 +387,22 @@ export function AppointmentsPage() {
   const handleStatusUpdate = async () => {
     if (!editingAppointment || !selectedStatus) return;
 
+    const discountError = validateDiscountFormState(selectedDiscount);
+    if (discountError) {
+      toast.error(discountError);
+      return;
+    }
+
     try {
+      const discountInput = toAppointmentFeeDiscountInput(selectedDiscount);
+
       await updateStatus({
         id: editingAppointment.id,
         status: selectedStatus,
         note: selectedNote.trim() || null,
         injectionName: selectedInjectionName ?? undefined,
         injectionAmount: selectedInjectionAmount ?? undefined,
+        feesDiscount: discountInput ? [discountInput] : null,
       }).unwrap();
       toast.success("Appointment updated successfully");
       closeStatusModal();
@@ -621,6 +646,12 @@ export function AppointmentsPage() {
               </div>
             )}
           </label>
+          <span className="h-px w-full bg-outline-variant/30" />
+          <AppointmentDiscountFields
+            idPrefix={`status-${editingAppointment?.id ?? "none"}`}
+            value={selectedDiscount}
+            onChange={setSelectedDiscount}
+          />
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="ghost" onClick={closeStatusModal}>
               Cancel

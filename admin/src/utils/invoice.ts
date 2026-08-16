@@ -11,6 +11,10 @@ import {
   formatSerialDisplay,
   getEffectiveSerialNumber,
 } from "./appointmentSerial";
+import {
+  getDiscountTypeLabel,
+  resolveDiscountBdt,
+} from "./discount";
 
 export type InvoiceLineItem = {
   serial: number;
@@ -114,6 +118,24 @@ export function buildInvoiceLineItems(appointment: Appointment): {
     });
   }
 
+  const totalDiscount = (appointment.feesDiscount ?? []).reduce(
+    (sum, discount) => sum + resolveDiscountBdt(discount, fee),
+    0,
+  );
+
+  for (const discount of appointment.feesDiscount ?? []) {
+    const discountValue = resolveDiscountBdt(discount, fee);
+    const discountLabel =
+      discount.name?.trim() || getDiscountTypeLabel(discount.discountType);
+
+    lineItems.push({
+      serial: lineItems.length + 1,
+      label: "Discount",
+      value: discountLabel,
+      amount: discountValue > 0 ? `-${discountValue}` : "",
+    });
+  }
+
   for (let serial = lineItems.length + 1; serial <= INVOICE_TABLE_ROW_COUNT; serial += 1) {
     lineItems.push({
       serial,
@@ -123,8 +145,11 @@ export function buildInvoiceLineItems(appointment: Appointment): {
     });
   }
 
-  // Calculate total amount: always sum consultation fee + injection (if any)
-  const totalNumeric = Number(fee) + (appointment.injectionAmount ?? 0);
+  // Calculate total amount: consultation fee + injection - discounts (never below 0)
+  const totalNumeric = Math.max(
+    0,
+    Number(fee) + (appointment.injectionAmount ?? 0) - totalDiscount,
+  );
   const totalAmount = String(totalNumeric);
 
   return { lineItems, totalAmount };

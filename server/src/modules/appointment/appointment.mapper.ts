@@ -202,4 +202,7 @@ export function toAdminAppointments<
 export const APPOINTMENT_ACTOR_INCLUDE = {
   createdBy: { select: { id: true, name: true, email: true } },
   updatedBy: { select: { id: true, name: true, email: true } },
+  feesDiscount: {
+    orderBy: { createdAt: "asc" as const },
+  },
 } as const;

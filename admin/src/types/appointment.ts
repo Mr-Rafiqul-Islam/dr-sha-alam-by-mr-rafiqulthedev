@@ -10,6 +10,13 @@ export type AppointmentPaymentStatus = "PENDING" | "SUCCESS" | "CANCEL";
 export type SiteRef = "DOCTOR_SHA_ALAM" | "TRUE_CARE_HELLING_CENTER";
 
 import type { PendingDeleteMeta } from "./pendingDelete";
+import type {
+  AppointmentFeeDiscount,
+  AppointmentFeeDiscountInput,
+  AppointmentDiscountFormState,
+} from "../utils/discount";
+
+export type { AppointmentFeeDiscount, AppointmentFeeDiscountInput, AppointmentDiscountFormState };
 
 export type Appointment = PendingDeleteMeta & {
   id: string;
@@ -32,6 +39,7 @@ export type Appointment = PendingDeleteMeta & {
   note: string | null;
   injectionName?: string | null;
   injectionAmount?: number | null;
+  feesDiscount?: AppointmentFeeDiscount[];
   createdBy: string;
   updatedBy: string;
   createdAt: string;
@@ -59,6 +67,7 @@ export type AppointmentFormData = {
   symptoms?: string;
   preferredDate: string;
   preferredTime: string;
+  discount: AppointmentDiscountFormState;
 };
 
 /** Payload shape for POST /api/v1/client/appointments */
@@ -71,4 +80,5 @@ export type CreateAppointmentPayload = {
   problem?: string;
   preferredDate: string;
   preferredTime: string;
+  feesDiscount?: AppointmentFeeDiscountInput[];
 };

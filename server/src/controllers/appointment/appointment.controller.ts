@@ -52,6 +52,11 @@ import {
   parseRequiredString,
 } from "../../modules/appointment/appointment.utils.js";
 import { routeParamString } from "../../utils/express-params.js";
+import {
+  hasFeesDiscountBodyKey,
+  parseFeesDiscountInput,
+  replaceAppointmentFeesDiscounts,
+} from "../../modules/appointment/appointment.discount.js";
 
 function parseBodyString(value: unknown): string | undefined {
   if (typeof value === "string" && value.trim()) {
@@ -92,6 +97,15 @@ export async function createAppointment(req: Request, res: Response) {
 
     const { dayStart, dayEnd } = getDayRange(selectedDate);
     const adminId = req.admin?.id ?? null;
+    const isAdmin = Boolean(req.admin);
+
+    if (hasFeesDiscountBodyKey(req.body) && !isAdmin) {
+      throw new AppointmentValidationError(
+        "Discounts are only available for admin appointments",
+      );
+    }
+
+    const feesDiscountInput = parseFeesDiscountInput(req.body, { isAdmin });
 
     let smsLabel: string | null | undefined;
 
@@ -148,6 +162,20 @@ export async function createAppointment(req: Request, res: Response) {
           slotId: slotAvailability.slotId,
           createdById: adminId,
           updatedById: adminId,
+          ...(feesDiscountInput && feesDiscountInput.length > 0
+            ? {
+                feesDiscount: {
+                  create: feesDiscountInput.map((discount) => ({
+                    name: discount.name,
+                    description: discount.description,
+                    discountType: discount.discountType,
+                    discountAmount: discount.discountAmount,
+                    discountPercentage: discount.discountPercentage,
+                    discountCode: discount.discountCode,
+                  })),
+                },
+              }
+            : {}),
         },
         include: APPOINTMENT_ACTOR_INCLUDE,
       });
@@ -262,10 +290,30 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       }
     }
 
-    const appointment = await prisma.appointment.update({
-      where: { id: appointmentId },
-      data: updateData,
-      include: APPOINTMENT_ACTOR_INCLUDE,
+    const feesDiscountInput = parseFeesDiscountInput(req.body, {
+      isAdmin: Boolean(req.admin),
+    });
+
+    const appointment = await prisma.$transaction(async (tx) => {
+      await tx.appointment.update({
+        where: { id: appointmentId },
+        data: updateData,
+      });
+
+      if (feesDiscountInput !== undefined) {
+        await replaceAppointmentFeesDiscounts(
+          tx,
+          appointmentId,
+          feesDiscountInput,
+        );
+      }
+
+      const updated = await tx.appointment.findUniqueOrThrow({
+        where: { id: appointmentId },
+        include: APPOINTMENT_ACTOR_INCLUDE,
+      });
+
+      return updated;
     });
 
     const noteChanged =
@@ -283,6 +331,9 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
         ...(noteChanged ? { noteChanged: true } : {}),
         ...(Object.prototype.hasOwnProperty.call(req.body, "injectionName") ? { injectionName: appointment.injectionName } : {}),
         ...(Object.prototype.hasOwnProperty.call(req.body, "injectionAmount") ? { injectionAmount: appointment.injectionAmount } : {}),
+        ...(feesDiscountInput !== undefined
+          ? { feesDiscountUpdated: true, feesDiscountCount: appointment.feesDiscount.length }
+          : {}),
       },
     });
 

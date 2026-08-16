@@ -13,9 +13,14 @@ import { useGetSlotDefaultsQuery } from "../../store/api/slotDefaultsApi";
 import type { AppointmentFormData } from "../../types/appointment";
 import type { FormFieldConfig } from "../../types/form";
 import {
+  DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE,
+  DISCOUNT_TYPE_OPTIONS,
+} from "../../utils/discount";
+import {
   getMinPreferredDateYmd,
   isValidPreferredDateYmd,
 } from "../../utils/appointment";
+import { AppointmentDiscountFields } from "./AppointmentDiscountFields";
 
 export type { AppointmentFormData } from "../../types/appointment";
 
@@ -28,6 +33,7 @@ const defaultValues: AppointmentFormData = {
   symptoms: "",
   preferredDate: "",
   preferredTime: "",
+  discount: { ...DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE },
 };
 
 type AppointmentFormProps = {
@@ -127,6 +133,20 @@ function AppointmentFormFields({
           (value) => slotCodes.length === 0 || slotCodes.includes(value),
           "Select a valid time slot",
         ),
+      discount: z.object({
+        enabled: z.boolean(),
+        discountType: z.enum(
+          DISCOUNT_TYPE_OPTIONS.map((option) => option.value) as [
+            (typeof DISCOUNT_TYPE_OPTIONS)[number]["value"],
+            ...(typeof DISCOUNT_TYPE_OPTIONS)[number]["value"][],
+          ],
+        ),
+        discountAmount: z.number().nullable(),
+        discountPercentage: z.number().nullable(),
+        discountName: z.string(),
+        discountCode: z.string(),
+        discountDescription: z.string(),
+      }),
     })
     .superRefine((data, ctx) => {
       if (!data.preferredDate) {
@@ -158,6 +178,9 @@ function AppointmentFormFields({
 
   const preferredTime =
     useWatch({ control: form.control, name: "preferredTime" }) ?? "";
+  const discount =
+    useWatch({ control: form.control, name: "discount" }) ??
+    DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE;
   const minPreferredDate = getMinPreferredDateYmd();
 
   useEffect(() => {
@@ -246,6 +269,16 @@ function AppointmentFormFields({
         control={form.control}
         fields={appointmentFields}
         disabled={isSubmitting}
+      />
+
+      <span className="block h-px w-full bg-outline-variant/30" />
+
+      <AppointmentDiscountFields
+        idPrefix="create-appointment"
+        value={discount}
+        onChange={(nextValue) =>
+          form.setValue("discount", nextValue, { shouldDirty: true })
+        }
       />
 
       <div className="pt-2">

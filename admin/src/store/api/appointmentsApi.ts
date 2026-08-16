@@ -4,6 +4,7 @@ import type {
   AppointmentsListResponse,
   AppointmentStatus,
   CreateAppointmentPayload,
+  AppointmentFeeDiscountInput,
 } from "../../types/appointment";
 import type { DeleteMutationResponse } from "../../types/deleteRequest";
 import { baseApi } from "./baseApi";
@@ -33,16 +34,24 @@ export const appointmentsApi = baseApi.injectEndpoints({
     }),
     updateAppointmentStatus: builder.mutation<
       Appointment,
-      { id: string; status: AppointmentStatus; note?: string | null; injectionName?: string | null; injectionAmount?: number | null }
+      {
+        id: string;
+        status: AppointmentStatus;
+        note?: string | null;
+        injectionName?: string | null;
+        injectionAmount?: number | null;
+        feesDiscount?: AppointmentFeeDiscountInput[] | null;
+      }
     >({
-      query: ({ id, status, note, injectionName, injectionAmount }) => ({
+      query: ({ id, status, note, injectionName, injectionAmount, feesDiscount }) => ({
         url: `/api/v1/admin/appointments/${id}/status`,
         method: "PATCH",
         body: {
           status,
           ...(note !== undefined ? { note } : {}),
-          ...(Object.prototype.hasOwnProperty.call({ injectionName }, 'injectionName') ? { injectionName } : {}),
-          ...(Object.prototype.hasOwnProperty.call({ injectionAmount }, 'injectionAmount') ? { injectionAmount } : {}),
+          ...(injectionName !== undefined ? { injectionName } : {}),
+          ...(injectionAmount !== undefined ? { injectionAmount } : {}),
+          ...(feesDiscount !== undefined ? { feesDiscount } : {}),
         },
       }),
       transformResponse: (response: AppointmentResponse) => response.appointment,
