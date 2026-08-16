@@ -236,6 +236,8 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       note?: string | null;
       injectionName?: string | null;
       injectionAmount?: number | null;
+      operationName?: string | null;
+      operationAmount?: number | null;
     } = {
       status,
       updatedById: req.admin?.id ?? null,
@@ -262,6 +264,23 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       }
     }
 
+    if (Object.prototype.hasOwnProperty.call(req.body, "operationName")) {
+      updateData.operationName = parseOptionalString(req.body.operationName);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, "operationAmount")) {
+      const raw = req.body.operationAmount;
+      if (raw === null || raw === "") {
+        updateData.operationAmount = null;
+      } else {
+        const num = Number(raw);
+        if (!Number.isFinite(num) || num < 0) {
+          throw new AppointmentValidationError("Invalid operation amount");
+        }
+        updateData.operationAmount = num;
+      }
+    }
+
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
       data: updateData,
@@ -283,6 +302,8 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
         ...(noteChanged ? { noteChanged: true } : {}),
         ...(Object.prototype.hasOwnProperty.call(req.body, "injectionName") ? { injectionName: appointment.injectionName } : {}),
         ...(Object.prototype.hasOwnProperty.call(req.body, "injectionAmount") ? { injectionAmount: appointment.injectionAmount } : {}),
+        ...(Object.prototype.hasOwnProperty.call(req.body, "operationName") ? { operationName: appointment.operationName } : {}),
+        ...(Object.prototype.hasOwnProperty.call(req.body, "operationAmount") ? { operationAmount: appointment.operationAmount } : {}),
       },
     });
 

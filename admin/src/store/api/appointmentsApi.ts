@@ -33,9 +33,17 @@ export const appointmentsApi = baseApi.injectEndpoints({
     }),
     updateAppointmentStatus: builder.mutation<
       Appointment,
-      { id: string; status: AppointmentStatus; note?: string | null; injectionName?: string | null; injectionAmount?: number | null }
+      {
+        id: string;
+        status: AppointmentStatus;
+        note?: string | null;
+        injectionName?: string | null;
+        injectionAmount?: number | null;
+        operationName?: string | null;
+        operationAmount?: number | null;
+      }
     >({
-      query: ({ id, status, note, injectionName, injectionAmount }) => ({
+      query: ({ id, status, note, injectionName, injectionAmount, operationName, operationAmount }) => ({
         url: `/api/v1/admin/appointments/${id}/status`,
         method: "PATCH",
         body: {
@@ -43,6 +51,8 @@ export const appointmentsApi = baseApi.injectEndpoints({
           ...(note !== undefined ? { note } : {}),
           ...(Object.prototype.hasOwnProperty.call({ injectionName }, 'injectionName') ? { injectionName } : {}),
           ...(Object.prototype.hasOwnProperty.call({ injectionAmount }, 'injectionAmount') ? { injectionAmount } : {}),
+          ...(operationName !== undefined ? { operationName } : {}),
+          ...(operationAmount !== undefined ? { operationAmount } : {}),
         },
       }),
       transformResponse: (response: AppointmentResponse) => response.appointment,

@@ -114,6 +114,17 @@ export function buildInvoiceLineItems(appointment: Appointment): {
     });
   }
 
+  const operationAmount = appointment.operationAmount ?? null;
+  if (appointment.operationName) {
+    const operationDisplay = operationAmount != null ? String(operationAmount) : "";
+    lineItems.push({
+      serial: lineItems.length + 1,
+      label: "Operation",
+      value: appointment.operationName,
+      amount: operationDisplay,
+    });
+  }
+
   for (let serial = lineItems.length + 1; serial <= INVOICE_TABLE_ROW_COUNT; serial += 1) {
     lineItems.push({
       serial,
@@ -123,8 +134,11 @@ export function buildInvoiceLineItems(appointment: Appointment): {
     });
   }
 
-  // Calculate total amount: always sum consultation fee + injection (if any)
-  const totalNumeric = Number(fee) + (appointment.injectionAmount ?? 0);
+  // Calculate total amount: always sum consultation fee, injection, and operation.
+  const totalNumeric =
+    Number(fee) +
+    (appointment.injectionAmount ?? 0) +
+    (appointment.operationName ? appointment.operationAmount ?? 0 : 0);
   const totalAmount = String(totalNumeric);
 
   return { lineItems, totalAmount };
