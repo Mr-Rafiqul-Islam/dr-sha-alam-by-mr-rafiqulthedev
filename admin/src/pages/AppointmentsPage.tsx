@@ -682,22 +682,32 @@ export function AppointmentsPage() {
 
             {isInjectionEnabled && (
               <div className="grid gap-2 sm:grid-cols-2">
-                <select
-                  value={selectedInjectionName ?? ""}
-                  onChange={(e) =>
-                    setSelectedInjectionName(e.target.value || null)
-                  }
-                  className="rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  <option value="" disabled>
-                    Select injection
-                  </option>
-                  {INJECTION_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <input
+                    type="text"
+                    list={`injection-name-options-${editingAppointment?.id ?? "none"}`}
+                    placeholder="Select or type injection name"
+                    autoComplete="off"
+                    value={selectedInjectionName ?? ""}
+                    onChange={(e) =>
+                      setSelectedInjectionName(e.target.value || null)
+                    }
+                    className="w-full rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <datalist
+                    id={`injection-name-options-${editingAppointment?.id ?? "none"}`}
+                  >
+                    {INJECTION_OPTIONS.map((option) => (
+                      <option key={option} value={option} />
+                    ))}
+                    {selectedInjectionName &&
+                    !INJECTION_OPTIONS.some(
+                      (option) => option === selectedInjectionName,
+                    ) ? (
+                      <option value={selectedInjectionName} />
+                    ) : null}
+                  </datalist>
+                </div>
 
                 <input
                   type="number"
