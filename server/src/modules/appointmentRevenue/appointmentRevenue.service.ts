@@ -9,6 +9,7 @@ import {
   BUSINESS_TIMEZONE,
   CATEGORY_LABELS,
   CATEGORY_SLOT_CODES,
+  emptyFeesByCategory,
   ORDERED_CATEGORIES,
   resolveRevenueCategory,
   REVENUE_CURRENCY,
@@ -49,6 +50,7 @@ function createCategoryCountMap(): Record<RevenueCategoryKey, CategoryCounts> {
     [AppointmentRevenueCategory.NEW_PLID]: emptyCounts(),
     [AppointmentRevenueCategory.OLD_PLID]: emptyCounts(),
     [AppointmentRevenueCategory.GENERAL]: emptyCounts(),
+    [AppointmentRevenueCategory.OLD_GENERAL]: emptyCounts(),
     OTHER: emptyCounts(),
   };
 }
@@ -73,6 +75,7 @@ export function aggregateAppointmentRevenue(
 
   for (const row of rows) {
     const category = resolveRevenueCategory({
+      feeCategory: row.feeCategory,
       slotCode: row.slot?.code,
       preferredTime: row.preferredTime,
     });
@@ -155,7 +158,7 @@ export function aggregateAppointmentRevenue(
   };
 }
 
-async function loadFeesByCategory(
+export async function loadFeesByCategory(
   siteRef: SiteRef,
 ): Promise<Record<AppointmentRevenueCategory, number>> {
   const rows = await prisma.appointmentRevenueFee.findMany({
@@ -163,17 +166,81 @@ async function loadFeesByCategory(
     select: { category: true, fee: true },
   });
 
-  const fees: Record<AppointmentRevenueCategory, number> = {
-    [AppointmentRevenueCategory.NEW_PLID]: 0,
-    [AppointmentRevenueCategory.OLD_PLID]: 0,
-    [AppointmentRevenueCategory.GENERAL]: 0,
-  };
+  const fees = emptyFeesByCategory();
 
   for (const row of rows) {
     fees[row.category] = decimalToNumber(row.fee);
   }
 
   return fees;
+}
+
+export function consultationFeeForResolvedCategory(
+  category: RevenueCategoryKey,
+  feesByCategory: Record<AppointmentRevenueCategory, number>,
+): number {
+  if (category === "OTHER") {
+    return 0;
+  }
+  return roundToTwoDecimals(feesByCategory[category] ?? 0);
+}
+
+export function resolveAppointmentConsultationFee(
+  appointment: {
+    feeCategory?: AppointmentRevenueCategory | null;
+    preferredTime: string;
+    slot?: { code: string } | null;
+  },
+  feesByCategory: Record<AppointmentRevenueCategory, number>,
+): number {
+  const category = resolveRevenueCategory({
+    feeCategory: appointment.feeCategory,
+    slotCode: appointment.slot?.code,
+    preferredTime: appointment.preferredTime,
+  });
+  return consultationFeeForResolvedCategory(category, feesByCategory);
+}
+
+export async function withConsultationFees<
+  T extends {
+    siteRef: SiteRef;
+    feeCategory?: AppointmentRevenueCategory | null;
+    preferredTime: string;
+    slot?: { code: string } | null;
+  },
+>(
+  appointments: T[],
+): Promise<
+  Array<
+    T & {
+      consultationFee: number;
+      resolvedFeeCategory: Exclude<RevenueCategoryKey, "OTHER"> | null;
+    }
+  >
+> {
+  const siteRefs = [...new Set(appointments.map((appointment) => appointment.siteRef))];
+  const feesBySite = new Map<SiteRef, Record<AppointmentRevenueCategory, number>>();
+
+  await Promise.all(
+    siteRefs.map(async (siteRef) => {
+      feesBySite.set(siteRef, await loadFeesByCategory(siteRef));
+    }),
+  );
+
+  return appointments.map((appointment) => {
+    const fees = feesBySite.get(appointment.siteRef) ?? emptyFeesByCategory();
+    const category = resolveRevenueCategory({
+      feeCategory: appointment.feeCategory,
+      slotCode: appointment.slot?.code,
+      preferredTime: appointment.preferredTime,
+    });
+
+    return {
+      ...appointment,
+      consultationFee: consultationFeeForResolvedCategory(category, fees),
+      resolvedFeeCategory: category === "OTHER" ? null : category,
+    };
+  });
 }
 
 export async function getAppointmentRevenueSummary(params: {
@@ -199,6 +266,7 @@ export async function getAppointmentRevenueSummary(params: {
       select: {
         status: true,
         preferredTime: true,
+        feeCategory: true,
         slot: { select: { code: true } },
       },
     }),
@@ -224,11 +292,7 @@ export async function getAppointmentRevenueFees(
     orderBy: { category: "asc" },
   });
 
-  const fees: AppointmentRevenueFeesData["fees"] = {
-    NEW_PLID: 0,
-    OLD_PLID: 0,
-    GENERAL: 0,
-  };
+  const fees = emptyFeesByCategory();
 
   let updatedAt: string | null = null;
 

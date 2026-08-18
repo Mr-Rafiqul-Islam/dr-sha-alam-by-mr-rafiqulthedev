@@ -13,7 +13,7 @@ import {
   getFrontendUrl,
   handlePaymentCancelSync,
   handlePaymentFailSync,
-  resolveConsultationFee,
+  resolveBookingConsultationFee,
   resolveDoctorId,
   validateSslOrThrow,
 } from "../../modules/payment/payment.service.js";
@@ -121,7 +121,10 @@ export async function startPayment(req: Request, res: Response) {
     const doctorId = await resolveDoctorId(
       typeof req.body.doctorId === "string" ? req.body.doctorId : undefined,
     );
-    const amount = await resolveConsultationFee(doctorId);
+    const amount = await resolveBookingConsultationFee({
+      preferredTime: appointmentPayload.preferredTime,
+      siteRef: appointmentPayload.siteRef,
+    });
     const userId =
       typeof req.body.userId === "string" && req.body.userId.trim()
         ? req.body.userId.trim()

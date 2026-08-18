@@ -7,7 +7,7 @@ import {
   decimalToNumber,
   roundToTwoDecimals,
 } from "./appointmentRevenue.service.js";
-import { parseRevenueFeeValue } from "./appointmentRevenue.validation.js";
+import { parseRevenueFeeValue, parseRevenueFeesBody } from "./appointmentRevenue.validation.js";
 import { AppointmentValidationError } from "../appointment/appointment.utils.js";
 import type { AppointmentRowForRevenue } from "./appointmentRevenue.types.js";
 
@@ -15,16 +15,19 @@ const FEES: Record<AppointmentRevenueCategory, number> = {
   NEW_PLID: 1000,
   OLD_PLID: 800,
   GENERAL: 500,
+  OLD_GENERAL: 400,
 };
 
 function row(
   status: AppointmentStatus,
   preferredTime: string,
   slotCode?: string | null,
+  feeCategory?: AppointmentRevenueCategory | null,
 ): AppointmentRowForRevenue {
   return {
     status,
     preferredTime,
+    feeCategory: feeCategory ?? null,
     slot: slotCode ? { code: slotCode } : null,
   };
 }
@@ -57,6 +60,28 @@ describe("resolveRevenueCategory", () => {
     assert.equal(
       resolveRevenueCategory({ preferredTime: "PLID (Present at - 9:00 AM)" }),
       "OTHER",
+    );
+  });
+
+  it("uses stored feeCategory over slot", () => {
+    assert.equal(
+      resolveRevenueCategory({
+        feeCategory: AppointmentRevenueCategory.OLD_GENERAL,
+        slotCode: "G-5",
+        preferredTime: "G-5",
+      }),
+      AppointmentRevenueCategory.OLD_GENERAL,
+    );
+  });
+
+  it("infers GENERAL from G-5 when feeCategory is unset", () => {
+    assert.equal(
+      resolveRevenueCategory({ slotCode: "G-5" }),
+      AppointmentRevenueCategory.GENERAL,
+    );
+    assert.notEqual(
+      resolveRevenueCategory({ preferredTime: "G-5" }),
+      AppointmentRevenueCategory.OLD_GENERAL,
     );
   });
 });
@@ -158,12 +183,39 @@ describe("aggregateAppointmentRevenue", () => {
       NEW_PLID: 0,
       OLD_PLID: 0,
       GENERAL: 0,
+      OLD_GENERAL: 0,
     };
     const result = aggregateAppointmentRevenue(
       [row(AppointmentStatus.ATTEND, "P-9", "P-9")],
       zeroFees,
     );
     assert.equal(result.summary.totalRevenue, 0);
+  });
+
+  it("splits G-5 attendance between GENERAL and OLD_GENERAL", () => {
+    const result = aggregateAppointmentRevenue(
+      [
+        row(AppointmentStatus.ATTEND, "G-5", "G-5"),
+        row(AppointmentStatus.ATTEND, "G-5", "G-5"),
+        row(
+          AppointmentStatus.ATTEND,
+          "G-5",
+          "G-5",
+          AppointmentRevenueCategory.OLD_GENERAL,
+        ),
+      ],
+      FEES,
+    );
+
+    const general = result.categories.find((c) => c.key === "GENERAL");
+    const oldGeneral = result.categories.find((c) => c.key === "OLD_GENERAL");
+    assert.equal(general?.attended, 2);
+    assert.equal(general?.slotCode, "G-5");
+    assert.equal(general?.revenue, 1000);
+    assert.equal(oldGeneral?.attended, 1);
+    assert.equal(oldGeneral?.slotCode, "G-5");
+    assert.equal(oldGeneral?.revenue, 400);
+    assert.equal(result.summary.totalRevenue, 1400);
   });
 });
 
@@ -183,6 +235,19 @@ describe("parseRevenueFeeValue", () => {
     assert.throws(
       () => parseRevenueFeeValue("10.999", "fees.GENERAL"),
       (error: unknown) => error instanceof AppointmentValidationError,
+    );
+  });
+
+  it("requires OLD_GENERAL in the fees body", () => {
+    assert.throws(
+      () =>
+        parseRevenueFeesBody({
+          siteRef: "DOCTOR_SHA_ALAM",
+          fees: { NEW_PLID: 1500, OLD_PLID: 1000, GENERAL: 600 },
+        }),
+      (error: unknown) =>
+        error instanceof AppointmentValidationError &&
+        error.message.includes("OLD_GENERAL"),
     );
   });
 });

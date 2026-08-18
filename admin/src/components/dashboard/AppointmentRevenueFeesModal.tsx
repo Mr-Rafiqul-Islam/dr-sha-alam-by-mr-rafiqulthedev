@@ -26,6 +26,7 @@ const feesFormSchema = z.object({
   newPlidFee: feeSchema,
   oldPlidFee: feeSchema,
   generalFee: feeSchema,
+  oldGeneralFee: feeSchema,
 });
 
 type FeesFormValues = z.infer<typeof feesFormSchema>;
@@ -50,6 +51,7 @@ function feesToFormValues(fees: AppointmentRevenueFees["fees"]): FeesFormValues 
     newPlidFee: String(fees.NEW_PLID),
     oldPlidFee: String(fees.OLD_PLID),
     generalFee: String(fees.GENERAL),
+    oldGeneralFee: String(fees.OLD_GENERAL),
   };
 }
 
@@ -75,6 +77,7 @@ export function AppointmentRevenueFeesModal({
       newPlidFee: "0",
       oldPlidFee: "0",
       generalFee: "0",
+      oldGeneralFee: "0",
     },
   });
 
@@ -93,6 +96,7 @@ export function AppointmentRevenueFeesModal({
           NEW_PLID: Number(values.newPlidFee),
           OLD_PLID: Number(values.oldPlidFee),
           GENERAL: Number(values.generalFee),
+          OLD_GENERAL: Number(values.oldGeneralFee),
         },
       }).unwrap();
       toast.success("Revenue fees updated successfully");
@@ -170,6 +174,23 @@ export function AppointmentRevenueFeesModal({
             {errors.generalFee ? (
               <p className="text-label-sm text-error">
                 {errors.generalFee.message}
+              </p>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="oldGeneralFee" className="text-label-md font-medium">
+              Old General Fee
+            </label>
+            <Input
+              id="oldGeneralFee"
+              type="number"
+              min={0}
+              step="0.01"
+              {...register("oldGeneralFee")}
+            />
+            {errors.oldGeneralFee ? (
+              <p className="text-label-sm text-error">
+                {errors.oldGeneralFee.message}
               </p>
             ) : null}
           </div>

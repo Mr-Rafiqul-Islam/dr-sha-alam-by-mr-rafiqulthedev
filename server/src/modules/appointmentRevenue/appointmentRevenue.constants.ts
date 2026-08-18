@@ -17,12 +17,14 @@ export const CATEGORY_SLOT_CODES: Record<AppointmentRevenueCategory, string> = {
   [AppointmentRevenueCategory.NEW_PLID]: BOOTSTRAP_SLOT_DEFAULTS[0].code,
   [AppointmentRevenueCategory.OLD_PLID]: BOOTSTRAP_SLOT_DEFAULTS[1].code,
   [AppointmentRevenueCategory.GENERAL]: BOOTSTRAP_SLOT_DEFAULTS[2].code,
+  [AppointmentRevenueCategory.OLD_GENERAL]: BOOTSTRAP_SLOT_DEFAULTS[2].code,
 };
 
 export const CATEGORY_LABELS: Record<RevenueCategoryKey, string> = {
   [AppointmentRevenueCategory.NEW_PLID]: "New PLID Patient",
   [AppointmentRevenueCategory.OLD_PLID]: "Old PLID Patient",
   [AppointmentRevenueCategory.GENERAL]: "General Patient",
+  [AppointmentRevenueCategory.OLD_GENERAL]: "Old General Patient",
   OTHER: "Other",
 };
 
@@ -30,8 +32,18 @@ export const ORDERED_CATEGORIES: RevenueCategoryKey[] = [
   AppointmentRevenueCategory.NEW_PLID,
   AppointmentRevenueCategory.OLD_PLID,
   AppointmentRevenueCategory.GENERAL,
+  AppointmentRevenueCategory.OLD_GENERAL,
   "OTHER",
 ];
+
+export function emptyFeesByCategory(): Record<AppointmentRevenueCategory, number> {
+  return {
+    [AppointmentRevenueCategory.NEW_PLID]: 0,
+    [AppointmentRevenueCategory.OLD_PLID]: 0,
+    [AppointmentRevenueCategory.GENERAL]: 0,
+    [AppointmentRevenueCategory.OLD_GENERAL]: 0,
+  };
+}
 
 export function normalizeSlotCode(value: string | null | undefined): string | null {
   if (value == null) {
@@ -42,9 +54,14 @@ export function normalizeSlotCode(value: string | null | undefined): string | nu
 }
 
 export function resolveRevenueCategory(input: {
+  feeCategory?: AppointmentRevenueCategory | null;
   slotCode?: string | null;
   preferredTime?: string | null;
 }): RevenueCategoryKey {
+  if (input.feeCategory) {
+    return input.feeCategory;
+  }
+
   const slotCode = normalizeSlotCode(input.slotCode);
   if (slotCode) {
     const fromSlot = SLOT_CODE_TO_CATEGORY[slotCode];

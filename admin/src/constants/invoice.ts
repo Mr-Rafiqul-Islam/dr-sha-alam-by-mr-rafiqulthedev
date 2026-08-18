@@ -1,5 +1,3 @@
-export const CONSULTATION_FEE_BDT = 500;
-
 export const INVOICE_COLORS = {
   primary: "#1A7567",
   header: "#0C7564",

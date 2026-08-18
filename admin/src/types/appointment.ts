@@ -7,13 +7,18 @@ export type AppointmentStatus =
 
 export type AppointmentPaymentStatus = "PENDING" | "SUCCESS" | "CANCEL";
 
-export type AppointmentCategoryFilter = "GENERAL" | "NEW_PLID" | "OLD_PLID";
+export type AppointmentCategoryFilter =
+  | "GENERAL"
+  | "OLD_GENERAL"
+  | "NEW_PLID"
+  | "OLD_PLID";
 
 export const APPOINTMENT_CATEGORY_OPTIONS: ReadonlyArray<{
   key: AppointmentCategoryFilter;
   label: string;
 }> = [
   { key: "GENERAL", label: "General" },
+  { key: "OLD_GENERAL", label: "Old General" },
   { key: "NEW_PLID", label: "PLID New" },
   { key: "OLD_PLID", label: "PLID Old" },
 ] as const;
@@ -52,6 +57,9 @@ export type Appointment = PendingDeleteMeta & {
   injectionAmount?: number | null;
   operationName?: string | null;
   operationAmount?: number | null;
+  feeCategory?: AppointmentCategoryFilter | null;
+  resolvedFeeCategory?: AppointmentCategoryFilter | null;
+  consultationFee?: number;
   feesDiscount?: AppointmentFeeDiscount[];
   createdBy: string;
   updatedBy: string;
@@ -94,4 +102,5 @@ export type CreateAppointmentPayload = {
   preferredDate: string;
   preferredTime: string;
   feesDiscount?: AppointmentFeeDiscountInput[];
+  feeCategory?: AppointmentCategoryFilter;
 };

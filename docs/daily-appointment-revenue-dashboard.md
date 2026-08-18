@@ -21,18 +21,24 @@ The current appointment records do not provide a complete cash ledger for every 
 
 ## Category mapping
 
-| Slot code | Category key | Label |
-|-----------|--------------|-------|
-| `P-9` | `NEW_PLID` | New PLID Patient |
-| `OP-4` | `OLD_PLID` | Old PLID Patient |
-| `G-5` | `GENERAL` | General Patient |
-| unknown / legacy label | `OTHER` | Other |
+| Slot code | Category key | Label | Default fee (BDT) |
+|-----------|--------------|-------|-------------------|
+| `P-9` | `NEW_PLID` | New PLID Patient | 1500 |
+| `OP-4` | `OLD_PLID` | Old PLID Patient | 1000 |
+| `G-5` | `GENERAL` | General Patient | 600 |
+| `G-5` | `OLD_GENERAL` | Old General Patient | 400 |
+| unknown / no stored category | `OTHER` | Other | 0 |
+
+`GENERAL` and `OLD_GENERAL` share slot `G-5`. There is no fourth public time slot.
 
 Resolution rules:
 
-1. Use `appointment.slot.code` when the slot relation exists
-2. Otherwise fall back to `preferredTime` when it matches a known slot code
-3. Unknown values are counted under `OTHER` with fee/revenue `0`
+1. Use stored `appointment.feeCategory` when set (staff override)
+2. Otherwise use `appointment.slot.code` when the slot relation exists
+3. Otherwise fall back to `preferredTime` when it matches a known slot code (`G-5` infers `GENERAL`, not `OLD_GENERAL`)
+4. Unknown values are counted under `OTHER` with fee/revenue `0`
+
+Existing appointment rows are not bulk-backfilled. Until staff set `feeCategory`, category is inferred from the slot as above.
 
 ## Status rules
 
@@ -63,7 +69,7 @@ Per category:
 
 Total:
 
-`totalRevenue = sum(categoryRevenue for NEW_PLID, OLD_PLID, GENERAL)`
+`totalRevenue = sum(categoryRevenue for NEW_PLID, OLD_PLID, GENERAL, OLD_GENERAL)`
 
 `OTHER` always contributes `0` revenue.
 
@@ -95,9 +101,10 @@ Content-Type: application/json
 {
   "siteRef": "DOCTOR_SHA_ALAM",
   "fees": {
-    "NEW_PLID": 0,
-    "OLD_PLID": 0,
-    "GENERAL": 0
+    "NEW_PLID": 1500,
+    "OLD_PLID": 1000,
+    "GENERAL": 600,
+    "OLD_GENERAL": 400
   }
 }
 ```
@@ -114,13 +121,14 @@ Fee validation:
 
 Fees are stored in `AppointmentRevenueFee` using Prisma `Decimal(10, 2)`.
 
-Seed defaults come from environment variables:
+Seed defaults come from environment variables (used when set and valid):
 
-- `NEW_PLID_APPOINTMENT_FEE`
-- `OLD_PLID_APPOINTMENT_FEE`
-- `GENERAL_APPOINTMENT_FEE`
+- `NEW_PLID_APPOINTMENT_FEE` (default 1500)
+- `OLD_PLID_APPOINTMENT_FEE` (default 1000)
+- `GENERAL_APPOINTMENT_FEE` (default 600)
+- `OLD_GENERAL_APPOINTMENT_FEE` (default 400)
 
-When unset or invalid, seed uses `0`.
+When unset or invalid, seed uses the defaults above. Changing these fees later updates `AppointmentRevenueFee` only; it does not bulk-update existing appointment rows.
 
 Admins can also update fees from the dashboard **Configure Fees** action.
 
@@ -185,9 +193,10 @@ npm run lint
 Add to `server/.env` as needed:
 
 ```env
-NEW_PLID_APPOINTMENT_FEE=0
-OLD_PLID_APPOINTMENT_FEE=0
-GENERAL_APPOINTMENT_FEE=0
+NEW_PLID_APPOINTMENT_FEE=1500
+OLD_PLID_APPOINTMENT_FEE=1000
+GENERAL_APPOINTMENT_FEE=600
+OLD_GENERAL_APPOINTMENT_FEE=400
 ```
 
 See also [`server/.env.example`](../server/.env.example).

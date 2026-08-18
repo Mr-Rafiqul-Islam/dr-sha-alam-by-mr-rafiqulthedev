@@ -1,7 +1,4 @@
-import {
-  CONSULTATION_FEE_BDT,
-  INVOICE_TABLE_ROW_COUNT,
-} from "../constants/invoice";
+import { INVOICE_TABLE_ROW_COUNT } from "../constants/invoice";
 import type { Appointment } from "../types/appointment";
 import {
   formatNullable,
@@ -57,7 +54,7 @@ export function buildInvoiceLineItems(appointment: Appointment): {
   lineItems: InvoiceLineItem[];
   totalAmount: string;
 } {
-  const fee = CONSULTATION_FEE_BDT;
+  const fee = appointment.consultationFee ?? 0;
   // const paid = hasPaidConsultation(appointment);
   // Always show consultation fee on printed invoice (even if not paid)
   const feeDisplay = String(fee);

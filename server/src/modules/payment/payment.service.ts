@@ -24,6 +24,11 @@ import {
 import { validateSSLPayment } from "../../lib/sslPayment.js";
 import { submitAppointmentToTrucare } from "../../services/trucareClient.service.js";
 import {
+  consultationFeeForResolvedCategory,
+  loadFeesByCategory,
+} from "../appointmentRevenue/appointmentRevenue.service.js";
+import { resolveRevenueCategory } from "../appointmentRevenue/appointmentRevenue.constants.js";
+import {
   isPaymentAppointmentPayload,
   type PaymentAppointmentPayload,
 } from "./payment.types.js";
@@ -254,6 +259,26 @@ export async function resolveConsultationFee(doctorId: string): Promise<number> 
     "Consultation fee is not configured for this doctor",
     500,
   );
+}
+
+export async function resolveBookingConsultationFee(params: {
+  preferredTime: string;
+  siteRef?: SiteRef | null;
+}): Promise<number> {
+  const siteRef = params.siteRef ?? SiteRef.DOCTOR_SHA_ALAM;
+  const fees = await loadFeesByCategory(siteRef);
+  const category = resolveRevenueCategory({
+    preferredTime: params.preferredTime,
+  });
+
+  if (category === "OTHER") {
+    throw new AppointmentValidationError(
+      "Consultation fee is not configured for this appointment category",
+      400,
+    );
+  }
+
+  return consultationFeeForResolvedCategory(category, fees);
 }
 
 export async function resolveDoctorId(doctorId?: string | null): Promise<string> {

@@ -1,4 +1,4 @@
-import type { SiteRef } from "@prisma/client";
+import type { SiteRef, AppointmentRevenueCategory } from "@prisma/client";
 import type { RevenueCategoryKey } from "./appointmentRevenue.constants.js";
 
 export type CategoryCounts = {
@@ -42,5 +42,6 @@ export type AppointmentRevenueFeesData = {
 export type AppointmentRowForRevenue = {
   status: string;
   preferredTime: string;
+  feeCategory?: AppointmentRevenueCategory | null;
   slot: { code: string } | null;
 };

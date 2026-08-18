@@ -135,13 +135,15 @@ export function toCreateAppointmentPayload(
   data: AppointmentFormData,
 ): CreateAppointmentPayload {
   const discountInput = toAppointmentFeeDiscountInput(data.discount);
+  const isOldGeneral = data.preferredTime === OLD_GENERAL_PREFERRED_TIME;
 
   return {
     fullName: data.patientName.trim(),
     phoneNumber: data.phone.trim(),
     homeAddress: data.homeAddress.trim(),
     preferredDate: data.preferredDate,
-    preferredTime: data.preferredTime,
+    preferredTime: isOldGeneral ? GENERAL_SLOT_CODE : data.preferredTime,
+    ...(isOldGeneral ? { feeCategory: "OLD_GENERAL" } : {}),
     ...(data.email.trim() ? { email: data.email.trim() } : {}),
     ...(data.age?.trim() ? { age: data.age.trim() } : {}),
     ...(data.symptoms?.trim() ? { problem: data.symptoms.trim() } : {}),
@@ -178,6 +180,8 @@ export function getTodayYmd(): string {
 }
 
 export const PLID_SLOT_CODE = "P-9";
+export const GENERAL_SLOT_CODE = "G-5";
+export const OLD_GENERAL_PREFERRED_TIME = "OLD_GENERAL";
 
 export function requiresFutureAppointmentDate(slotCode: string): boolean {
   return slotCode === PLID_SLOT_CODE;
