@@ -1,5 +1,6 @@
 import type {
   Appointment,
+  AppointmentExtraFilter,
   AppointmentFormData,
   AppointmentPaymentStatus,
   AppointmentStatus,
@@ -69,6 +70,7 @@ export function getStatusLabel(status: AppointmentStatus): string {
     PENDING: "Pending",
     CONFIRMED: "Confirmed",
     ATTEND: "Attended",
+    NOT_ATTENDED: "Not Attended",
     CANCEL: "Cancelled",
     RESCHEDULED: "Rescheduled",
   };
@@ -81,6 +83,7 @@ export function getStatusBadgeVariant(status: AppointmentStatus): BadgeVariant {
     PENDING: "pending",
     CONFIRMED: "confirmed",
     ATTEND: "attend",
+    NOT_ATTENDED: "notAttended",
     CANCEL: "cancel",
     RESCHEDULED: "rescheduled",
   };
@@ -127,6 +130,7 @@ export const APPOINTMENT_STATUS_OPTIONS: Array<{
     { value: "PENDING", label: "Pending" },
     { value: "CONFIRMED", label: "Confirmed" },
     { value: "ATTEND", label: "Attended" },
+    { value: "NOT_ATTENDED", label: "Not Attended" },
     { value: "RESCHEDULED", label: "Rescheduled" },
     { value: "CANCEL", label: "Cancelled" },
   ];
@@ -289,7 +293,26 @@ export type AppointmentFilterState = {
   search: string;
   date: string;
   todayOnly: boolean;
+  extraFilters: AppointmentExtraFilter[];
 };
+
+function matchesExtraFilter(
+  appointment: Appointment,
+  filter: AppointmentExtraFilter,
+): boolean {
+  switch (filter) {
+    case "INJECTION":
+      return Boolean(appointment.injectionName?.trim());
+    case "SURGERY":
+      return Boolean(appointment.operationName?.trim());
+    case "ATTENDED":
+      return appointment.status === "ATTEND";
+    case "NOT_ATTENDED":
+      return appointment.status === "NOT_ATTENDED";
+    default:
+      return false;
+  }
+}
 
 export function filterAppointments(
   appointments: Appointment[],
@@ -315,6 +338,16 @@ export function filterAppointments(
 
     if (effectiveDate && !isSameCalendarDay(appointment.appointmentDate, effectiveDate)) {
       return false;
+    }
+
+    if (filters.extraFilters.length > 0) {
+      const matchesAnyExtraFilter = filters.extraFilters.some((filter) =>
+        matchesExtraFilter(appointment, filter),
+      );
+
+      if (!matchesAnyExtraFilter) {
+        return false;
+      }
     }
 
     return true;

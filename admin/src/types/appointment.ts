@@ -1,9 +1,16 @@
 export type AppointmentStatus =
   | "PENDING"
   | "ATTEND"
+  | "NOT_ATTENDED"
   | "CANCEL"
   | "RESCHEDULED"
   | "CONFIRMED";
+
+export type AppointmentExtraFilter =
+  | "INJECTION"
+  | "SURGERY"
+  | "ATTENDED"
+  | "NOT_ATTENDED";
 
 export type AppointmentPaymentStatus = "PENDING" | "SUCCESS" | "CANCEL";
 
@@ -21,6 +28,16 @@ export const APPOINTMENT_CATEGORY_OPTIONS: ReadonlyArray<{
   { key: "OLD_GENERAL", label: "Old General" },
   { key: "NEW_PLID", label: "PLID New" },
   { key: "OLD_PLID", label: "PLID Old" },
+] as const;
+
+export const APPOINTMENT_EXTRA_FILTER_OPTIONS: ReadonlyArray<{
+  key: AppointmentExtraFilter;
+  label: string;
+}> = [
+  { key: "INJECTION", label: "Injection" },
+  { key: "SURGERY", label: "Surgery" },
+  { key: "ATTENDED", label: "Attended" },
+  { key: "NOT_ATTENDED", label: "Not Attended" },
 ] as const;
 
 export type SiteRef = "DOCTOR_SHA_ALAM" | "TRUE_CARE_HELLING_CENTER";

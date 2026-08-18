@@ -19,6 +19,7 @@ enum UserRole {
 enum AppointmentStatus {
   PENDING
   ATTEND
+  NOT_ATTENDED
   CANCEL
   RESCHEDULED
   CONFIRMED

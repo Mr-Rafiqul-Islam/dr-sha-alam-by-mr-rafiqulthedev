@@ -90,6 +90,9 @@ describe("assertSerialModificationAllowed", () => {
     assert.doesNotThrow(() =>
       assertSerialModificationAllowed(AppointmentStatus.ATTEND),
     );
+    assert.doesNotThrow(() =>
+      assertSerialModificationAllowed(AppointmentStatus.NOT_ATTENDED),
+    );
   });
 });
 

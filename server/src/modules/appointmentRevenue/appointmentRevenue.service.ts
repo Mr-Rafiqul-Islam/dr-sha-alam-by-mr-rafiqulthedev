@@ -100,6 +100,10 @@ export function aggregateAppointmentRevenue(
         summary.attended += 1;
         summary.booked += 1;
         break;
+      case AppointmentStatus.NOT_ATTENDED:
+        bucket.booked += 1;
+        summary.booked += 1;
+        break;
       case AppointmentStatus.CANCEL:
         bucket.cancelled += 1;
         summary.cancelled += 1;

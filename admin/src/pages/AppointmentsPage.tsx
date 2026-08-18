@@ -34,6 +34,7 @@ import {
   APPOINTMENT_CATEGORY_OPTIONS,
   type Appointment,
   type AppointmentCategoryFilter,
+  type AppointmentExtraFilter,
   type AppointmentStatus,
 } from "../types/appointment";
 import {
@@ -252,6 +253,7 @@ export function AppointmentsPage() {
   const [date, setDate] = useState("");
   const [todayOnly, setTodayOnly] = useState(false);
   const [categories, setCategories] = useState<AppointmentCategoryFilter[]>([]);
+  const [extraFilters, setExtraFilters] = useState<AppointmentExtraFilter[]>([]);
   const [editingAppointment, setEditingAppointment] =
     useState<Appointment | null>(null);
   const [deletingAppointment, setDeletingAppointment] =
@@ -314,6 +316,7 @@ export function AppointmentsPage() {
     search,
     date,
     todayOnly,
+    extraFilters,
   });
   const totalItems = filteredAppointments.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -484,11 +487,21 @@ export function AppointmentsPage() {
     setCurrentPage(1);
   };
 
+  const handleExtraFilterToggle = (filter: AppointmentExtraFilter) => {
+    setExtraFilters((current) =>
+      current.includes(filter)
+        ? current.filter((value) => value !== filter)
+        : [...current, filter],
+    );
+    setCurrentPage(1);
+  };
+
   const handleClearFilters = () => {
     setSearch("");
     setDate("");
     setTodayOnly(false);
     setCategories([]);
+    setExtraFilters([]);
     setCurrentPage(1);
   };
 
@@ -551,6 +564,7 @@ export function AppointmentsPage() {
           date={date}
           todayOnly={todayOnly}
           categories={categories}
+          extraFilters={extraFilters}
           onSearchChange={(value) => {
             setSearch(value);
             setCurrentPage(1);
@@ -561,6 +575,7 @@ export function AppointmentsPage() {
             setCurrentPage(1);
           }}
           onCategoryToggle={handleCategoryToggle}
+          onExtraFilterToggle={handleExtraFilterToggle}
           onTodayToggle={handleTodayToggle}
           onClear={handleClearFilters}
           onRefresh={handleRefresh}
