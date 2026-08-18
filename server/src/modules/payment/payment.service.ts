@@ -44,10 +44,8 @@ type FulfillPaymentResult = {
 };
 
 type SmsPayload = {
-  name: string;
   phone: string;
-  serialNumber: number;
-  modifiedSerialNumber?: number | null;
+  appointmentDate: Date;
   slotCode: string;
   smsLabel?: string | null;
 };
@@ -447,10 +445,8 @@ async function fulfillExistingReservedAppointment(
     appointmentId: existing.id,
     alreadyProcessed: false,
     smsPayload: {
-      name: existing.name,
       phone: existing.phone,
-      serialNumber: existing.serialNumber,
-      modifiedSerialNumber: existing.modifiedSerialNumber,
+      appointmentDate: existing.appointmentDate,
       slotCode: existing.preferredTime,
       smsLabel: existing.slot?.smsLabel,
     },
@@ -574,9 +570,8 @@ async function fulfillLegacyPaymentAppointment(
     appointmentId: appointment.id,
     alreadyProcessed: false,
     smsPayload: {
-      name: payload.fullName,
       phone: payload.phoneNumber,
-      serialNumber,
+      appointmentDate: selectedDate,
       slotCode,
       smsLabel: slotAvailability.smsLabel,
     },

@@ -194,10 +194,8 @@ export async function createAppointment(req: Request, res: Response) {
     });
 
     void sendAppointmentSms({
-      name,
       phone,
-      serialNumber: newAppointment.serialNumber,
-      modifiedSerialNumber: newAppointment.modifiedSerialNumber,
+      appointmentDate: newAppointment.appointmentDate,
       slotCode,
       smsLabel,
     }).catch((smsError) => {
@@ -264,6 +262,7 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
 
     const existing = await prisma.appointment.findUnique({
       where: { id: appointmentId },
+      include: { slot: { select: { smsLabel: true } } },
     });
 
     if (!existing) {
@@ -377,6 +376,21 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
           : {}),
       },
     });
+
+    if (
+      existing.createdById == null &&
+      existing.status !== AppointmentStatus.CONFIRMED &&
+      appointment.status === AppointmentStatus.CONFIRMED
+    ) {
+      void sendAppointmentSms({
+        phone: appointment.phone,
+        appointmentDate: appointment.appointmentDate,
+        slotCode: appointment.preferredTime,
+        smsLabel: existing.slot?.smsLabel,
+      }).catch((smsError) => {
+        console.error("Failed to send appointment SMS after confirm:", smsError);
+      });
+    }
 
     const [appointmentWithFee] = await withConsultationFees([appointment]);
 

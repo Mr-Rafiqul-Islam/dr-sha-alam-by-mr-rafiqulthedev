@@ -1,67 +1,81 @@
+import { BUSINESS_TIMEZONE } from "../../utils/bangladeshDate.js";
+import { isNovocomConfigured, sendNovocomSms } from "../../lib/novocomSms.js";
 import type { PreferredTimeCode } from "./appointment.mapper.js";
 import { getPreferredTimeSmsLabel } from "./appointment.mapper.js";
-import { getEffectiveSerialNumber } from "./appointment.serial.js";
 
-const CHAMBER_SMS_FOOTER = `চেম্বার: TruCare Healing Centre
+const CHAMBER_SMS_HEADER = `চেম্বার: TruCare Diagnostics Centre
 সিদ্দিক টাওয়ার (৫ম তলা, লিফট এর- ৪), ৪৯ মহাখালী, ঢাকা।
-(স্কয়ার ফার্মাসিউটিক্যালস হেড অফিসের পাশের ভবন)`;
+(পুরাতন ব্রাক ইউনিভার্সিটির বিপরীত পাশে স্কয়ার ফার্মাসিউটিক্যালস হেড অফিসের পাশের ভবন),`;
 
-const CHAMBER_SMS_CONTACT = "যোগাযোগ: ০৯৬১৩-৬৬৮৮৬৬, ০১৭০১ ৩১৩০০১-০২";
+const CHAMBER_SMS_FOOTER = `যোগাযোগ: ০৯৬১৩-৬৬৮৮৬৬,০১৭০১৩১৩০০১, ০১৭০১৩১৩০০২
+গুগল ম্যাপঃ- https://maps.app.goo.gl/pKnvNaqG8cdvUtrR9?g_st=ic`;
 
-type AppointmentSmsPayload = {
-  name: string;
+const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"] as const;
+
+const BN_WEEKDAYS: Record<string, string> = {
+  Sun: "রবিবার",
+  Mon: "সোমবার",
+  Tue: "মঙ্গলবার",
+  Wed: "বুধবার",
+  Thu: "বৃহস্পতিবার",
+  Fri: "শুক্রবার",
+  Sat: "শনিবার",
+};
+
+export type AppointmentSmsPayload = {
   phone: string;
-  serialNumber: number;
-  modifiedSerialNumber?: number | null;
+  appointmentDate: Date;
   slotCode: string;
   smsLabel?: string | null;
 };
 
-function buildAppointmentSmsMessage({
-  name,
-  serialNumber,
-  modifiedSerialNumber,
+function toBengaliDigits(value: string): string {
+  return value.replace(/\d/g, (digit) => BN_DIGITS[Number(digit)] ?? digit);
+}
+
+export function formatAttendanceTimeLine(
+  appointmentDate: Date,
+  smsLabel: string,
+): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: BUSINESS_TIMEZONE,
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).formatToParts(appointmentDate);
+
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((entry) => entry.type === type)?.value ?? "";
+
+  const weekday = BN_WEEKDAYS[part("weekday")] ?? part("weekday");
+  const date = toBengaliDigits(`${part("day")}/${part("month")}/${part("year")}`);
+
+  return `উপস্থিতি সময়ঃ ${date} রোজ ${weekday} ${smsLabel}।`;
+}
+
+export function buildAppointmentSmsMessage({
+  appointmentDate,
   slotCode,
   smsLabel,
 }: Omit<AppointmentSmsPayload, "phone">): string {
   const resolvedLabel =
-    smsLabel ??
-    getPreferredTimeSmsLabel(slotCode as PreferredTimeCode);
+    smsLabel ?? getPreferredTimeSmsLabel(slotCode as PreferredTimeCode);
 
-  const effectiveSerial = getEffectiveSerialNumber({
-    serialNumber,
-    modifiedSerialNumber,
-  });
-
-  return `${CHAMBER_SMS_FOOTER}
-
-রোগীর নাম: ${name}
-আপনার সিরিয়াল নং: ${effectiveSerial}
-উপস্থিতি সময়ঃ ${resolvedLabel}
-
-${CHAMBER_SMS_CONTACT}`;
+  return `${CHAMBER_SMS_HEADER}
+${formatAttendanceTimeLine(appointmentDate, resolvedLabel)}
+${CHAMBER_SMS_FOOTER}`;
 }
 
-export async function sendAppointmentSms(payload: AppointmentSmsPayload): Promise<void> {
-  const apiKey = process.env.NOVOCOM_API_KEY;
-  const clientId = process.env.NOVOCOM_CLIENT_ID;
-  const senderId = process.env.NOVOCOM_SENDER_ID;
-
-  if (!apiKey || !clientId || !senderId) {
+export async function sendAppointmentSms(
+  payload: AppointmentSmsPayload,
+): Promise<void> {
+  if (!isNovocomConfigured()) {
     return;
   }
 
-  const message = encodeURIComponent(buildAppointmentSmsMessage(payload));
-  const mobileNumbers = encodeURIComponent(payload.phone);
-
-  const url =
-    `https://sms.novocom-bd.com/api/v2/SendSMS?` +
-    `ApiKey=${encodeURIComponent(apiKey)}&ClientId=${encodeURIComponent(clientId)}` +
-    `&SenderId=${encodeURIComponent(senderId)}` +
-    `&Message=${message}&MobileNumbers=${mobileNumbers}&Is_Unicode=True`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`SMS gateway responded with ${response.status}`);
-  }
+  await sendNovocomSms({
+    phone: payload.phone,
+    message: buildAppointmentSmsMessage(payload),
+  });
 }
