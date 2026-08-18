@@ -30,10 +30,12 @@ import {
   useUpdateAppointmentSerialMutation,
   useUpdateAppointmentStatusMutation,
 } from "../store/api/appointmentsApi";
-import type {
-  Appointment,
-  AppointmentCategoryFilter,
-  AppointmentStatus,
+import {
+  APPOINTMENT_CATEGORY_OPTIONS,
+  type Appointment,
+  type AppointmentCategoryFilter,
+  type AppointmentExtraFilter,
+  type AppointmentStatus,
 } from "../types/appointment";
 import {
   APPOINTMENT_STATUS_OPTIONS,
@@ -251,6 +253,7 @@ export function AppointmentsPage() {
   const [date, setDate] = useState("");
   const [todayOnly, setTodayOnly] = useState(false);
   const [categories, setCategories] = useState<AppointmentCategoryFilter[]>([]);
+  const [extraFilters, setExtraFilters] = useState<AppointmentExtraFilter[]>([]);
   const [editingAppointment, setEditingAppointment] =
     useState<Appointment | null>(null);
   const [deletingAppointment, setDeletingAppointment] =
@@ -285,6 +288,9 @@ export function AppointmentsPage() {
     useState<AppointmentDiscountFormState>({
       ...DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE,
     });
+  const [selectedFeeCategory, setSelectedFeeCategory] = useState<
+    AppointmentCategoryFilter | ""
+  >("");
 
   const {
     data: appointments = [],
@@ -310,6 +316,7 @@ export function AppointmentsPage() {
     search,
     date,
     todayOnly,
+    extraFilters,
   });
   const totalItems = filteredAppointments.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -337,6 +344,9 @@ export function AppointmentsPage() {
     setSelectedDiscount(
       discountFromAppointment(appointment.feesDiscount?.[0] ?? null),
     );
+    setSelectedFeeCategory(
+      appointment.feeCategory ?? appointment.resolvedFeeCategory ?? "",
+    );
   };
 
   const closeStatusModal = () => {
@@ -350,6 +360,7 @@ export function AppointmentsPage() {
     setSelectedOperationAmount(null);
     setIsOperationEnabled(false);
     setSelectedDiscount({ ...DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE });
+    setSelectedFeeCategory("");
   };
 
   const closeDeleteModal = () => {
@@ -432,6 +443,7 @@ export function AppointmentsPage() {
         operationName: isOperationEnabled ? selectedOperationName?.trim() || null : null,
         operationAmount: isOperationEnabled ? selectedOperationAmount : null,
         feesDiscount: discountInput ? [discountInput] : null,
+        ...(selectedFeeCategory ? { feeCategory: selectedFeeCategory } : {}),
       }).unwrap();
       toast.success("Appointment updated successfully");
       closeStatusModal();
@@ -475,11 +487,21 @@ export function AppointmentsPage() {
     setCurrentPage(1);
   };
 
+  const handleExtraFilterToggle = (filter: AppointmentExtraFilter) => {
+    setExtraFilters((current) =>
+      current.includes(filter)
+        ? current.filter((value) => value !== filter)
+        : [...current, filter],
+    );
+    setCurrentPage(1);
+  };
+
   const handleClearFilters = () => {
     setSearch("");
     setDate("");
     setTodayOnly(false);
     setCategories([]);
+    setExtraFilters([]);
     setCurrentPage(1);
   };
 
@@ -542,6 +564,7 @@ export function AppointmentsPage() {
           date={date}
           todayOnly={todayOnly}
           categories={categories}
+          extraFilters={extraFilters}
           onSearchChange={(value) => {
             setSearch(value);
             setCurrentPage(1);
@@ -552,6 +575,7 @@ export function AppointmentsPage() {
             setCurrentPage(1);
           }}
           onCategoryToggle={handleCategoryToggle}
+          onExtraFilterToggle={handleExtraFilterToggle}
           onTodayToggle={handleTodayToggle}
           onClear={handleClearFilters}
           onRefresh={handleRefresh}
@@ -584,6 +608,29 @@ export function AppointmentsPage() {
             >
               {APPOINTMENT_STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-2">
+            <span className="text-label-md font-medium text-on-surface">
+              Fee category
+            </span>
+            <select
+              value={selectedFeeCategory}
+              onChange={(e) =>
+                setSelectedFeeCategory(
+                  e.target.value as AppointmentCategoryFilter | "",
+                )
+              }
+              className="w-full rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="" disabled>
+                Select fee category
+              </option>
+              {APPOINTMENT_CATEGORY_OPTIONS.map((option) => (
+                <option key={option.key} value={option.key}>
                   {option.label}
                 </option>
               ))}
@@ -635,22 +682,32 @@ export function AppointmentsPage() {
 
             {isInjectionEnabled && (
               <div className="grid gap-2 sm:grid-cols-2">
-                <select
-                  value={selectedInjectionName ?? ""}
-                  onChange={(e) =>
-                    setSelectedInjectionName(e.target.value || null)
-                  }
-                  className="rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  <option value="" disabled>
-                    Select injection
-                  </option>
-                  {INJECTION_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <input
+                    type="text"
+                    list={`injection-name-options-${editingAppointment?.id ?? "none"}`}
+                    placeholder="Select or type injection name"
+                    autoComplete="off"
+                    value={selectedInjectionName ?? ""}
+                    onChange={(e) =>
+                      setSelectedInjectionName(e.target.value || null)
+                    }
+                    className="w-full rounded-lg border border-outline-variant/50 bg-surface px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <datalist
+                    id={`injection-name-options-${editingAppointment?.id ?? "none"}`}
+                  >
+                    {INJECTION_OPTIONS.map((option) => (
+                      <option key={option} value={option} />
+                    ))}
+                    {selectedInjectionName &&
+                    !INJECTION_OPTIONS.some(
+                      (option) => option === selectedInjectionName,
+                    ) ? (
+                      <option value={selectedInjectionName} />
+                    ) : null}
+                  </datalist>
+                </div>
 
                 <input
                   type="number"

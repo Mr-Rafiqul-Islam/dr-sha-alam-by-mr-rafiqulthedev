@@ -148,15 +148,23 @@ const REVENUE_FEE_ENV_KEYS = {
   [AppointmentRevenueCategory.NEW_PLID]: "NEW_PLID_APPOINTMENT_FEE",
   [AppointmentRevenueCategory.OLD_PLID]: "OLD_PLID_APPOINTMENT_FEE",
   [AppointmentRevenueCategory.GENERAL]: "GENERAL_APPOINTMENT_FEE",
+  [AppointmentRevenueCategory.OLD_GENERAL]: "OLD_GENERAL_APPOINTMENT_FEE",
 };
 
-function parseSeedFee(value) {
+const REVENUE_FEE_DEFAULTS = {
+  [AppointmentRevenueCategory.NEW_PLID]: 1500,
+  [AppointmentRevenueCategory.OLD_PLID]: 1000,
+  [AppointmentRevenueCategory.GENERAL]: 600,
+  [AppointmentRevenueCategory.OLD_GENERAL]: 400,
+};
+
+function parseSeedFee(value, fallback) {
   if (value === undefined || value === null || String(value).trim() === "") {
-    return 0;
+    return fallback;
   }
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 0) {
-    return 0;
+    return fallback;
   }
   return Math.round(parsed * 100) / 100;
 }
@@ -164,7 +172,7 @@ function parseSeedFee(value) {
 async function seedAppointmentRevenueFees(siteRef) {
   for (const category of Object.values(AppointmentRevenueCategory)) {
     const envKey = REVENUE_FEE_ENV_KEYS[category];
-    const fee = parseSeedFee(process.env[envKey]);
+    const fee = parseSeedFee(process.env[envKey], REVENUE_FEE_DEFAULTS[category]);
     await prisma.appointmentRevenueFee.upsert({
       where: {
         siteRef_category: { siteRef, category },

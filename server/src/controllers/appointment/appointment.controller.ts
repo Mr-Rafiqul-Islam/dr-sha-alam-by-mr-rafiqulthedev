@@ -1,4 +1,4 @@
-import { AppointmentStatus, SiteRef } from "@prisma/client";
+import { AppointmentRevenueCategory, AppointmentStatus, SiteRef } from "@prisma/client";
 import type { Request, Response } from "express";
 import { prisma } from "../../config/db.js";
 import { sendAppointmentSms } from "../../modules/appointment/appointment.sms.js";
@@ -49,12 +49,14 @@ import {
   parseAppointmentDate,
   parseAppointmentStatus,
   parseEmail,
+  parseFeeCategory,
   parseAppointmentDateForSlot,
   parseFutureAppointmentDate,
   parseMonthYear,
   parseOptionalString,
   parseRequiredString,
 } from "../../modules/appointment/appointment.utils.js";
+import { withConsultationFees } from "../../modules/appointmentRevenue/appointmentRevenue.service.js";
 import { routeParamString } from "../../utils/express-params.js";
 import {
   hasFeesDiscountBodyKey,
@@ -110,6 +112,10 @@ export async function createAppointment(req: Request, res: Response) {
     }
 
     const feesDiscountInput = parseFeesDiscountInput(req.body, { isAdmin });
+    const feeCategory =
+      isAdmin && Object.prototype.hasOwnProperty.call(req.body, "feeCategory")
+        ? parseFeeCategory(req.body.feeCategory)
+        : undefined;
 
     let smsLabel: string | null | undefined;
 
@@ -166,6 +172,8 @@ export async function createAppointment(req: Request, res: Response) {
           slotId: slotAvailability.slotId,
           createdById: adminId,
           updatedById: adminId,
+          ...(isAdmin ? { status: AppointmentStatus.CONFIRMED } : {}),
+          ...(feeCategory ? { feeCategory } : {}),
           ...(feesDiscountInput && feesDiscountInput.length > 0
             ? {
                 feesDiscount: {
@@ -186,10 +194,8 @@ export async function createAppointment(req: Request, res: Response) {
     });
 
     void sendAppointmentSms({
-      name,
       phone,
-      serialNumber: newAppointment.serialNumber,
-      modifiedSerialNumber: newAppointment.modifiedSerialNumber,
+      appointmentDate: newAppointment.appointmentDate,
       slotCode,
       smsLabel,
     }).catch((smsError) => {
@@ -256,6 +262,7 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
 
     const existing = await prisma.appointment.findUnique({
       where: { id: appointmentId },
+      include: { slot: { select: { smsLabel: true } } },
     });
 
     if (!existing) {
@@ -270,6 +277,7 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       injectionAmount?: number | null;
       operationName?: string | null;
       operationAmount?: number | null;
+      feeCategory?: AppointmentRevenueCategory;
     } = {
       status,
       updatedById: req.admin?.id ?? null,
@@ -311,6 +319,10 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
         }
         updateData.operationAmount = num;
       }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, "feeCategory")) {
+      updateData.feeCategory = parseFeeCategory(req.body.feeCategory);
     }
 
     const feesDiscountInput = parseFeesDiscountInput(req.body, {
@@ -356,16 +368,36 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
         ...(Object.prototype.hasOwnProperty.call(req.body, "injectionAmount") ? { injectionAmount: appointment.injectionAmount } : {}),
         ...(Object.prototype.hasOwnProperty.call(req.body, "operationName") ? { operationName: appointment.operationName } : {}),
         ...(Object.prototype.hasOwnProperty.call(req.body, "operationAmount") ? { operationAmount: appointment.operationAmount } : {}),
+        ...(Object.prototype.hasOwnProperty.call(req.body, "feeCategory")
+          ? { feeCategory: appointment.feeCategory }
+          : {}),
         ...(feesDiscountInput !== undefined
           ? { feesDiscountUpdated: true, feesDiscountCount: appointment.feesDiscount.length }
           : {}),
       },
     });
 
+    if (
+      existing.createdById == null &&
+      existing.status !== AppointmentStatus.CONFIRMED &&
+      appointment.status === AppointmentStatus.CONFIRMED
+    ) {
+      void sendAppointmentSms({
+        phone: appointment.phone,
+        appointmentDate: appointment.appointmentDate,
+        slotCode: appointment.preferredTime,
+        smsLabel: existing.slot?.smsLabel,
+      }).catch((smsError) => {
+        console.error("Failed to send appointment SMS after confirm:", smsError);
+      });
+    }
+
+    const [appointmentWithFee] = await withConsultationFees([appointment]);
+
     return res.status(200).json({
       success: true,
       message: "Appointment updated successfully",
-      appointment: toAdminAppointment(appointment),
+      appointment: toAdminAppointment(appointmentWithFee),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Internal server error");
@@ -411,7 +443,9 @@ export async function updateAppointmentSerial(req: Request, res: Response) {
     return res.status(200).json({
       success: true,
       message,
-      appointment: toAdminAppointment(result.appointment),
+      appointment: toAdminAppointment(
+        (await withConsultationFees([result.appointment]))[0],
+      ),
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Failed to update appointment serial");
@@ -609,12 +643,22 @@ export async function rescheduleAppointment(req: Request, res: Response) {
   }
 }
 
-function mapAdminAppointments<T extends { id: string; preferredTime: string; serialNumber: number; modifiedSerialNumber?: number | null }>(
+async function mapAdminAppointments<
+  T extends {
+    id: string;
+    siteRef: SiteRef;
+    preferredTime: string;
+    serialNumber: number;
+    modifiedSerialNumber?: number | null;
+    feeCategory?: AppointmentRevenueCategory | null;
+  },
+>(
   appointments: T[],
   pendingDeleteMap: Map<string, string>,
   hidePendingDeletes: boolean,
 ) {
-  const mapped = toAdminAppointments(appointments);
+  const withFees = await withConsultationFees(appointments);
+  const mapped = toAdminAppointments(withFees);
   return hidePendingDeletes
     ? mapped
     : annotatePendingDeleteMeta(mapped, pendingDeleteMap);
@@ -647,7 +691,7 @@ export async function getAllAppointments(req: Request, res: Response) {
     return res.status(200).json({
       success: true,
       message: "Appointments fetched successfully",
-      appointments: mapAdminAppointments(
+      appointments: await mapAdminAppointments(
         appointments,
         pendingDeleteMap,
         hidePendingDeletes,
@@ -685,7 +729,7 @@ export async function getAppointmentsByDay(req: Request, res: Response) {
     return res.status(200).json({
       success: true,
       message: "Appointments fetched successfully",
-      appointments: mapAdminAppointments(
+      appointments: await mapAdminAppointments(
         appointments,
         pendingDeleteMap,
         hidePendingDeletes,
@@ -720,7 +764,7 @@ export async function getAppointmentsByMonth(req: Request, res: Response) {
     return res.status(200).json({
       success: true,
       message: "Appointments fetched successfully",
-      appointments: mapAdminAppointments(
+      appointments: await mapAdminAppointments(
         appointments,
         pendingDeleteMap,
         hidePendingDeletes,

@@ -67,6 +67,7 @@ export const appointmentsApi = baseApi.injectEndpoints({
         operationName?: string | null;
         operationAmount?: number | null;
         feesDiscount?: AppointmentFeeDiscountInput[] | null;
+        feeCategory?: AppointmentCategoryFilter;
       }
     >({
       query: ({
@@ -78,6 +79,7 @@ export const appointmentsApi = baseApi.injectEndpoints({
         operationName,
         operationAmount,
         feesDiscount,
+        feeCategory,
       }) => ({
         url: `/api/v1/admin/appointments/${id}/status`,
         method: "PATCH",
@@ -89,6 +91,7 @@ export const appointmentsApi = baseApi.injectEndpoints({
           ...(operationName !== undefined ? { operationName } : {}),
           ...(operationAmount !== undefined ? { operationAmount } : {}),
           ...(feesDiscount !== undefined ? { feesDiscount } : {}),
+          ...(feeCategory !== undefined ? { feeCategory } : {}),
         },
       }),
       transformResponse: (response: AppointmentResponse) => response.appointment,

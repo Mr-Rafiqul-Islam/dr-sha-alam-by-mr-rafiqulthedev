@@ -16,7 +16,6 @@ import {
   getEffectiveSerialNumber,
   isSerialModified,
 } from "../../utils/appointmentSerial";
-import { CONSULTATION_FEE_BDT } from "../../constants/invoice";
 import { formatDiscountSummary } from "../../utils/discount";
 
 type AppointmentViewModalProps = {
@@ -188,7 +187,10 @@ export function AppointmentViewModal({
                 appointment.feesDiscount?.length
                   ? appointment.feesDiscount
                       .map((discount) =>
-                        formatDiscountSummary(discount, CONSULTATION_FEE_BDT),
+                        formatDiscountSummary(
+                          discount,
+                          appointment.consultationFee ?? 0,
+                        ),
                       )
                       .join("; ")
                   : "—"

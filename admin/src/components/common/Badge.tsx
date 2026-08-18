@@ -5,6 +5,7 @@ export type BadgeVariant =
   | "pending"
   | "confirmed"
   | "attend"
+  | "notAttended"
   | "cancel"
   | "rescheduled"
   | "neutral";
@@ -22,6 +23,8 @@ const variantClasses: Record<BadgeVariant, string> = {
     "bg-secondary-fixed text-on-secondary-fixed-variant border-secondary-fixed-dim/30",
   attend:
     "bg-primary-fixed text-on-primary-fixed-variant border-primary-fixed-dim/30",
+  notAttended:
+    "bg-tertiary-fixed text-on-tertiary-fixed-variant border-tertiary-fixed-dim/30",
   cancel:
     "bg-error-container text-on-error-container border-error/30",
   rescheduled:

@@ -61,18 +61,42 @@ function getBootstrapLabelForCode(code: string): string | undefined {
   return BOOTSTRAP_SLOT_DEFAULTS.find((slot) => slot.code === code)?.label;
 }
 
+function inferredSlotMatch(category: AppointmentRevenueCategory): Prisma.AppointmentWhereInput {
+  const code = CATEGORY_SLOT_CODES[category];
+  const label = getBootstrapLabelForCode(code);
+
+  return {
+    AND: [
+      { feeCategory: null },
+      {
+        OR: [
+          { preferredTime: code },
+          ...(label ? [{ preferredTime: label }] : []),
+          { slot: { is: { code } } },
+        ],
+      },
+    ],
+  };
+}
+
+function categoryMatch(category: AppointmentCategoryFilter): Prisma.AppointmentWhereInput {
+  if (category === AppointmentRevenueCategory.OLD_GENERAL) {
+    return { feeCategory: AppointmentRevenueCategory.OLD_GENERAL };
+  }
+
+  return {
+    OR: [{ feeCategory: category }, inferredSlotMatch(category)],
+  };
+}
+
 export function buildCategoryWhereClause(
   categories: AppointmentCategoryFilter[],
 ): Prisma.AppointmentWhereInput {
-  const matches = categories.flatMap((category) => {
-    const code = CATEGORY_SLOT_CODES[category];
-    const label = getBootstrapLabelForCode(code);
+  const matches = categories.map(categoryMatch);
 
-    return [
-      { preferredTime: code },
-      ...(label ? [{ preferredTime: label }] : []),
-    ];
-  });
+  if (matches.length === 1) {
+    return matches[0];
+  }
 
   return { OR: matches };
 }

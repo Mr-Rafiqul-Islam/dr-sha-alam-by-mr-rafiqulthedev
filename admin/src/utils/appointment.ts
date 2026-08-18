@@ -1,5 +1,6 @@
 import type {
   Appointment,
+  AppointmentExtraFilter,
   AppointmentFormData,
   AppointmentPaymentStatus,
   AppointmentStatus,
@@ -69,6 +70,7 @@ export function getStatusLabel(status: AppointmentStatus): string {
     PENDING: "Pending",
     CONFIRMED: "Confirmed",
     ATTEND: "Attended",
+    NOT_ATTENDED: "Not Attended",
     CANCEL: "Cancelled",
     RESCHEDULED: "Rescheduled",
   };
@@ -81,6 +83,7 @@ export function getStatusBadgeVariant(status: AppointmentStatus): BadgeVariant {
     PENDING: "pending",
     CONFIRMED: "confirmed",
     ATTEND: "attend",
+    NOT_ATTENDED: "notAttended",
     CANCEL: "cancel",
     RESCHEDULED: "rescheduled",
   };
@@ -127,6 +130,7 @@ export const APPOINTMENT_STATUS_OPTIONS: Array<{
     { value: "PENDING", label: "Pending" },
     { value: "CONFIRMED", label: "Confirmed" },
     { value: "ATTEND", label: "Attended" },
+    { value: "NOT_ATTENDED", label: "Not Attended" },
     { value: "RESCHEDULED", label: "Rescheduled" },
     { value: "CANCEL", label: "Cancelled" },
   ];
@@ -135,13 +139,15 @@ export function toCreateAppointmentPayload(
   data: AppointmentFormData,
 ): CreateAppointmentPayload {
   const discountInput = toAppointmentFeeDiscountInput(data.discount);
+  const isOldGeneral = data.preferredTime === OLD_GENERAL_PREFERRED_TIME;
 
   return {
     fullName: data.patientName.trim(),
     phoneNumber: data.phone.trim(),
     homeAddress: data.homeAddress.trim(),
     preferredDate: data.preferredDate,
-    preferredTime: data.preferredTime,
+    preferredTime: isOldGeneral ? GENERAL_SLOT_CODE : data.preferredTime,
+    ...(isOldGeneral ? { feeCategory: "OLD_GENERAL" } : {}),
     ...(data.email.trim() ? { email: data.email.trim() } : {}),
     ...(data.age?.trim() ? { age: data.age.trim() } : {}),
     ...(data.symptoms?.trim() ? { problem: data.symptoms.trim() } : {}),
@@ -178,6 +184,8 @@ export function getTodayYmd(): string {
 }
 
 export const PLID_SLOT_CODE = "P-9";
+export const GENERAL_SLOT_CODE = "G-5";
+export const OLD_GENERAL_PREFERRED_TIME = "OLD_GENERAL";
 
 export function requiresFutureAppointmentDate(slotCode: string): boolean {
   return slotCode === PLID_SLOT_CODE;
@@ -285,7 +293,26 @@ export type AppointmentFilterState = {
   search: string;
   date: string;
   todayOnly: boolean;
+  extraFilters: AppointmentExtraFilter[];
 };
+
+function matchesExtraFilter(
+  appointment: Appointment,
+  filter: AppointmentExtraFilter,
+): boolean {
+  switch (filter) {
+    case "INJECTION":
+      return Boolean(appointment.injectionName?.trim());
+    case "SURGERY":
+      return Boolean(appointment.operationName?.trim());
+    case "ATTENDED":
+      return appointment.status === "ATTEND";
+    case "NOT_ATTENDED":
+      return appointment.status === "NOT_ATTENDED";
+    default:
+      return false;
+  }
+}
 
 export function filterAppointments(
   appointments: Appointment[],
@@ -311,6 +338,16 @@ export function filterAppointments(
 
     if (effectiveDate && !isSameCalendarDay(appointment.appointmentDate, effectiveDate)) {
       return false;
+    }
+
+    if (filters.extraFilters.length > 0) {
+      const matchesAnyExtraFilter = filters.extraFilters.some((filter) =>
+        matchesExtraFilter(appointment, filter),
+      );
+
+      if (!matchesAnyExtraFilter) {
+        return false;
+      }
     }
 
     return true;

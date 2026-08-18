@@ -17,8 +17,10 @@ import {
   DISCOUNT_TYPE_OPTIONS,
 } from "../../utils/discount";
 import {
+  GENERAL_SLOT_CODE,
   getMinPreferredDateYmd,
   isValidPreferredDateYmd,
+  OLD_GENERAL_PREFERRED_TIME,
 } from "../../utils/appointment";
 import { AppointmentDiscountFields } from "./AppointmentDiscountFields";
 
@@ -61,19 +63,35 @@ export function AppointmentForm({
     [schedules],
   );
 
-  const slotCodes =
-    slotDefaults?.slots
-      .filter((slot) => slot.isActive)
-      .map((slot) => slot.code) ?? [];
+  const activeSlots =
+    slotDefaults?.slots.filter((slot) => slot.isActive) ?? [];
+  const generalSlot = activeSlots.find((slot) => slot.code === GENERAL_SLOT_CODE);
+
+  const slotCodes = [
+    ...activeSlots.map((slot) => slot.code),
+    ...(generalSlot ? [OLD_GENERAL_PREFERRED_TIME] : []),
+  ];
 
   const timeSlotOptions = [
     { value: "", label: "Select Time Slot", disabled: true },
-    ...(slotDefaults?.slots
-      .filter((slot) => slot.isActive)
-      .map((slot) => ({
-        value: slot.code,
-        label: slot.label,
-      })) ?? []),
+    ...activeSlots.flatMap((slot) => {
+      const option = { value: slot.code, label: slot.label };
+      if (slot.code !== GENERAL_SLOT_CODE) {
+        return [option];
+      }
+
+      const oldGeneralLabel = /general patient/i.test(slot.label)
+        ? slot.label.replace(/general patient/i, "Old General Patient")
+        : `Old General Patient (Present at - 5:00 PM)`;
+
+      return [
+        option,
+        {
+          value: OLD_GENERAL_PREFERRED_TIME,
+          label: oldGeneralLabel,
+        },
+      ];
+    }),
   ];
 
   if (slotDefaultsLoading || schedulesLoading) {

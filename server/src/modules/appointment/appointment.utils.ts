@@ -1,9 +1,10 @@
-import { AppointmentStatus, Prisma } from "@prisma/client";
+import { AppointmentRevenueCategory, AppointmentStatus, Prisma } from "@prisma/client";
 import type { Response } from "express";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const APPOINTMENT_STATUSES = new Set<string>(Object.values(AppointmentStatus));
+const FEE_CATEGORIES = new Set<string>(Object.values(AppointmentRevenueCategory));
 
 export const PLID_SLOT_CODE = "P-9";
 
@@ -154,6 +155,13 @@ export function parseAppointmentStatus(value: unknown): AppointmentStatus {
     throw new AppointmentValidationError("Invalid appointment status");
   }
   return value as AppointmentStatus;
+}
+
+export function parseFeeCategory(value: unknown): AppointmentRevenueCategory {
+  if (typeof value !== "string" || !FEE_CATEGORIES.has(value)) {
+    throw new AppointmentValidationError("Invalid feeCategory");
+  }
+  return value as AppointmentRevenueCategory;
 }
 
 export function parseMonthYear(month: string | undefined, year: string | undefined) {

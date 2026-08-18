@@ -24,6 +24,11 @@ import {
 import { validateSSLPayment } from "../../lib/sslPayment.js";
 import { submitAppointmentToTrucare } from "../../services/trucareClient.service.js";
 import {
+  consultationFeeForResolvedCategory,
+  loadFeesByCategory,
+} from "../appointmentRevenue/appointmentRevenue.service.js";
+import { resolveRevenueCategory } from "../appointmentRevenue/appointmentRevenue.constants.js";
+import {
   isPaymentAppointmentPayload,
   type PaymentAppointmentPayload,
 } from "./payment.types.js";
@@ -39,10 +44,8 @@ type FulfillPaymentResult = {
 };
 
 type SmsPayload = {
-  name: string;
   phone: string;
-  serialNumber: number;
-  modifiedSerialNumber?: number | null;
+  appointmentDate: Date;
   slotCode: string;
   smsLabel?: string | null;
 };
@@ -256,6 +259,26 @@ export async function resolveConsultationFee(doctorId: string): Promise<number> 
   );
 }
 
+export async function resolveBookingConsultationFee(params: {
+  preferredTime: string;
+  siteRef?: SiteRef | null;
+}): Promise<number> {
+  const siteRef = params.siteRef ?? SiteRef.DOCTOR_SHA_ALAM;
+  const fees = await loadFeesByCategory(siteRef);
+  const category = resolveRevenueCategory({
+    preferredTime: params.preferredTime,
+  });
+
+  if (category === "OTHER") {
+    throw new AppointmentValidationError(
+      "Consultation fee is not configured for this appointment category",
+      400,
+    );
+  }
+
+  return consultationFeeForResolvedCategory(category, fees);
+}
+
 export async function resolveDoctorId(doctorId?: string | null): Promise<string> {
   const resolved = doctorId?.trim() || process.env.DEFAULT_DOCTOR_ID?.trim();
   if (!resolved) {
@@ -422,10 +445,8 @@ async function fulfillExistingReservedAppointment(
     appointmentId: existing.id,
     alreadyProcessed: false,
     smsPayload: {
-      name: existing.name,
       phone: existing.phone,
-      serialNumber: existing.serialNumber,
-      modifiedSerialNumber: existing.modifiedSerialNumber,
+      appointmentDate: existing.appointmentDate,
       slotCode: existing.preferredTime,
       smsLabel: existing.slot?.smsLabel,
     },
@@ -549,9 +570,8 @@ async function fulfillLegacyPaymentAppointment(
     appointmentId: appointment.id,
     alreadyProcessed: false,
     smsPayload: {
-      name: payload.fullName,
       phone: payload.phoneNumber,
-      serialNumber,
+      appointmentDate: selectedDate,
       slotCode,
       smsLabel: slotAvailability.smsLabel,
     },

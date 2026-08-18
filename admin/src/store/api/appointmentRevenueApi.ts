@@ -1,7 +1,12 @@
 import type { SiteRef } from "../../types/appointment";
 import { baseApi } from "./baseApi";
 
-export type RevenueCategoryKey = "NEW_PLID" | "OLD_PLID" | "GENERAL" | "OTHER";
+export type RevenueCategoryKey =
+  | "NEW_PLID"
+  | "OLD_PLID"
+  | "GENERAL"
+  | "OLD_GENERAL"
+  | "OTHER";
 
 export type RevenueCategoryRow = {
   key: RevenueCategoryKey;
@@ -43,6 +48,7 @@ export type AppointmentRevenueFees = {
     NEW_PLID: number;
     OLD_PLID: number;
     GENERAL: number;
+    OLD_GENERAL: number;
   };
   updatedAt: string | null;
 };
