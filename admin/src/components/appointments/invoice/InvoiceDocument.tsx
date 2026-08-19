@@ -8,6 +8,9 @@ import {
 import {
   INVOICE_COLORS,
   INVOICE_PAGE_SIZE,
+  PAD_PRINT_BOTTOM_INSET_PT,
+  PAD_PRINT_SIGNATURE_BOTTOM_PT,
+  PAD_PRINT_TOP_INSET_PT,
   TRUCARE_INVOICE,
 } from "../../../constants/invoice";
 import type { Appointment } from "../../../types/appointment";
@@ -18,8 +21,11 @@ import {
 } from "../../../utils/invoice";
 import { InvoiceHeaderBand, InvoiceWatermark } from "./InvoiceGraphics";
 
+export type InvoiceDocumentVariant = "preview" | "print";
+
 type InvoiceDocumentProps = {
   appointment: Appointment;
+  variant?: InvoiceDocumentVariant;
 };
 
 const styles = StyleSheet.create({
@@ -177,10 +183,24 @@ const styles = StyleSheet.create({
     fontSize: 8,
     textAlign: "center",
   },
+  printBody: {
+    paddingTop: PAD_PRINT_TOP_INSET_PT,
+    paddingBottom: PAD_PRINT_BOTTOM_INSET_PT,
+  },
+  printFooter: {
+    height: PAD_PRINT_BOTTOM_INSET_PT,
+  },
+  printSignatureBlock: {
+    bottom: PAD_PRINT_SIGNATURE_BOTTOM_PT,
+  },
 });
 
-export function InvoiceDocument({ appointment }: InvoiceDocumentProps) {
+export function InvoiceDocument({
+  appointment,
+  variant = "preview",
+}: InvoiceDocumentProps) {
   const { lineItems, totalAmount } = buildInvoiceLineItems(appointment);
+  const isPrint = variant === "print";
 
   return (
     <Document title={`Invoice - ${appointment.name}`}>
@@ -189,11 +209,13 @@ export function InvoiceDocument({ appointment }: InvoiceDocumentProps) {
           <InvoiceWatermark />
         </View>
 
-        <View style={styles.header}>
-          <InvoiceHeaderBand />
-        </View>
+        {isPrint ? null : (
+          <View style={styles.header}>
+            <InvoiceHeaderBand />
+          </View>
+        )}
 
-        <View style={styles.body}>
+        <View style={isPrint ? [styles.body, styles.printBody] : styles.body}>
           <Text style={styles.title}>INVOICE</Text>
 
           <View style={styles.metaRow}>
@@ -243,8 +265,14 @@ export function InvoiceDocument({ appointment }: InvoiceDocumentProps) {
           </View>
         </View>
 
-        <View style={styles.footer} fixed>
-          <View style={styles.signatureBlock}>
+        <View style={isPrint ? [styles.footer, styles.printFooter] : styles.footer} fixed>
+          <View
+            style={
+              isPrint
+                ? [styles.signatureBlock, styles.printSignatureBlock]
+                : styles.signatureBlock
+            }
+          >
             <Text style={styles.paidSealLabel}>
               {TRUCARE_INVOICE.paidSealLabel}
             </Text>

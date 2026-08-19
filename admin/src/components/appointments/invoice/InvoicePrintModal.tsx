@@ -16,7 +16,9 @@ export function InvoicePrintModal({
   const handlePrint = useCallback(async () => {
     if (!appointment) return;
 
-    const blob = await pdf(<InvoiceDocument appointment={appointment} />).toBlob();
+    const blob = await pdf(
+      <InvoiceDocument appointment={appointment} variant="print" />,
+    ).toBlob();
     const url = URL.createObjectURL(blob);
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
@@ -52,8 +54,8 @@ export function InvoicePrintModal({
       {appointment ? (
         <div className="flex flex-col gap-4">
           <div className="h-160 overflow-hidden rounded-lg border border-outline-variant/30 bg-surface">
-            <PDFViewer width="100%" height="100%" showToolbar>
-              <InvoiceDocument appointment={appointment} />
+            <PDFViewer width="100%" height="100%" showToolbar={false}>
+              <InvoiceDocument appointment={appointment} variant="preview" />
             </PDFViewer>
           </div>
 
