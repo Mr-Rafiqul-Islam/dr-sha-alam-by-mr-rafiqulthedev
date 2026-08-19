@@ -7,6 +7,7 @@ import {
 } from "@react-pdf/renderer";
 import {
   INVOICE_COLORS,
+  INVOICE_PAGE_SIZE,
   TRUCARE_INVOICE,
 } from "../../../constants/invoice";
 import type { Appointment } from "../../../types/appointment";
@@ -24,7 +25,7 @@ type InvoiceDocumentProps = {
 const styles = StyleSheet.create({
   page: {
     fontFamily: "Helvetica",
-    fontSize: 10,
+    fontSize: 8,
     color: "#1A1A1A",
     position: "relative",
   },
@@ -35,38 +36,38 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 0,
     bottom: 0,
-    width: 360,
-    height: 400,
+    width: 254,
+    height: 282,
   },
   body: {
-    paddingHorizontal: 36,
-    paddingTop: 24,
-    paddingBottom: 90,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 64,
     flex: 1,
   },
   title: {
     color: INVOICE_COLORS.primary,
-    fontSize: 28,
+    fontSize: 20,
     fontFamily: "Helvetica-Bold",
     textAlign: "center",
-    marginBottom: 20,
-    letterSpacing: 1.5,
+    marginBottom: 12,
+    letterSpacing: 1.2,
   },
   metaRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 18,
-    gap: 24,
+    marginBottom: 12,
+    gap: 16,
   },
   metaField: {
     flexDirection: "row",
     alignItems: "flex-end",
     flex: 1,
-    gap: 6,
+    gap: 4,
   },
   metaLabel: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 10,
+    fontSize: 8,
     color: INVOICE_COLORS.primary,
   },
   metaValue: {
@@ -74,35 +75,35 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: INVOICE_COLORS.primary,
     borderStyle: "dotted",
-    paddingBottom: 2,
-    fontSize: 10,
+    paddingBottom: 1,
+    fontSize: 8,
   },
   itemsSection: {
-    marginTop: 4,
+    marginTop: 2,
   },
   itemsHeader: {
     flexDirection: "row",
     backgroundColor: INVOICE_COLORS.primary,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
   },
   itemsHeaderCell: {
     color: INVOICE_COLORS.white,
     fontFamily: "Helvetica-Bold",
-    fontSize: 8.5,
+    fontSize: 7,
     textTransform: "uppercase",
   },
   itemsRow: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 26,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    minHeight: 18,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
     borderBottomWidth: 1,
     borderBottomColor: INVOICE_COLORS.borderMuted,
   },
   itemsCell: {
-    fontSize: 8.5,
+    fontSize: 7.5,
   },
   colSl: { width: "8%" },
   colLabel: { width: "34%" },
@@ -111,71 +112,69 @@ const styles = StyleSheet.create({
   totalRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    marginTop: 10,
+    marginTop: 8,
   },
   totalLabelBox: {
     backgroundColor: INVOICE_COLORS.primary,
-    paddingVertical: 8,
-    // paddingHorizontal: 12,
-    minWidth: 120,
+    paddingVertical: 6,
+    minWidth: 96,
     justifyContent: "center",
     alignItems: "center",
   },
   totalLabel: {
     color: INVOICE_COLORS.white,
     fontFamily: "Helvetica-Bold",
-    fontSize: 9,
+    fontSize: 8,
     textAlign: "center",
   },
   totalValueBox: {
     borderWidth: 1,
     borderColor: INVOICE_COLORS.primary,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    minWidth: 80,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    minWidth: 64,
     justifyContent: "center",
     alignItems: "center",
   },
   totalValue: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 10,
+    fontSize: 8,
   },
   footer: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    height: 90,
+    height: 64,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "flex-end",
   },
   signatureBlock: {
     position: "absolute",
-    right: 36,
-    bottom: 18,
+    right: 24,
+    bottom: 12,
     alignItems: "center",
-    width: 180,
+    width: 140,
   },
   paidSealLabel: {
-    // color: "#0F766E",
-    color: "#166534",  // Darker green for better visibility
+    color: "#166534",
     fontFamily: "Times-Roman",
     fontWeight: "bold" as const,
-    fontSize: 26,
-    marginBottom: 4,
+    fontSize: 18,
+    marginBottom: 2,
   },
   signatureLine: {
     width: "100%",
     borderBottomWidth: 1,
     borderBottomColor: INVOICE_COLORS.primary,
     borderStyle: "dotted",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   signatureLabel: {
     color: INVOICE_COLORS.primary,
     fontFamily: "Helvetica-Bold",
-    fontSize: 10,
+    fontSize: 8,
     textAlign: "center",
   },
 });
@@ -185,7 +184,7 @@ export function InvoiceDocument({ appointment }: InvoiceDocumentProps) {
 
   return (
     <Document title={`Invoice - ${appointment.name}`}>
-      <Page size="A4" style={styles.page}>
+      <Page size={INVOICE_PAGE_SIZE} style={styles.page}>
         <View style={styles.watermarkWrap} fixed>
           <InvoiceWatermark />
         </View>

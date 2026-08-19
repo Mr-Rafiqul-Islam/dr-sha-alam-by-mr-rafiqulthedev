@@ -34,4 +34,5 @@ export const TRUCARE_INVOICE = {
   signatureLabel: "Trucare Diagnostic Center",
 } as const;
 
+export const INVOICE_PAGE_SIZE = "A5" as const;
 export const INVOICE_TABLE_ROW_COUNT = 10;
