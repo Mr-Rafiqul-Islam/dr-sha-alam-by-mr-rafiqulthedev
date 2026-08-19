@@ -36,3 +36,10 @@ export const TRUCARE_INVOICE = {
 
 export const INVOICE_PAGE_SIZE = "A5" as const;
 export const INVOICE_TABLE_ROW_COUNT = 10;
+
+/** Blank top of the pad-print PDF so content clears the pre-printed header. Tweak and reprint. */
+export const PAD_PRINT_TOP_INSET_PT = 80;
+/** Blank bottom of the pad-print PDF so items clear the pre-printed footer. Tweak and reprint. */
+export const PAD_PRINT_BOTTOM_INSET_PT = 90;
+/** Distance of the PAID seal/signature from the bottom edge on pad print. Tweak and reprint. */
+export const PAD_PRINT_SIGNATURE_BOTTOM_PT = 72;
