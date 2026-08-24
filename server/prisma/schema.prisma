@@ -14,6 +14,7 @@ enum UserRole {
   PATIENT
   DOCTOR
   SUPPORT
+  CHAMBER
 }
 
 enum AppointmentStatus {
@@ -29,6 +30,12 @@ enum AppointmentPaymentStatus {
   PENDING
   SUCCESS
   CANCEL
+}
+
+enum AppointmentPaymentMethod {
+  CASH
+  SSL
+  BKASH
 }
 
 enum SiteRef {
@@ -284,6 +291,8 @@ model Appointment {
   age                  String?
   status               AppointmentStatus         @default(PENDING)
   paymentStatus        AppointmentPaymentStatus?
+  paymentMethod        AppointmentPaymentMethod?
+  collectedAmount      Float?
   siteRef              SiteRef                   @default(DOCTOR_SHA_ALAM)
   transactionId        String?                   @unique
   scheduleId           String?
@@ -298,6 +307,7 @@ model Appointment {
   feeCategory          AppointmentRevenueCategory?
 
   feesDiscount AppointmentFeeDiscount[]
+  payments     Payment[]
 
   schedule  AppointmentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
   slot      AppointmentSlot?     @relation(fields: [slotId], references: [id], onDelete: SetNull)
@@ -463,13 +473,14 @@ model Payment {
   updatedAt DateTime @updatedAt
 
   // Relations
-  user   User?   @relation(fields: [userId], references: [id])
-  doctor Doctor? @relation(fields: [doctorId], references: [id])
-  // appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  user        User?         @relation(fields: [userId], references: [id])
+  doctor      Doctor?       @relation(fields: [doctorId], references: [id])
+  appointment Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
   @@index([tranId])
   @@index([userId])
   @@index([doctorId])
+  @@index([appointmentId])
 }
 
 model Blog {
@@ -622,6 +633,16 @@ model AnalyticsSetting {
   accessToken   String?
   testEventCode String?
   enabled       Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentSetting {
+  id                      String  @id @default(uuid())
+  isSingleton             Boolean @unique @default(true)
+  bkashMerchantQrUrl      String?
+  bkashMerchantQrPublicId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

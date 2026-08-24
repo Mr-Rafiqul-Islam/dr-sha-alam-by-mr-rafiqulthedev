@@ -25,6 +25,7 @@ import { AppointmentViewModal } from "../components/appointments/AppointmentView
 import { AppointmentSerialModal } from "../components/appointments/AppointmentSerialModal";
 import { AppointmentDiscountFields } from "../components/appointments/AppointmentDiscountFields";
 import {
+  useConfirmAdminBkashPaymentMutation,
   useDeleteAppointmentMutation,
   useGetAppointmentsQuery,
   useUpdateAppointmentSerialMutation,
@@ -45,6 +46,7 @@ import {
   formatNullable,
   getTodayYmd,
   getInitials,
+  getPaymentMethodLabel,
   getPaymentStatusBadgeVariant,
   getPaymentStatusLabel,
   getStatusBadgeVariant,
@@ -212,6 +214,14 @@ function AppointmentCard({
         >
           {getPaymentStatusLabel(appointment.paymentStatus)}
         </Badge>
+        {appointment.paymentMethod ? (
+          <Badge variant="neutral">
+            {getPaymentMethodLabel(appointment.paymentMethod)}
+            {appointment.collectedAmount != null
+              ? ` · ${appointment.collectedAmount} BDT`
+              : ""}
+          </Badge>
+        ) : null}
       </div>
 
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
@@ -310,6 +320,8 @@ export function AppointmentsPage() {
     useDeleteAppointmentMutation();
   const [updateSerial, { isLoading: isResettingSerial }] =
     useUpdateAppointmentSerialMutation();
+  const [confirmBkash, { isLoading: isConfirmingBkash }] =
+    useConfirmAdminBkashPaymentMutation();
 
   const effectiveDate = todayOnly ? getTodayYmd() : date;
   const filteredAppointments = filterAppointments(appointments, {
@@ -395,6 +407,21 @@ export function AppointmentsPage() {
   const handleSerialSuccess = (appointment: Appointment) => {
     if (viewingAppointment?.id === appointment.id) {
       setViewingAppointment(appointment);
+    }
+  };
+
+  const handleConfirmBkash = async (appointment: Appointment) => {
+    try {
+      const updated = await confirmBkash(appointment.id).unwrap();
+      toast.success("bKash payment confirmed");
+      setViewingAppointment((current) =>
+        current?.id === updated.id ? updated : current,
+      );
+      setEditingAppointment((current) =>
+        current?.id === updated.id ? updated : current,
+      );
+    } catch {
+      toast.error("Failed to confirm bKash payment");
     }
   };
 
@@ -813,6 +840,24 @@ export function AppointmentsPage() {
             value={selectedDiscount}
             onChange={setSelectedDiscount}
           />
+          {editingAppointment?.paymentMethod === "BKASH" &&
+          editingAppointment.paymentStatus === "PENDING" ? (
+            <div className="flex flex-col gap-2 rounded-lg border border-outline-variant/40 bg-surface-container-low p-4">
+              <p className="text-label-md font-medium text-on-surface">
+                Pending bKash collection
+              </p>
+              <p className="text-label-sm text-on-surface-variant">
+                Confirm after the patient pays the due amount.
+              </p>
+              <Button
+                type="button"
+                disabled={isConfirmingBkash}
+                onClick={() => void handleConfirmBkash(editingAppointment)}
+              >
+                {isConfirmingBkash ? "Confirming..." : "Confirm bKash collected"}
+              </Button>
+            </div>
+          ) : null}
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="ghost" onClick={closeStatusModal}>
               Cancel
@@ -845,6 +890,10 @@ export function AppointmentsPage() {
           openSerialModal(appointment);
         }}
         onResetSerial={setResettingSerialAppointment}
+        onConfirmBkash={(appointment) => {
+          void handleConfirmBkash(appointment);
+        }}
+        isConfirmingBkash={isConfirmingBkash}
       />
 
       <AppointmentSerialModal
@@ -1020,13 +1069,23 @@ export function AppointmentsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          <Badge
-                            variant={getPaymentStatusBadgeVariant(
-                              appointment.paymentStatus,
-                            )}
-                          >
-                            {getPaymentStatusLabel(appointment.paymentStatus)}
-                          </Badge>
+                          <div className="flex flex-col gap-1">
+                            <Badge
+                              variant={getPaymentStatusBadgeVariant(
+                                appointment.paymentStatus,
+                              )}
+                            >
+                              {getPaymentStatusLabel(appointment.paymentStatus)}
+                            </Badge>
+                            {appointment.paymentMethod ? (
+                              <span className="text-label-sm text-on-surface-variant">
+                                {getPaymentMethodLabel(appointment.paymentMethod)}
+                                {appointment.collectedAmount != null
+                                  ? ` · ${appointment.collectedAmount} BDT`
+                                  : ""}
+                              </span>
+                            ) : null}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <span

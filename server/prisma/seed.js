@@ -18,9 +18,10 @@ const ROLE_SEED_PASSWORDS = {
   [UserRole.SUPER_ADMIN]: process.env.SUPER_ADMIN_SEED_PASSWORD || "SuperAdmin@Dev123!",
   [UserRole.EDITOR]: process.env.EDITOR_SEED_PASSWORD || "Editor@Dev123!",
   [UserRole.SUPPORT]: process.env.SUPPORT_SEED_PASSWORD || "Support@Dev123!",
+  [UserRole.CHAMBER]: process.env.CHAMBER_SEED_PASSWORD || "Chamber@Dev123!",
 };
 
-const SEED_STAFF_ROLES = [UserRole.SUPER_ADMIN, UserRole.EDITOR, UserRole.SUPPORT];
+const SEED_STAFF_ROLES = [UserRole.SUPER_ADMIN, UserRole.EDITOR, UserRole.SUPPORT, UserRole.CHAMBER];
 
 function seedPasswordPlainForRole(role) {
   const plain = ROLE_SEED_PASSWORDS[role];
@@ -44,12 +45,17 @@ const staffUsersToSeed = [
   {
     email: "chamber.trucare@gmail.com",
     name: "Chamber",
-    role: UserRole.SUPPORT,
+    role: UserRole.CHAMBER,
   },
   {
     email: "thesakibdev@gmail.com",
     name: "Sakib",
     role: UserRole.SUPER_ADMIN,
+  },
+  {
+    email: "chamber.desk@doctorshahalam.com",
+    name: "Chamber Desk",
+    role: UserRole.CHAMBER,
   },
   {
     email: "foysaloff856@gmail.com",

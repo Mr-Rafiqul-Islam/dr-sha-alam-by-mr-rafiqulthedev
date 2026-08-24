@@ -29,6 +29,7 @@ function buildSchema(isEdit: boolean) {
         "ADMIN",
         "MANAGER",
         "SUPPORT",
+        "CHAMBER",
         "EDITOR",
       ]),
       password: isEdit ? z.string().optional() : passwordSchema,

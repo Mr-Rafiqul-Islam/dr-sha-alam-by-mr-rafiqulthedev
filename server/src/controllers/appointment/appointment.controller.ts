@@ -1,4 +1,4 @@
-import { AppointmentRevenueCategory, AppointmentStatus, SiteRef } from "@prisma/client";
+import { AppointmentRevenueCategory, AppointmentStatus, SiteRef, UserRole } from "@prisma/client";
 import type { Request, Response } from "express";
 import { prisma } from "../../config/db.js";
 import { sendAppointmentSms } from "../../modules/appointment/appointment.sms.js";
@@ -63,6 +63,11 @@ import {
   parseFeesDiscountInput,
   replaceAppointmentFeesDiscounts,
 } from "../../modules/appointment/appointment.discount.js";
+import {
+  applyStaffPaymentOnCreate,
+  parseStaffPaymentSelection,
+  resolveStaffCollectionDue,
+} from "../../modules/appointment/appointment.payment.js";
 
 function parseBodyString(value: unknown): string | undefined {
   if (typeof value === "string" && value.trim()) {
@@ -116,6 +121,22 @@ export async function createAppointment(req: Request, res: Response) {
       isAdmin && Object.prototype.hasOwnProperty.call(req.body, "feeCategory")
         ? parseFeeCategory(req.body.feeCategory)
         : undefined;
+
+    const paymentSelection = parseStaffPaymentSelection(req.body, {
+      isAdmin,
+      role: req.admin?.role as UserRole | undefined,
+    });
+    const paymentCreateFields = paymentSelection
+      ? applyStaffPaymentOnCreate(
+          paymentSelection,
+          await resolveStaffCollectionDue({
+            preferredTime: slotCode,
+            feeCategory,
+            siteRef: SiteRef.DOCTOR_SHA_ALAM,
+            discounts: feesDiscountInput ?? [],
+          }),
+        )
+      : undefined;
 
     let smsLabel: string | null | undefined;
 
@@ -174,6 +195,7 @@ export async function createAppointment(req: Request, res: Response) {
           updatedById: adminId,
           ...(isAdmin ? { status: AppointmentStatus.CONFIRMED } : {}),
           ...(feeCategory ? { feeCategory } : {}),
+          ...(paymentCreateFields ?? {}),
           ...(feesDiscountInput && feesDiscountInput.length > 0
             ? {
                 feesDiscount: {
@@ -699,6 +721,46 @@ export async function getAllAppointments(req: Request, res: Response) {
     });
   } catch (error) {
     return handleAppointmentError(res, error, "Failed to get appointments");
+  }
+}
+
+export async function getAdminAppointmentById(req: Request, res: Response) {
+  try {
+    const id = routeParamString(req.params.id);
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Invalid appointment id" });
+    }
+
+    const { pendingDeleteMap, hidePendingDeletes, pendingDeleteWhere } =
+      await getAdminAppointmentListContext(req);
+
+    const appointment = await prisma.appointment.findFirst({
+      where: {
+        AND: [{ id }, pendingDeleteWhere],
+      },
+      include: APPOINTMENT_ACTOR_INCLUDE,
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "No appointment found",
+      });
+    }
+
+    const [mapped] = await mapAdminAppointments(
+      [appointment],
+      pendingDeleteMap,
+      hidePendingDeletes,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Appointment fetched successfully",
+      appointment: mapped,
+    });
+  } catch (error) {
+    return handleAppointmentError(res, error, "Failed to get appointment");
   }
 }
 

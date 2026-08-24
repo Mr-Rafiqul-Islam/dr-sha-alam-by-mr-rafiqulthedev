@@ -2,6 +2,7 @@ import { INVOICE_TABLE_ROW_COUNT } from "../constants/invoice";
 import type { Appointment } from "../types/appointment";
 import {
   formatNullable,
+  getPaymentMethodLabel,
   getPaymentStatusLabel,
 } from "./appointment";
 import {
@@ -86,7 +87,14 @@ export function buildInvoiceLineItems(appointment: Appointment): {
     {
       serial: 5,
       label: "Payment Status",
-      value: getPaymentStatusLabel(appointment.paymentStatus),
+      value: [
+        getPaymentStatusLabel(appointment.paymentStatus),
+        appointment.paymentMethod
+          ? getPaymentMethodLabel(appointment.paymentMethod)
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
       amount: "",
     },
     {

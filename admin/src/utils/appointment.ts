@@ -1,7 +1,9 @@
 import type {
   Appointment,
+  AppointmentCategoryFilter,
   AppointmentExtraFilter,
   AppointmentFormData,
+  AppointmentPaymentMethod,
   AppointmentPaymentStatus,
   AppointmentStatus,
   CreateAppointmentPayload,
@@ -9,6 +11,7 @@ import type {
 } from "../types/appointment";
 import type { BadgeVariant } from "../components/common/Badge";
 import {
+  resolveDiscountBdt,
   toAppointmentFeeDiscountInput,
 } from "./discount";
 
@@ -123,6 +126,22 @@ export function getPaymentStatusBadgeVariant(
   return variants[paymentStatus];
 }
 
+export function getPaymentMethodLabel(
+  paymentMethod: AppointmentPaymentMethod | null | undefined,
+): string {
+  if (paymentMethod == null) {
+    return "—";
+  }
+
+  const labels: Record<AppointmentPaymentMethod, string> = {
+    CASH: "Cash",
+    SSL: "SSL",
+    BKASH: "bKash",
+  };
+
+  return labels[paymentMethod];
+}
+
 export const APPOINTMENT_STATUS_OPTIONS: Array<{
   value: AppointmentStatus;
   label: string;
@@ -140,6 +159,12 @@ export function toCreateAppointmentPayload(
 ): CreateAppointmentPayload {
   const discountInput = toAppointmentFeeDiscountInput(data.discount);
   const isOldGeneral = data.preferredTime === OLD_GENERAL_PREFERRED_TIME;
+  const paymentMethod =
+    data.paymentChannel === "CASH"
+      ? "CASH"
+      : data.paymentChannel === "DIGITAL"
+        ? data.digitalMethod
+        : undefined;
 
   return {
     fullName: data.patientName.trim(),
@@ -152,7 +177,52 @@ export function toCreateAppointmentPayload(
     ...(data.age?.trim() ? { age: data.age.trim() } : {}),
     ...(data.symptoms?.trim() ? { problem: data.symptoms.trim() } : {}),
     ...(discountInput ? { feesDiscount: [discountInput] } : {}),
+    ...(paymentMethod ? { paymentMethod } : {}),
+    ...(paymentMethod === "CASH" && data.collectedAmount != null
+      ? { collectedAmount: data.collectedAmount }
+      : {}),
   };
+}
+
+export function resolveCreateFeeCategory(
+  preferredTime: string,
+): AppointmentCategoryFilter | null {
+  if (preferredTime === OLD_GENERAL_PREFERRED_TIME) {
+    return "OLD_GENERAL";
+  }
+  if (preferredTime === PLID_SLOT_CODE) {
+    return "NEW_PLID";
+  }
+  if (preferredTime === "OP-4") {
+    return "OLD_PLID";
+  }
+  if (preferredTime === GENERAL_SLOT_CODE) {
+    return "GENERAL";
+  }
+  return null;
+}
+
+export function computeStaffDueAmount(
+  categoryFee: number,
+  discount: AppointmentFormData["discount"],
+): number {
+  const input = toAppointmentFeeDiscountInput(discount);
+  if (!input) {
+    return Math.round(categoryFee * 100) / 100;
+  }
+
+  const due =
+    categoryFee -
+    resolveDiscountBdt(
+      {
+        discountType: input.discountType,
+        discountAmount: input.discountAmount ?? null,
+        discountPercentage: input.discountPercentage ?? null,
+      },
+      categoryFee,
+    );
+
+  return Math.round(Math.max(0, due) * 100) / 100;
 }
 
 export function isFutureDateYmd(value: string): boolean {

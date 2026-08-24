@@ -20,6 +20,7 @@ import {
 } from "../modules/analyticsSettings/analyticsSettings.routes.js";
 import { appointmentRevenueAdminRouter } from "../modules/appointmentRevenue/appointmentRevenue.route.js";
 import { announcementAdminRouter } from "./announcement/admin/announcement.routes.js";
+import { paymentSettingsAdminRouter } from "../modules/paymentSettings/paymentSettings.routes.js";
 
 
 /**
@@ -42,5 +43,6 @@ export function mountRoutes(app: Express): void {
   app.use("/api/v1/admin/contact-messages", contactAdminRouter);
   app.use("/api/v1/admin/announcements", announcementAdminRouter);
   app.use("/api/v1/admin/appointment-revenue", appointmentRevenueAdminRouter);
+  app.use("/api/v1/admin/payment-settings", paymentSettingsAdminRouter);
   app.use("/api/v1/payment", paymentRouter);
 }

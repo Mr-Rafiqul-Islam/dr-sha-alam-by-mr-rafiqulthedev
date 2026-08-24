@@ -9,6 +9,12 @@ import {
   useUpdateAppointmentRevenueFeesMutation,
   type AppointmentRevenueFees,
 } from "../../store/api/appointmentRevenueApi";
+import {
+  useGetPaymentSettingsQuery,
+  useUploadBkashQrImageMutation,
+  useUpsertPaymentSettingsMutation,
+} from "../../store/api/paymentSettingsApi";
+import fallbackBkashQr from "../../assets/bkash-merchant-qr.svg";
 
 const feeSchema = z
   .string()
@@ -65,6 +71,13 @@ export function AppointmentRevenueFeesModal({
   );
   const [updateFees, { isLoading: isSaving }] =
     useUpdateAppointmentRevenueFeesMutation();
+  const { data: paymentSettings } = useGetPaymentSettingsQuery(undefined, {
+    skip: !open,
+  });
+  const [uploadBkashQr, { isLoading: isUploadingQr }] =
+    useUploadBkashQrImageMutation();
+  const [upsertPaymentSettings, { isLoading: isSavingQr }] =
+    useUpsertPaymentSettingsMutation();
 
   const {
     register,
@@ -204,6 +217,48 @@ export function AppointmentRevenueFeesModal({
           </div>
         </form>
       )}
+      {open && !isLoading && !isError ? (
+        <div className="space-y-3 border-t border-outline-variant/30 pt-6">
+          <h3 className="text-label-md font-semibold text-on-surface">
+            bKash merchant QR
+          </h3>
+          <p className="text-label-sm text-on-surface-variant">
+            Uploaded image is shown to chamber staff. If none is uploaded, the
+            hardcoded placeholder QR is used.
+          </p>
+          <img
+            src={paymentSettings?.bkashMerchantQrUrl || fallbackBkashQr}
+            alt="Current bKash QR"
+            className="h-40 w-40 rounded-lg border border-outline-variant/40 bg-white object-contain p-2"
+          />
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            disabled={isUploadingQr || isSavingQr}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (!file) {
+                return;
+              }
+              void (async () => {
+                try {
+                  const payload = await uploadBkashQr(file).unwrap();
+                  await upsertPaymentSettings({
+                    bkashMerchantQrUrl: payload.image,
+                    bkashMerchantQrPublicId: payload.imagePublicId,
+                  }).unwrap();
+                  toast.success("bKash QR updated");
+                } catch (error) {
+                  toast.error(
+                    getApiErrorMessage(error, "Failed to upload bKash QR"),
+                  );
+                }
+              })();
+            }}
+          />
+        </div>
+      ) : null}
     </Modal>
   );
 }
