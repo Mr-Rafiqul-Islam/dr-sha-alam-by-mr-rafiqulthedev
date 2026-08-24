@@ -316,6 +316,16 @@ model Appointment {
   @@index([appointmentDate, preferredTime, siteRef, status])
 }
 
+model AppointmentDayCloseRun {
+  id           String   @id @default(uuid())
+  siteRef      SiteRef
+  businessDate String
+  closedCount  Int
+  closedAt     DateTime @default(now())
+
+  @@unique([siteRef, businessDate])
+}
+
 model AppointmentFeeDiscount {
   id String @id @default(uuid())
 
