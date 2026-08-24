@@ -5,6 +5,7 @@ export const STAFF_PANEL_ROLES = new Set<UserRole>([
   UserRole.ADMIN,
   UserRole.MANAGER,
   UserRole.SUPPORT,
+  UserRole.CHAMBER,
   UserRole.EDITOR,
 ]);
 
@@ -31,7 +32,7 @@ const ANALYTICS_SETTINGS_ROLES = new Set<UserRole>([
   UserRole.MANAGER,
 ]);
 
-const SUPPORT_PERMISSIONS = new Set<AdminPermission>([
+const FRONT_DESK_PERMISSIONS = new Set<AdminPermission>([
   "appointments",
   "appointmentSchedules",
   "contactMessages",
@@ -72,8 +73,8 @@ export function canAccessAdminPermission(
     return true;
   }
 
-  if (role === UserRole.SUPPORT) {
-    return SUPPORT_PERMISSIONS.has(permission);
+  if (role === UserRole.SUPPORT || role === UserRole.CHAMBER) {
+    return FRONT_DESK_PERMISSIONS.has(permission);
   }
 
   if (role === UserRole.EDITOR) {
@@ -84,7 +85,7 @@ export function canAccessAdminPermission(
 }
 
 export function getDefaultAdminPath(role: UserRole): string {
-  if (role === UserRole.SUPPORT) {
+  if (role === UserRole.SUPPORT || role === UserRole.CHAMBER) {
     return "/appointments";
   }
 

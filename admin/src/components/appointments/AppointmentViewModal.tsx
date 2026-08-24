@@ -4,6 +4,7 @@ import type { Appointment } from "../../types/appointment";
 import {
   formatAppointmentDateTime,
   formatNullable,
+  getPaymentMethodLabel,
   getPaymentStatusBadgeVariant,
   getPaymentStatusLabel,
   getSiteRefLabel,
@@ -24,6 +25,8 @@ type AppointmentViewModalProps = {
   onPrint?: (appointment: Appointment) => void;
   onModifySerial?: (appointment: Appointment) => void;
   onResetSerial?: (appointment: Appointment) => void;
+  onConfirmBkash?: (appointment: Appointment) => void;
+  isConfirmingBkash?: boolean;
 };
 
 type DetailRowProps = {
@@ -73,6 +76,8 @@ export function AppointmentViewModal({
   onPrint,
   onModifySerial,
   onResetSerial,
+  onConfirmBkash,
+  isConfirmingBkash,
 }: AppointmentViewModalProps) {
   const effectiveSerial = appointment
     ? getEffectiveSerialNumber(appointment)
@@ -213,6 +218,18 @@ export function AppointmentViewModal({
                 </Badge>
               }
             />
+            <DetailRow
+              label="Payment Method"
+              value={getPaymentMethodLabel(appointment.paymentMethod)}
+            />
+            <DetailRow
+              label="Collected Amount"
+              value={
+                appointment.collectedAmount != null
+                  ? String(appointment.collectedAmount)
+                  : "—"
+              }
+            />
           </DetailSection>
 
           <DetailSection title="Audit">
@@ -252,6 +269,17 @@ export function AppointmentViewModal({
               ) : null}
             </div>
             <div className="flex gap-3">
+              {appointment.paymentMethod === "BKASH" &&
+              appointment.paymentStatus === "PENDING" &&
+              onConfirmBkash ? (
+                <Button
+                  variant="primary"
+                  disabled={isConfirmingBkash}
+                  onClick={() => onConfirmBkash(appointment)}
+                >
+                  {isConfirmingBkash ? "Confirming..." : "Confirm bKash collected"}
+                </Button>
+              ) : null}
               <Button
                 variant="primary"
                 onClick={() => {

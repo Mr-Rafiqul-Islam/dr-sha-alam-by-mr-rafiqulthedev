@@ -23,6 +23,13 @@ import {
   OLD_GENERAL_PREFERRED_TIME,
 } from "../../utils/appointment";
 import { AppointmentDiscountFields } from "./AppointmentDiscountFields";
+import { AppointmentPaymentFields } from "./AppointmentPaymentFields";
+import { useAdminAuth } from "../../contexts/AdminAuthContext";
+import { useGetAppointmentRevenueFeesQuery } from "../../store/api/appointmentRevenueApi";
+import {
+  computeStaffDueAmount,
+  resolveCreateFeeCategory,
+} from "../../utils/appointment";
 
 export type { AppointmentFormData } from "../../types/appointment";
 
@@ -36,6 +43,9 @@ const defaultValues: AppointmentFormData = {
   preferredDate: "",
   preferredTime: "",
   discount: { ...DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE },
+  paymentChannel: "",
+  digitalMethod: "SSL",
+  collectedAmount: null,
 };
 
 type AppointmentFormProps = {
@@ -132,6 +142,10 @@ function AppointmentFormFields({
   submitLabel: string;
   timeSlotOptions: Array<{ value: string; label: string; disabled?: boolean }>;
 }) {
+  const { user } = useAdminAuth();
+  const paymentRequired = user?.role === "CHAMBER";
+  const { data: feeData } = useGetAppointmentRevenueFeesQuery("DOCTOR_SHA_ALAM");
+
   const appointmentSchema = z
     .object({
       patientName: z.string().min(1, "Full name is required"),
@@ -165,6 +179,9 @@ function AppointmentFormFields({
         discountCode: z.string(),
         discountDescription: z.string(),
       }),
+      paymentChannel: z.enum(["", "CASH", "DIGITAL"]),
+      digitalMethod: z.enum(["SSL", "BKASH"]),
+      collectedAmount: z.number().nullable(),
     })
     .superRefine((data, ctx) => {
       if (!data.preferredDate) {
@@ -187,6 +204,23 @@ function AppointmentFormFields({
           path: ["preferredDate"],
         });
       }
+    })
+    .superRefine((data, ctx) => {
+      if (paymentRequired && !data.paymentChannel) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Payment method is required",
+          path: ["paymentChannel"],
+        });
+      }
+
+      if (data.paymentChannel === "CASH" && data.collectedAmount == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Enter the cash amount",
+          path: ["collectedAmount"],
+        });
+      }
     });
 
   const form = useForm<AppointmentFormData>({
@@ -199,7 +233,19 @@ function AppointmentFormFields({
   const discount =
     useWatch({ control: form.control, name: "discount" }) ??
     DEFAULT_APPOINTMENT_DISCOUNT_FORM_STATE;
+  const paymentChannel =
+    useWatch({ control: form.control, name: "paymentChannel" }) ?? "";
+  const digitalMethod =
+    useWatch({ control: form.control, name: "digitalMethod" }) ?? "SSL";
+  const collectedAmount =
+    useWatch({ control: form.control, name: "collectedAmount" }) ?? null;
   const minPreferredDate = getMinPreferredDateYmd();
+
+  const feeCategory = resolveCreateFeeCategory(preferredTime);
+  const categoryFee =
+    feeCategory && feeData?.fees ? feeData.fees[feeCategory] : null;
+  const dueAmount =
+    categoryFee == null ? null : computeStaffDueAmount(categoryFee, discount);
 
   useEffect(() => {
     const preferredDate = form.getValues("preferredDate");
@@ -296,6 +342,38 @@ function AppointmentFormFields({
         value={discount}
         onChange={(nextValue) =>
           form.setValue("discount", nextValue, { shouldDirty: true })
+        }
+      />
+
+      <span className="block h-px w-full bg-outline-variant/30" />
+
+      <AppointmentPaymentFields
+        paymentChannel={paymentChannel}
+        digitalMethod={digitalMethod}
+        collectedAmount={collectedAmount}
+        dueAmount={dueAmount}
+        required={paymentRequired}
+        disabled={isSubmitting}
+        onPaymentChannelChange={(value) => {
+          form.setValue("paymentChannel", value, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+          if (value === "CASH" && dueAmount != null) {
+            form.setValue("collectedAmount", dueAmount, { shouldDirty: true });
+          }
+          if (value !== "CASH") {
+            form.setValue("collectedAmount", null);
+          }
+        }}
+        onDigitalMethodChange={(value) =>
+          form.setValue("digitalMethod", value, { shouldDirty: true })
+        }
+        onCollectedAmountChange={(value) =>
+          form.setValue("collectedAmount", value, {
+            shouldDirty: true,
+            shouldValidate: true,
+          })
         }
       />
 

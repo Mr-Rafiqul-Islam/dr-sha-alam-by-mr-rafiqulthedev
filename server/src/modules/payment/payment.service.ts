@@ -1,10 +1,12 @@
 import {
+  AppointmentPaymentMethod,
   AppointmentPaymentStatus,
   AppointmentStatus,
   Prisma,
   SiteRef,
 } from "@prisma/client";
 import type { Payment } from "@prisma/client";
+import SSLCommerzPayment from "sslcommerz-lts";
 import { prisma } from "../../config/db.js";
 import {
   runSerializableTransaction,
@@ -32,6 +34,10 @@ import {
   isPaymentAppointmentPayload,
   type PaymentAppointmentPayload,
 } from "./payment.types.js";
+import {
+  appointmentPatchForPaymentFailure,
+  resolveStaffCollectionDue,
+} from "../appointment/appointment.payment.js";
 
 const ACTIVE_APPOINTMENT_STATUSES = {
   not: AppointmentStatus.CANCEL,
@@ -222,12 +228,12 @@ export async function createPendingPaymentWithAppointment(params: {
   });
 }
 
-export function getFrontendUrl(): string {
-  return process.env.FRONTEND_URL ?? "http://localhost:3000";
+export function getAdminUrl(): string {
+  return process.env.ADMIN_URL ?? "http://localhost:5173";
 }
 
 export function getBackendUrl(): string {
-  return process.env.BACKEND_URL ?? `http://localhost:${process.env.PORT ?? 5007}`;
+  return process.env.BACKEND_URL ?? `http://localhost:${process.env.PORT ?? 5001}`;
 }
 
 export function shouldSkipSslValidation(): boolean {
@@ -346,11 +352,17 @@ export async function handlePaymentFailSync(
     });
 
     if (payment.appointmentId) {
+      const appointment = await tx.appointment.findUnique({
+        where: { id: payment.appointmentId },
+        select: { createdById: true },
+      });
+
       await tx.appointment.update({
         where: { id: payment.appointmentId },
-        data: {
-          status: AppointmentStatus.CANCEL,
-        },
+        data: appointmentPatchForPaymentFailure({
+          createdById: appointment?.createdById,
+          kind: "fail",
+        }),
       });
     }
   });
@@ -383,11 +395,18 @@ export async function handlePaymentCancelSync(
     });
 
     if (payment.appointmentId) {
+      const appointment = await tx.appointment.findUnique({
+        where: { id: payment.appointmentId },
+        select: { createdById: true },
+      });
+
       await tx.appointment.update({
         where: { id: payment.appointmentId },
-        data: {
-          paymentStatus,
-        },
+        data: appointmentPatchForPaymentFailure({
+          createdById: appointment?.createdById,
+          kind: "cancel",
+          providerPaymentStatus: paymentStatus,
+        }),
       });
     }
   });
@@ -424,7 +443,11 @@ async function fulfillExistingReservedAppointment(
 
   await tx.appointment.update({
     where: { id: existing.id },
-    data: { paymentStatus },
+    data: {
+      paymentStatus,
+      collectedAmount: currentPayment.amount,
+      transactionId: existing.transactionId ?? currentPayment.tranId,
+    },
   });
 
   await tx.payment.update({
@@ -697,5 +720,153 @@ export async function buildPaymentAppointmentPayloadWithSlotValidation(
     ...payload,
     scheduleId: slotResult.scheduleId,
     slotId: slotResult.slotId,
+  };
+}
+
+function extractSslQrCode(apiResponse: Record<string, unknown> | null | undefined): string | undefined {
+  if (!apiResponse) {
+    return undefined;
+  }
+
+  for (const key of ["qrcode", "QRCode", "QRCodeURL", "qrCode", "qr_code"]) {
+    const value = apiResponse[key];
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return undefined;
+}
+
+export async function startAdminSslSession(appointmentId: string): Promise<{
+  gatewayPageUrl: string;
+  qrCode?: string;
+  tranId: string;
+  amount: number;
+}> {
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: appointmentId },
+    include: { feesDiscount: true },
+  });
+
+  if (!appointment) {
+    throw new AppointmentValidationError("Appointment not found", 404);
+  }
+
+  if (appointment.paymentMethod !== AppointmentPaymentMethod.SSL) {
+    throw new AppointmentValidationError("Appointment is not an SSL payment");
+  }
+
+  if (appointment.paymentStatus === AppointmentPaymentStatus.SUCCESS) {
+    throw new AppointmentValidationError("Appointment is already paid");
+  }
+
+  const amount = await resolveStaffCollectionDue({
+    preferredTime: appointment.preferredTime,
+    feeCategory: appointment.feeCategory,
+    siteRef: appointment.siteRef,
+    discounts: appointment.feesDiscount,
+  });
+
+  const existingPayment = await prisma.payment.findFirst({
+    where: {
+      appointmentId,
+      gateway: "SSLCommerz",
+      status: "PENDING",
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const tranId = existingPayment?.tranId ?? `TRX-${Date.now()}`;
+  const doctorId = await resolveDoctorId();
+  const backendUrl = getBackendUrl();
+
+  if (!existingPayment) {
+    await prisma.payment.create({
+      data: {
+        tranId,
+        doctorId,
+        amount,
+        status: "PENDING",
+        gateway: "SSLCommerz",
+        transactionId: tranId,
+        appointmentId,
+        meta: { source: "admin" },
+        gatewayResponse: {
+          fullName: appointment.name,
+          phoneNumber: appointment.phone,
+          email: appointment.email,
+          homeAddress: appointment.homeAddress,
+          problem: appointment.problem,
+          preferredDate: appointment.appointmentDate.toISOString(),
+          preferredTime: appointment.preferredTime,
+          siteRef: appointment.siteRef,
+        },
+      },
+    });
+  } else if (existingPayment.amount !== amount) {
+    await prisma.payment.update({
+      where: { tranId: existingPayment.tranId },
+      data: { amount, meta: { source: "admin" } },
+    });
+  }
+
+  await prisma.appointment.update({
+    where: { id: appointmentId },
+    data: {
+      transactionId: tranId,
+      paymentStatus: AppointmentPaymentStatus.PENDING,
+    },
+  });
+
+  const sslData = {
+    total_amount: amount,
+    currency: "BDT",
+    tran_id: tranId,
+    success_url: `${backendUrl}/api/v1/payment/success?tranId=${encodeURIComponent(tranId)}`,
+    fail_url: `${backendUrl}/api/v1/payment/fail?tranId=${encodeURIComponent(tranId)}`,
+    cancel_url: `${backendUrl}/api/v1/payment/cancel?tranId=${encodeURIComponent(tranId)}`,
+    ipn_url: `${backendUrl}/api/v1/payment/ipn`,
+    shipping_method: "Courier",
+    product_name: "Doctor Appointment",
+    product_category: "Healthcare",
+    product_profile: "general",
+    cus_name: appointment.name,
+    cus_email: appointment.email || "appointment@doctorshahalam.com",
+    cus_add1: appointment.homeAddress,
+    cus_city: "Dhaka",
+    cus_state: "Dhaka",
+    cus_postcode: "1000",
+    cus_country: "Bangladesh",
+    cus_phone: appointment.phone,
+    ship_name: appointment.name,
+    ship_add1: appointment.homeAddress,
+    ship_city: "Dhaka",
+    ship_state: "Dhaka",
+    ship_postcode: 1000,
+    ship_country: "Bangladesh",
+  };
+
+  const storeId = process.env.SSLCOMMERZ_STORE_ID;
+  const storePassword = process.env.SSLCOMMERZ_STORE_PASSWORD;
+  const isLive = process.env.SSL_IS_LIVE === "true";
+
+  if (!storeId || !storePassword) {
+    throw new AppointmentValidationError("Payment gateway is not configured", 500);
+  }
+
+  const sslcz = new SSLCommerzPayment(storeId, storePassword, isLive);
+  const apiResponse = await sslcz.init(sslData);
+  const gatewayPageUrl = apiResponse?.GatewayPageURL;
+
+  if (!gatewayPageUrl) {
+    throw new AppointmentValidationError("Failed to get payment URL", 500);
+  }
+
+  return {
+    gatewayPageUrl,
+    qrCode: extractSslQrCode(apiResponse),
+    tranId,
+    amount,
   };
 }

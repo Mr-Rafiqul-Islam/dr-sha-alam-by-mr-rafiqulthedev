@@ -6,12 +6,14 @@ export const STAFF_ROLE_OPTIONS: Array<{ value: StaffRole; label: string }> = [
   { value: "ADMIN", label: "Admin" },
   { value: "MANAGER", label: "Manager" },
   { value: "SUPPORT", label: "Support" },
+  { value: "CHAMBER", label: "Chamber" },
   { value: "EDITOR", label: "Editor" },
 ];
 
 export const ADMIN_ONLY_ROLE_OPTIONS = STAFF_ROLE_OPTIONS.filter((option) =>
   option.value === "ADMIN" ||
   option.value === "SUPPORT" ||
+  option.value === "CHAMBER" ||
   option.value === "EDITOR",
 );
 
@@ -36,6 +38,7 @@ export function canManageAdminTarget(
     return (
       targetRole === "ADMIN" ||
       targetRole === "SUPPORT" ||
+      targetRole === "CHAMBER" ||
       targetRole === "EDITOR"
     );
   }

@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { corsOptions } from "./config/cors.js";
 import { mountRoutes } from "./routes/index.js";
+import { startAppointmentDayAutocloseScheduler } from "./modules/appointmentDayAutoclose/appointmentDayAutoclose.scheduler.js";
 
 const app = express();
 const port: number | string = process.env.PORT || 5007;
@@ -21,4 +22,5 @@ app.get("/", (req: Request, res: Response) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port http://localhost:${port}`);
+  startAppointmentDayAutocloseScheduler();
 });

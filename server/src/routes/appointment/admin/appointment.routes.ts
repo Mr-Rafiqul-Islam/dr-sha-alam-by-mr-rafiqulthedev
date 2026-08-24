@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as appointmentController from "../../../controllers/appointment/appointment.controller.js";
+import * as appointmentPaymentController from "../../../controllers/appointment/appointment.payment.controller.js";
 import { adminActivityTracing } from "../../../modules/activity/activity.middleware.js";
 import { requireAdminAuth, requireAdminPermission } from "../../../modules/adminAuth/adminAuth.middleware.js";
 
@@ -19,6 +20,7 @@ appointmentAdminRouter.get(
   "/month/:month/:year",
   appointmentController.getAppointmentsByMonth,
 );
+appointmentAdminRouter.get("/:id", appointmentController.getAdminAppointmentById);
 appointmentAdminRouter.patch(
   "/:id/status",
   appointmentController.updateAppointmentStatus,
@@ -26,5 +28,13 @@ appointmentAdminRouter.patch(
 appointmentAdminRouter.patch(
   "/:id/serial",
   appointmentController.updateAppointmentSerial,
+);
+appointmentAdminRouter.post(
+  "/:id/payments/ssl/start",
+  appointmentPaymentController.startAdminSslPayment,
+);
+appointmentAdminRouter.post(
+  "/:id/payments/bkash/confirm",
+  appointmentPaymentController.confirmAdminBkashPayment,
 );
 appointmentAdminRouter.delete("/:id", appointmentController.deleteAppointment);

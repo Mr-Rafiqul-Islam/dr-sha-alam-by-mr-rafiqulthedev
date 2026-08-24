@@ -14,6 +14,8 @@ export type AppointmentExtraFilter =
 
 export type AppointmentPaymentStatus = "PENDING" | "SUCCESS" | "CANCEL";
 
+export type AppointmentPaymentMethod = "CASH" | "SSL" | "BKASH";
+
 export type AppointmentCategoryFilter =
   | "GENERAL"
   | "OLD_GENERAL"
@@ -67,6 +69,8 @@ export type Appointment = PendingDeleteMeta & {
   age: string | null;
   status: AppointmentStatus;
   paymentStatus: AppointmentPaymentStatus | null;
+  paymentMethod: AppointmentPaymentMethod | null;
+  collectedAmount: number | null;
   siteRef: SiteRef;
   transactionId: string | null;
   note: string | null;
@@ -106,6 +110,9 @@ export type AppointmentFormData = {
   preferredDate: string;
   preferredTime: string;
   discount: AppointmentDiscountFormState;
+  paymentChannel: "" | "CASH" | "DIGITAL";
+  digitalMethod: "SSL" | "BKASH";
+  collectedAmount: number | null;
 };
 
 /** Payload shape for POST /api/v1/client/appointments */
@@ -120,4 +127,6 @@ export type CreateAppointmentPayload = {
   preferredTime: string;
   feesDiscount?: AppointmentFeeDiscountInput[];
   feeCategory?: AppointmentCategoryFilter;
+  paymentMethod?: AppointmentPaymentMethod;
+  collectedAmount?: number;
 };

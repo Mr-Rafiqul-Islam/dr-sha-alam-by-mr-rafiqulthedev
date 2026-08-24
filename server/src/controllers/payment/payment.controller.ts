@@ -10,7 +10,7 @@ import {
   createPendingPaymentWithAppointment,
   fulfillSuccessfulPayment,
   getBackendUrl,
-  getFrontendUrl,
+  getAdminUrl,
   handlePaymentCancelSync,
   handlePaymentFailSync,
   resolveBookingConsultationFee,
@@ -33,7 +33,7 @@ function parseBodyString(value: unknown): string | undefined {
 }
 
 function buildBookingSuccessUrl(appointmentId: string, tranId: string): string {
-  return `${getFrontendUrl()}/booking-success?appointmentId=${encodeURIComponent(appointmentId)}&tranId=${encodeURIComponent(tranId)}`;
+  return `${getAdminUrl()}/booking-success?appointmentId=${encodeURIComponent(appointmentId)}&tranId=${encodeURIComponent(tranId)}`;
 }
 
 async function sendPurchaseCapiEvent(params: {
@@ -94,7 +94,7 @@ function routeBodyString(value: unknown): string | undefined {
 }
 
 function redirectPaymentFailed(res: Response, error: string) {
-  return res.redirect(`${getFrontendUrl()}/payment-failed?error=${encodeURIComponent(error)}`);
+  return res.redirect(`${getAdminUrl()}/payment-failed?error=${encodeURIComponent(error)}`);
 }
 
 function logPaymentProviderStatus(
@@ -313,7 +313,7 @@ export async function paymentFail(req: Request, res: Response) {
       await handlePaymentFailSync(payment, req.body);
     }
 
-    return res.redirect(`${getFrontendUrl()}/payment-failed`);
+    return res.redirect(`${getAdminUrl()}/payment-failed`);
   } catch (error) {
     console.error("Payment fail handler failed:", error);
     return redirectPaymentFailed(res, "server_error");
@@ -339,7 +339,7 @@ export async function paymentCancel(req: Request, res: Response) {
       await handlePaymentCancelSync(payment, req.body);
     }
 
-    return res.redirect(`${getFrontendUrl()}/payment-cancelled`);
+    return res.redirect(`${getAdminUrl()}/payment-cancelled`);
   } catch (error) {
     console.error("Payment cancel handler failed:", error);
     return redirectPaymentFailed(res, "server_error");

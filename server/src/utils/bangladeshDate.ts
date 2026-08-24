@@ -17,8 +17,11 @@ export function isValidDateYmd(value: string): boolean {
   );
 }
 
-export function getTodayYmdInTimeZone(timeZone: string): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());
+export function getTodayYmdInTimeZone(
+  timeZone: string,
+  now: Date = new Date(),
+): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone }).format(now);
 }
 
 export function addDaysToYmd(dateYmd: string, deltaDays: number): string {

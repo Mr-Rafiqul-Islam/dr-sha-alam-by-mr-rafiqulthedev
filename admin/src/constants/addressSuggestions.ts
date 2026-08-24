@@ -16,6 +16,7 @@
 export const HOME_ADDRESS_SUGGESTIONS = [
   // Dhaka District / City
   "Dhaka",
+  "Mohammadpur",
   "Adabor, Dhaka",
   "Airport, Dhaka",
   "Badda, Dhaka",

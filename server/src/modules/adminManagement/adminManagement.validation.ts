@@ -6,6 +6,7 @@ export const STAFF_MANAGEMENT_ROLES = [
   UserRole.ADMIN,
   UserRole.MANAGER,
   UserRole.SUPPORT,
+  UserRole.CHAMBER,
   UserRole.EDITOR,
 ] as const;
 
@@ -15,6 +16,7 @@ export type StaffManagementRole = (typeof STAFF_MANAGEMENT_ROLES)[number];
 export const ADMIN_ASSIGNABLE_ROLES = new Set<UserRole>([
   UserRole.ADMIN,
   UserRole.SUPPORT,
+  UserRole.CHAMBER,
   UserRole.EDITOR,
 ]);
 

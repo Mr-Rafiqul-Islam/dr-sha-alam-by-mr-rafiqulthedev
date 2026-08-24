@@ -56,6 +56,53 @@ export const appointmentsApi = baseApi.injectEndpoints({
       transformResponse: (response: AppointmentResponse) => response.appointment,
       invalidatesTags: [{ type: "Appointment", id: "LIST" }, { type: "AppointmentRevenue", id: "SUMMARY" }],
     }),
+    getAppointment: builder.query<Appointment, string>({
+      query: (id) => `/api/v1/admin/appointments/${id}`,
+      transformResponse: (response: AppointmentResponse) => response.appointment,
+      providesTags: (_result, _error, id) => [{ type: "Appointment", id }],
+    }),
+    startAdminSslPayment: builder.mutation<
+      {
+        gatewayPageUrl: string;
+        qrCode?: string;
+        tranId: string;
+        amount: number;
+      },
+      string
+    >({
+      query: (id) => ({
+        url: `/api/v1/admin/appointments/${id}/payments/ssl/start`,
+        method: "POST",
+      }),
+      transformResponse: (response: {
+        success: boolean;
+        gatewayPageUrl: string;
+        qrCode?: string;
+        tranId: string;
+        amount: number;
+      }) => ({
+        gatewayPageUrl: response.gatewayPageUrl,
+        qrCode: response.qrCode,
+        tranId: response.tranId,
+        amount: response.amount,
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Appointment", id },
+        { type: "Appointment", id: "LIST" },
+      ],
+    }),
+    confirmAdminBkashPayment: builder.mutation<Appointment, string>({
+      query: (id) => ({
+        url: `/api/v1/admin/appointments/${id}/payments/bkash/confirm`,
+        method: "POST",
+      }),
+      transformResponse: (response: AppointmentResponse) => response.appointment,
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Appointment", id },
+        { type: "Appointment", id: "LIST" },
+        { type: "AppointmentRevenue", id: "SUMMARY" },
+      ],
+    }),
     updateAppointmentStatus: builder.mutation<
       Appointment,
       {
@@ -145,7 +192,10 @@ export const appointmentsApi = baseApi.injectEndpoints({
 
 export const {
   useGetAppointmentsQuery,
+  useGetAppointmentQuery,
   useCreateAppointmentMutation,
+  useStartAdminSslPaymentMutation,
+  useConfirmAdminBkashPaymentMutation,
   useUpdateAppointmentStatusMutation,
   useUpdateAppointmentSerialMutation,
   useDeleteAppointmentMutation,

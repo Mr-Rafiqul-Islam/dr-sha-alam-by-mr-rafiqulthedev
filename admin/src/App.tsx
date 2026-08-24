@@ -6,6 +6,9 @@ import {
 } from "./components/auth/RequireAdminPermission";
 import { RequireAdminAuth } from "./components/auth/RequireAdminAuth";
 import { AdminLayout } from "./components/layout/AdminLayout";
+import BookingSuccessPage from "./pages/BookingSuccessPage";
+import PaymentFailedPage from "./pages/PaymentFailedPage";
+import PaymentCancelledPage from "./pages/PaymentCancelledPage";
 
 function lazyNamed<T extends Record<string, ComponentType<object>>>(
   loader: () => Promise<T>,
@@ -128,6 +131,9 @@ function App() {
             <Route path="admins/:id/edit" element={<AdminFormPage />} />
             <Route path="admins" element={<AdminsPage />} />
           </Route>
+          <Route path="booking-success" element={<BookingSuccessPage />} />
+          <Route path="payment-failed" element={<PaymentFailedPage />} />
+          <Route path="payment-cancelled" element={<PaymentCancelledPage />} />
         </Route>
         <Route path="*" element={<RoleDefaultRedirect />} />
       </Route>
